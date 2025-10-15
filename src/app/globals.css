@@ -16,17 +16,33 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* 移除深色模式，统一使用白色背景 */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #ffffff;
+    --foreground: #171717;
+  }
+  
+  html,
+  body {
+    background: #ffffff !important;
   }
 }
 
 body {
-  background: var(--background);
+  background: #ffffff;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* 修复加载页面黑色背景问题 */
+html {
+  background: #ffffff;
+}
+
+/* Next.js 加载状态优化 */
+#__next {
+  background: #ffffff;
 }
 /* 黑色主题样式 */
 .btn-primary {
@@ -107,7 +123,116 @@ a:hover {
 }
 
 /* 响应式设计 */
-@media (max-width: 768px) {
+
+/* iPad 横屏和竖屏 (768px - 1024px) */
+@media only screen and (min-width: 768px) and (max-width: 1024px) {
+  /* 移除桌面端最小宽度限制 */
+  .min-w-\[1200px\] {
+    min-width: 100% !important;
+  }
+
+  /* 表格字体和间距优化 */
+  .ant-table {
+    font-size: 13px;
+  }
+
+  .ant-table-thead > tr > th {
+    padding: 10px 8px;
+  }
+
+  .ant-table-tbody > tr > td {
+    padding: 10px 8px;
+    min-height: 44px;
+  }
+
+  /* 按钮触摸友好 */
+  .ant-btn {
+    min-height: 40px;
+    padding: 8px 16px;
+  }
+
+  /* 输入框触摸友好 */
+  .ant-input,
+  .ant-select-selector,
+  .ant-input-number,
+  .ant-picker {
+    min-height: 40px;
+  }
+
+  /* 下拉菜单项触摸友好 */
+  .ant-dropdown-menu-item {
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+
+  /* iPad 竖屏特殊优化 */
+  @media (orientation: portrait) {
+    /* 表格横向滚动 */
+    .ant-table-wrapper {
+      overflow-x: auto;
+    }
+
+    /* 抽屉宽度限制 */
+    .ant-drawer-content-wrapper {
+      max-width: 90vw !important;
+    }
+
+    /* 紧凑间距 */
+    .ant-card-body {
+      padding: 12px;
+    }
+
+    .ant-form-item {
+      margin-bottom: 10px;
+    }
+  }
+}
+
+/* 手机端 (< 768px) */
+@media (max-width: 767px) {
+  /* 移除最小宽度 */
+  .min-w-\[1200px\] {
+    min-width: 100% !important;
+  }
+
+  /* 表格紧凑模式 */
+  .ant-table {
+    font-size: 12px;
+  }
+
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    padding: 8px 4px;
+  }
+
+  /* 表格横向滚动 */
+  .ant-table-wrapper {
+    overflow-x: auto;
+  }
+
+  /* 按钮触摸友好 */
+  .ant-btn {
+    min-height: 44px;
+  }
+
+  /* 输入框触摸友好 */
+  .ant-input,
+  .ant-select-selector {
+    min-height: 44px;
+  }
+
+  /* 抽屉全屏 */
+  .ant-drawer-content-wrapper {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+
+  /* Modal 适配 */
+  .ant-modal {
+    max-width: 95vw !important;
+    margin: 8px auto !important;
+  }
+
   .sidebar-mobile {
     position: fixed;
     top: 0;
@@ -132,3 +257,36 @@ a:hover {
   }
 }
 
+/* 触摸优化 - 所有触摸设备 */
+@media (hover: none) and (pointer: coarse) {
+  /* 防止双击缩放 */
+  * {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 优化文本选择 */
+  * {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  input,
+  textarea,
+  .ant-input,
+  .ant-input-number-input {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  /* 滚动条优化 */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+}

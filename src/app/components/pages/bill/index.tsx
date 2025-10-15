@@ -260,10 +260,9 @@ export default function BillManagement() {
       <div style={{ 
         marginBottom: 24, 
         display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center' 
+        flexDirection:"column",
       }}>
-        <h2 style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>{t('billManagement')}</h2>
+        <h2 style={{ marginBottom: 20, fontSize: 24, fontWeight: 600 }}>{t('billManagement')}</h2>
         <div style={{ display: 'flex', gap: 8 }}>
           <Button type="primary" icon={<PrinterOutlined />} onClick={handlePrintReceipt}>{t('printReceipt')}</Button>
           <Button onClick={() => setPrintLabelVisible(true)}>

@@ -143,7 +143,7 @@ export default function DesignList({
         style={{ 
           display: "flex", 
           flexWrap: "wrap", 
-          height: 900, 
+          height: 800, 
           overflowY: "scroll",
           gap: '20px',
           padding:"10px",
@@ -157,7 +157,7 @@ export default function DesignList({
               key={`${item.id}-${index}`} 
               style={{ 
                 backgroundColor: "#fff", 
-                width: 500, 
+                flex:"40%",
                 height: 150, 
                 display: "flex", 
                 borderRadius: 10, 
