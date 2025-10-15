@@ -3,11 +3,15 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --primary: #f97316;
+  --primary-foreground: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -24,3 +28,107 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+/* 黑色主题样式 */
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+.btn-primary:hover {
+  background-color: #333333;
+  border-color: #333333;
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+.border-primary {
+  border-color: var(--primary);
+}
+
+.focus\:ring-primary:focus {
+  --tw-ring-color: var(--primary);
+}
+
+/* Ant Design 组件橙色主题覆盖 */
+.ant-btn-primary {
+  background-color: #f97316 !important;
+  border-color: #f97316 !important;
+}
+
+.ant-btn-primary:hover {
+  background-color: #ea580c !important;
+  border-color: #ea580c !important;
+}
+
+.ant-btn-primary:focus {
+  background-color: #f97316 !important;
+  border-color: #f97316 !important;
+}
+
+.ant-btn-primary:active {
+  background-color: #f97316 !important;
+  border-color: #f97316 !important;
+}
+
+/* 链接颜色 */
+a {
+  color: #f97316;
+}
+
+a:hover {
+  color: #ea580c;
+}
+
+/* 选中状态 */
+.selected, .active {
+  color: #f97316 !important;
+}
+
+/* 边框颜色 */
+.border-orange {
+  border-color: #f97316 !important;
+}
+
+/* 背景色 */
+.bg-orange {
+  background-color: #f97316 !important;
+}
+
+/* 自定义样式 */
+.sidebar-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+.content-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .sidebar-mobile {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    z-index: 50;
+    height: 100vh;
+    transition: left 0.3s ease-in-out;
+  }
+  
+  .sidebar-mobile.open {
+    left: 0;
+  }
+  
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+  }
+}
+

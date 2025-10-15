@@ -1,0 +1,23 @@
+Translation keys needed for ImageGallery.tsx:
+- fetchImagesFailed: '获取图片失败'
+- unableToFetchImageList: '无法获取图片列表'
+- fetchImageListFailed: '获取图片列表失败，请稍后重试'
+- deleteFailed: '删除失败' (already exists)
+- atLeastOneImage: '图片至少需要一张'
+- validationFailed: '验证失败'
+- atLeastOneImageInCollection: '图片合集中至少需要包含一张图片'
+- modifySuccess: '修改成功' (already exists)
+- modifyFailed: '修改失败' (already exists)
+- modifyImagesFailed: '修改图片失败，请稍后重试'
+- downloadFailed: '下载失败'
+- downloadImagesFailed: '下载图片失败，请稍后重试'
+- back: '返回'
+- coverColon: '封面:'
+- imagesColon: '图片:'
+- dragToReorder: '拖拽图片调整顺序'
+- noImages: '暂无图片'
+- addImages: '添加图片:'
+- confirm: '确定' (already exists)
+- cancel: '取消' (already exists)
+- edit: '编辑'
+- download: '下载'
