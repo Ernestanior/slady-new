@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Card, message, Pagination, Collapse, Form, Input, DatePicker, Tag, Tabs } from 'antd';
+import { Table, Button, Card, message, Pagination, Form, Input, DatePicker, Tag, Tabs } from 'antd';
 import { SearchOutlined, ReloadOutlined, FilterOutlined, PrinterOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { ReceiptData, ReceiptListRequest } from '@/lib/types';
@@ -262,7 +262,6 @@ export default function BillManagement() {
         display: 'flex', 
         flexDirection:"column",
       }}>
-        <h2 style={{ marginBottom: 20, fontSize: 24, fontWeight: 600 }}>{t('billManagement')}</h2>
         <div style={{ display: 'flex', gap: 8 }}>
           <Button type="primary" icon={<PrinterOutlined />} onClick={handlePrintReceipt}>{t('printReceipt')}</Button>
           <Button onClick={() => setPrintLabelVisible(true)}>
@@ -283,48 +282,33 @@ export default function BillManagement() {
         </div>
       </div>
       
-      {/* 高级搜索 */}
+      {/* 搜索表单 */}
       <Card style={{ marginBottom: 16 }}>
-        <Collapse
-          items={[
-            {
-              key: 'search',
-              label: (
-                <span>
-                  <FilterOutlined style={{ marginRight: 8 }} />
-                  {t('advancedSearch')}
-                </span>
-              ),
-              children: (
-                <Form
-                  form={form}
-                  layout="inline"
-                  onFinish={handleSearch}
-                >
-                  <Form.Item name="refNo" label="REFNO">
-                    <Input placeholder={t('pleaseEnterRefNo')} style={{ width: 200 }} />
-                  </Form.Item>
-                  <Form.Item name="createDate" label={t('createTime')}>
-                    <DatePicker.RangePicker 
-                      placeholder={[t('startTime'), t('endTime')]} 
-                      style={{ width: 300 }}
-                    />
-                  </Form.Item>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-                    {t('search')}
-                    </Button>
-                  </Form.Item>
-                  <Form.Item>
-                    <Button onClick={handleReset} icon={<ReloadOutlined />}>
-                    {t('reset')}
-                    </Button>
-                  </Form.Item>
-                </Form>
-              ),
-            },
-          ]}
-        />
+        <Form
+          form={form}
+          layout="inline"
+          onFinish={handleSearch}
+        >
+          <Form.Item name="refNo" label="REFNO">
+            <Input placeholder={t('pleaseEnterRefNo')} style={{ width: 200 }} />
+          </Form.Item>
+          <Form.Item name="createDate" label={t('createTime')}>
+            <DatePicker.RangePicker 
+              placeholder={[t('startTime'), t('endTime')]} 
+              style={{ width: 300 }}
+            />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+            {t('search')}
+            </Button>
+          </Form.Item>
+          <Form.Item>
+            <Button onClick={handleReset} icon={<ReloadOutlined />}>
+            {t('reset')}
+            </Button>
+          </Form.Item>
+        </Form>
       </Card>
 
       {/* 数据表格 */}

@@ -219,7 +219,7 @@ export default function MemberPurchaseHistory({ memberData, onBackToList }: Memb
           <Space wrap>
             {value.map((item, idx) => (
               <Tag key={idx} color="blue">
-                {item?.designCode} - ¥{item?.price}
+                {item?.designCode} - ${item?.price}
               </Tag>
             ))}
           </Space>
@@ -322,7 +322,7 @@ export default function MemberPurchaseHistory({ memberData, onBackToList }: Memb
           </Row>
           <Row style={{ marginBottom: 8 }}>
             <span style={{ fontWeight: 'bold', marginRight: 8, minWidth: 200 }}>Member Package Total Amount 会员配套总额：</span>
-            <span>¥{memberData?.membershipPackageTotal}</span>
+            <span>${memberData?.membershipPackageTotal}</span>
           </Row>
           <Row>
             <span style={{ fontWeight: 'bold', marginRight: 8, minWidth: 200 }}>Remark 备注：</span>

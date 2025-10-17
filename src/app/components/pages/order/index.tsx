@@ -1,14 +1,11 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Tabs, Button, Space } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { Tabs } from 'antd';
 import OrderList from './OrderList';
 import { WAREHOUSE } from '@/lib/types';
 
 export default function Order() {
-  const { t } = useTranslation();
   const [activeKey, setActiveKey] = useState('slady');
   const sladyRef = useRef<any>(null);
   const sl2Ref = useRef<any>(null);
@@ -65,24 +62,6 @@ export default function Order() {
 
   return (
     <div style={{ padding: '24px' }}>
-      <div style={{ 
-        marginBottom: 24, 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center' 
-      }}>
-        <h2 style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>{t('orderManagement')}</h2>
-        <Space>
-          <Button 
-            type="primary" 
-            icon={<ReloadOutlined />} 
-            onClick={handleRefresh}
-          >
-            {t('refreshAll')}
-          </Button>
-        </Space>
-      </div>
-
         <Tabs
           activeKey={activeKey}
           onChange={handleTabChange}

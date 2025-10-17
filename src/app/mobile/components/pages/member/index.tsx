@@ -6,11 +6,14 @@ import { useTranslation } from 'react-i18next';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, DollarOutlined, EyeOutlined, MoreOutlined } from '@ant-design/icons';
 import { member } from '@/lib/api';
 import { MemberData, MemberListRequest, ModifyMemberRequest, TopUpMemberRequest, CreateMemberRequest } from '@/lib/types';
+import { usePermissions } from '@/lib/usePermissions';
 import moment from 'moment';
 import MobileCardList from '../../MobileCardList';
+import MemberPurchaseHistory from './MemberPurchaseHistory';
 
 export default function MemberManagement() {
   const { t } = useTranslation();
+  const { canUseFeature } = usePermissions();
   const [loading, setLoading] = useState(false);
   const [members, setMembers] = useState<MemberData[]>([]);
   const [searchText, setSearchText] = useState('');
@@ -24,6 +27,9 @@ export default function MemberManagement() {
   // Modal states
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deletingMember, setDeletingMember] = useState<MemberData | null>(null);
+  
+  // View states
+  const [currentView, setCurrentView] = useState<'list' | 'purchase'>('list');
   
   // Forms
   const [createForm] = Form.useForm();
@@ -165,6 +171,18 @@ export default function MemberManagement() {
     setDeleteModalVisible(true);
   };
 
+  // 查看购买记录
+  const handleViewPurchase = (memberData: MemberData) => {
+    setSelectedMember(memberData);
+    setCurrentView('purchase');
+  };
+
+  // 返回列表
+  const handleBackToList = () => {
+    setCurrentView('list');
+    setSelectedMember(null);
+  };
+
   const handleConfirmDelete = async () => {
     if (!deletingMember) return;
     
@@ -205,16 +223,22 @@ export default function MemberManagement() {
         onClick: () => handleTopUp(memberData),
       },
       {
+        key: 'detail',
+        icon: <EyeOutlined />,
+        label: t('detailRecord'),
+        onClick: () => handleViewPurchase(memberData),
+      },
+      {
         key: 'divider',
         type: 'divider' as const,
       },
-      {
+      ...(canUseFeature('deleteMember') ? [{
         key: 'delete',
         icon: <DeleteOutlined />,
         label: t('delete'),
         danger: true,
         onClick: () => handleDelete(memberData),
-      },
+      }] : []),
     ];
 
     return (
@@ -223,7 +247,7 @@ export default function MemberManagement() {
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-base font-semibold text-gray-800">{memberData.name}</span>
-              <Tag color="green">¥{memberData.balance}</Tag>
+              <Tag color="green">${memberData.balance}</Tag>
             </div>
             <div className="text-sm text-gray-600 space-y-1">
               <div>📱 {memberData.phone}</div>
@@ -244,6 +268,16 @@ export default function MemberManagement() {
       </Card>
     );
   };
+
+  // 如果是购买记录页面，显示MemberPurchaseHistory组件
+  if (currentView === 'purchase' && selectedMember) {
+    return (
+      <MemberPurchaseHistory
+        memberData={selectedMember}
+        onBackToList={handleBackToList}
+      />
+    );
+  }
 
   return (
     <div className="p-4 pb-20">

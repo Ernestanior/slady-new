@@ -137,9 +137,9 @@ export default function DesignList({
         </Card>
 
         {/* 统计信息 */}
-        <div className="mb-4 text-gray-600">
+        {/* <div className="mb-4 text-gray-600">
           {t('foundItems', { count: pagination.total })} {displayData.length} {t('items')}
-        </div>
+        </div> */}
       </div>
 
       {/* 商品列表 */}

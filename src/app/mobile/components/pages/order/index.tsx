@@ -62,9 +62,7 @@ export default function OrderManagement() {
     <div className="p-4 pb-20">
       {/* 页面标题和操作按钮 */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-800 m-0">
-          {t('orderManagement')}
-        </h2>
+
         <Button 
           type="primary" 
           icon={<ReloadOutlined />} 

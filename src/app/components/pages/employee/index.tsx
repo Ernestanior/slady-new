@@ -316,12 +316,7 @@ export default function EmployeeManagement() {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{t('employeeManagement')}</h1>
-        <p className="text-gray-900 mt-2">{t('manageEmployeeInfoAndPermissions')}</p>
-      </div>
-      
+    <div className="p-6">      
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <UniversalTable
           columns={columns}

@@ -9,7 +9,6 @@ import {
   Modal,
   Form,
   Card,
-  Collapse,
   Dropdown,
   Menu,
   message,
@@ -20,13 +19,10 @@ import {
   MoreOutlined,
   EditOutlined,
   DeleteOutlined,
-  UpOutlined,
-  DownOutlined,
 } from '@ant-design/icons';
 import { UniversalTableProps, TableAction } from '@/lib/table-types';
 import { t } from 'i18next';
 
-const { Panel } = Collapse;
 
 export default function UniversalTable({
   columns,
@@ -48,7 +44,6 @@ export default function UniversalTable({
   bordered = true,
   className,
 }: UniversalTableProps) {
-  const [searchCollapsed, setSearchCollapsed] = useState(false);
 
   // 处理操作栏
   const handleActions = (record: any) => {
@@ -136,48 +131,33 @@ export default function UniversalTable({
 
   return (
     <div className={className}>
-      {/* 高级搜索 */}
+      {/* 搜索表单 */}
       {advancedSearch && (
         <Card className="mb-4" size="small">
-          <Collapse
-            activeKey={searchCollapsed ? [] : ['search']}
-            onChange={(keys) => setSearchCollapsed(keys.length === 0)}
-            ghost
+          <Form 
+            form={advancedSearch.form} 
+            layout="inline"
+            onFinish={advancedSearch.onSearch}
           >
-            <Panel
-              header={
-                <div className="flex items-center">
-                  <span>{t('advancedSearch')}</span>
-                </div>
-              }
-              key="search"
-            >
-              <Form 
-                form={advancedSearch.form} 
-                layout="inline"
-                onFinish={advancedSearch.onSearch}
-              >
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px 8px', width: '100%' }}>
-                  {advancedSearch.children}
-                  <Form.Item style={{ marginBottom: 0 }}>
-                    <Space>
-                      <Button type="primary" htmlType="submit">
-                        {t('search')}
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          advancedSearch.form.resetFields();
-                          advancedSearch.onReset?.();
-                        }}
-                      >
-                        {t('reset')}
-                      </Button>
-                    </Space>
-                  </Form.Item>
-                </div>
-              </Form>
-            </Panel>
-          </Collapse>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px 8px', width: '100%' }}>
+              {advancedSearch.children}
+              <Form.Item style={{ marginBottom: 0 }}>
+                <Space>
+                  <Button type="primary" htmlType="submit">
+                    {t('search')}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      advancedSearch.form.resetFields();
+                      advancedSearch.onReset?.();
+                    }}
+                  >
+                    {t('reset')}
+                  </Button>
+                </Space>
+              </Form.Item>
+            </div>
+          </Form>
         </Card>
       )}
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Card, message, Pagination, Collapse, Form, Input } from 'antd';
+import { Table, Button, Card, message, Pagination, Form, Input } from 'antd';
 import { ArrowLeftOutlined, SearchOutlined, ReloadOutlined, FilterOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { MemberPurchaseRecord, MemberPurchaseHistoryRequest } from '@/lib/types';
@@ -123,7 +123,7 @@ export default function MemberTopUpHistory({ onBackToList }: MemberTopUpHistoryP
       width: 120,
       render: (sum: number) => (
         <div style={{ fontWeight: 'bold', color: '#52c41a' }}>
-          ¥{sum}
+          ${sum}
         </div>
       ),
     },
@@ -134,7 +134,7 @@ export default function MemberTopUpHistory({ onBackToList }: MemberTopUpHistoryP
       width: 120,
       render: (amount: number) => (
         <div style={{ fontWeight: 'bold', color: '#52c41a' }}>
-          ¥{amount}
+          ${amount}
         </div>
       ),
     },
@@ -166,45 +166,30 @@ export default function MemberTopUpHistory({ onBackToList }: MemberTopUpHistoryP
         </div>
       </div>
 
-      {/* 高级{t('search')} */}
+      {/* 搜索表单 */}
       <Card style={{ marginBottom: 16 }}>
-        <Collapse
-          items={[
-            {
-              key: 'search',
-              label: (
-                <span>
-                  <FilterOutlined style={{ marginRight: 8 }} />
-                  {t('advancedSearch')}
-                </span>
-              ),
-              children: (
-                <Form
-                  form={form}
-                  layout="inline"
-                  onFinish={handleSearch}
-                >
-                  <Form.Item name="memberName" label={t('memberName')}>
-                    <Input placeholder={t('pleaseEnter') + t('memberName')} style={{ width: 200 }} />
-                  </Form.Item>
-                  <Form.Item name="voucherNumber" label={t('voucherNumber')}>
-                    <Input placeholder={t('pleaseEnter') + t('voucherNumber')} style={{ width: 200 }} />
-                  </Form.Item>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-                      {t('search')}
-                    </Button>
-                  </Form.Item>
-                  <Form.Item>
-                    <Button onClick={handleReset} icon={<ReloadOutlined />}>
-                      {t('reset')}
-                    </Button>
-                  </Form.Item>
-                </Form>
-              ),
-            },
-          ]}
-        />
+        <Form
+          form={form}
+          layout="inline"
+          onFinish={handleSearch}
+        >
+          <Form.Item name="memberName" label={t('memberName')}>
+            <Input placeholder={t('pleaseEnter') + t('memberName')} style={{ width: 200 }} />
+          </Form.Item>
+          <Form.Item name="voucherNumber" label={t('voucherNumber')}>
+            <Input placeholder={t('pleaseEnter') + t('voucherNumber')} style={{ width: 200 }} />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+              {t('search')}
+            </Button>
+          </Form.Item>
+          <Form.Item>
+            <Button onClick={handleReset} icon={<ReloadOutlined />}>
+              {t('reset')}
+            </Button>
+          </Form.Item>
+        </Form>
       </Card>
 
       {/* 数据表格 */}

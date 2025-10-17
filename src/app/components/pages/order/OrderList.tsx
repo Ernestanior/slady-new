@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
-import { Table, Button, Modal, Drawer, Form, Input, InputNumber, Select, message, App, Dropdown, Space, DatePicker, Card, Collapse } from 'antd';
+import { Table, Button, Modal, Drawer, Form, Input, InputNumber, Select, message, App, Dropdown, Space, DatePicker, Card } from 'antd';
 import { MoreOutlined, EditOutlined, DeleteOutlined, SendOutlined, CheckOutlined, ExclamationCircleOutlined, ReloadOutlined, CloseOutlined, PrinterOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { OrderData, ModifyOrderRequest, colorList, sizeList, WAREHOUSE } from '@/lib/types';
@@ -30,7 +30,6 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh },
   const [editDrawerVisible, setEditDrawerVisible] = useState(false);
   const [sentDrawerVisible, setSentDrawerVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
-  const [searchCollapsed, setSearchCollapsed] = useState(true);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 20,
@@ -496,58 +495,46 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh },
 
   return (
     <>
-      {/* 高级搜索 */}
+      {/* 搜索表单 */}
       <Card style={{ marginBottom: 16 }}>
-        <Collapse
-          activeKey={searchCollapsed ? [] : ['search']}
-          onChange={(keys) => setSearchCollapsed(keys.length === 0)}
-          items={[
-            {
-              key: 'search',
-              label: t('advancedSearch'),
-              children: (
-                <Form
-                  form={searchForm}
-                  layout="inline"
-                  onFinish={handleSearch}
-                  style={{ marginBottom: 16 }}
-                >
-                  <Form.Item name="design" label={t('orderCode')}>
-                    <Input placeholder={t('pleaseEnterDesignCode')} style={{ width: 200 }} />
-                  </Form.Item>
-                  
-                  <Form.Item name="remark" label={t('orderRemark')}>
-                    <Input placeholder={t('pleaseEnterRemark')} style={{ width: 200 }} />
-                  </Form.Item>
-                  
-                  <Form.Item name="status" label={t('status')}>
-                    <Select
-                      mode="multiple"
-                      placeholder={t('pleaseSelectStatus')}
-                      style={{ width: 200 }}
-                      options={statusOptions}
-                    />
-                  </Form.Item>
-                  
-                  <Form.Item name="dateRange" label={t('dateRange')}>
-                    <DatePicker.RangePicker style={{ width: 300 }} />
-                  </Form.Item>
-                  
-                  <Form.Item>
-                    <Space>
-                      <Button type="primary" htmlType="submit">
-                      {t('search')}
-                      </Button>
-                      <Button onClick={handleReset}>
-                      {t('reset')}
-                      </Button>
-                    </Space>
-                  </Form.Item>
-                </Form>
-              ),
-            },
-          ]}
-        />
+        <Form
+          form={searchForm}
+          layout="inline"
+          onFinish={handleSearch}
+          style={{ marginBottom: 16,  }}
+        >
+          <Form.Item name="design" label={t('orderCode')}>
+            <Input placeholder={t('pleaseEnterDesignCode')} style={{ width: 200,marginBottom:20 }} />
+          </Form.Item>
+          
+          <Form.Item name="remark" label={t('orderRemark')}>
+            <Input placeholder={t('pleaseEnterRemark')} style={{ width: 200 }} />
+          </Form.Item>
+          
+          <Form.Item name="status" label={t('status')}>
+            <Select
+              mode="multiple"
+              placeholder={t('pleaseSelectStatus')}
+              style={{ width: 200 }}
+              options={statusOptions}
+            />
+          </Form.Item>
+          
+          <Form.Item name="dateRange" label={t('dateRange')}>
+            <DatePicker.RangePicker style={{ width: 300 }} />
+          </Form.Item>
+          
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit">
+              {t('search')}
+              </Button>
+              <Button onClick={handleReset}>
+              {t('reset')}
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
       </Card>
 
       <Table

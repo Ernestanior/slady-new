@@ -165,13 +165,30 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
       title: t('operation'),
       key: 'action',
       render: (_: any, record: ItemData) => (
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <div style={{ 
+          display: 'flex', 
+          gap: '8px', 
+          flexWrap: 'wrap',
+          padding: '8px',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '6px',
+          border: '1px solid #e9ecef',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}>
           {canUseFeature('modifyStock') && (
             <Button
               type="link"
               icon={<EditOutlined />}
               onClick={() => handleModifyStock(record)}
               size="small"
+              style={{
+                backgroundColor: '#fff',
+                border: '1px solid #d9d9d9',
+                borderRadius: '4px',
+                padding: '4px 8px',
+                height: 'auto',
+                minWidth: '80px'
+              }}
             >
               {t('modifyStock')}
             </Button>
@@ -181,6 +198,14 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
             icon={<PlusOutlined />}
             onClick={() => handleOrder(record, 'store')}
             size="small"
+            style={{
+              backgroundColor: '#fff',
+              border: '1px solid #d9d9d9',
+              borderRadius: '4px',
+              padding: '4px 8px',
+              height: 'auto',
+              minWidth: '80px'
+            }}
           >
             {t('storeAdjustment')}
           </Button>
@@ -189,6 +214,14 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
             icon={<ShoppingOutlined />}
             onClick={() => handleOrder(record, 'customer')}
             size="small"
+            style={{
+              backgroundColor: '#fff',
+              border: '1px solid #d9d9d9',
+              borderRadius: '4px',
+              padding: '4px 8px',
+              height: 'auto',
+              minWidth: '80px'
+            }}
           >
             {t('customerOrder')}
           </Button>
@@ -199,6 +232,15 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
               icon={<DeleteOutlined />}
               onClick={() => handleDelete(record)}
               size="small"
+              style={{
+                backgroundColor: '#fff',
+                border: '1px solid #ff4d4f',
+                borderRadius: '4px',
+                padding: '4px 8px',
+                height: 'auto',
+                minWidth: '80px',
+                color: '#ff4d4f'
+              }}
             >
               {t('delete')}
             </Button>

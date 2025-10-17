@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Card, message, Pagination, Collapse, Form, Input, DatePicker } from 'antd';
+import { Table, Button, Card, message, Pagination, Form, Input, DatePicker } from 'antd';
 import { SearchOutlined, ReloadOutlined, FilterOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { EmployeeOperationLog, EmployeeOperationLogRequest } from '@/lib/types';
@@ -134,60 +134,36 @@ export default function EmployeeHistory() {
 
   return (
     <div style={{ padding: '24px' }}>
-      <div style={{ 
-        marginBottom: 24, 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center' 
-      }}>
-        <h2 style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>{t('employeeOperationHistory')}</h2>
-      </div>
-      
-      {/* 高级搜索 */}
+      {/* 搜索表单 */}
       <Card style={{ marginBottom: 16 }}>
-        <Collapse
-          items={[
-            {
-              key: 'search',
-              label: (
-                <span>
-                  <FilterOutlined style={{ marginRight: 8 }} />
-                  {t('advancedSearch')}
-                </span>
-              ),
-              children: (
-                <Form
-                  form={form}
-                  layout="inline"
-                  onFinish={handleSearch}
-                >
-                  <Form.Item name="userName" label={t('operator')}>
-                    <Input placeholder={t('pleaseEnterOperatorName')} style={{ width: 200 }} />
-                  </Form.Item>
-                  <Form.Item name="uri" label={t('api')}>
-                    <Input placeholder={t('pleaseEnterApiPath')} style={{ width: 200 }} />
-                  </Form.Item>
-                  <Form.Item name="operateDate" label={t('operationTime')}>
-                    <DatePicker.RangePicker 
-                      placeholder={[t('startTime'), t('endTime')]} 
-                      style={{ width: 300 }}
-                    />
-                  </Form.Item>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-                      {t('search')}
-                    </Button>
-                  </Form.Item>
-                  <Form.Item>
-                    <Button onClick={handleReset} icon={<ReloadOutlined />}>
-                      {t('reset')}
-                    </Button>
-                  </Form.Item>
-                </Form>
-              ),
-            },
-          ]}
-        />
+        <Form
+          form={form}
+          layout="inline"
+          onFinish={handleSearch}
+        >
+          <Form.Item name="userName" label={t('operator')}>
+            <Input placeholder={t('pleaseEnterOperatorName')} style={{ width: 200,marginBottom:20 }} />
+          </Form.Item>
+          <Form.Item name="uri" label={t('api')}>
+            <Input placeholder={t('pleaseEnterApiPath')} style={{ width: 200 }} />
+          </Form.Item>
+          <Form.Item name="operateDate" label={t('operationTime')}>
+            <DatePicker.RangePicker 
+              placeholder={[t('startTime'), t('endTime')]} 
+              style={{ width: 300 }}
+            />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+              {t('search')}
+            </Button>
+          </Form.Item>
+          <Form.Item>
+            <Button onClick={handleReset} icon={<ReloadOutlined />}>
+              {t('reset')}
+            </Button>
+          </Form.Item>
+        </Form>
       </Card>
 
       {/* 数据表格 */}

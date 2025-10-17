@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Table, Form, Input, Button, Card, message, Pagination, Collapse, Modal, Drawer, InputNumber, DatePicker, notification, Space, Tag, Row, Dropdown, Menu } from 'antd';
+import { Table, Form, Input, Button, Card, message, Pagination, Modal, Drawer, InputNumber, DatePicker, notification, Space, Tag, Row, Dropdown, Menu } from 'antd';
 import { SearchOutlined, ReloadOutlined, FilterOutlined, EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined, MoreOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { MemberData, MemberListRequest, ModifyMemberRequest, TopUpMemberRequest, MemberPurchaseRecord, MemberPurchaseRequest, CreateMemberRequest } from '@/lib/types';
@@ -112,7 +112,7 @@ export default function MemberManagement() {
     modifyForm.setFieldsValue({
       name: record.name,
       phone: record.phone,
-      registrationDate: moment(record.registrationDate),
+      registrationDate: moment(record.registrationDate, 'YYYY-MM-DD'),
       voucherNumber: record.voucherNumber,
       remark: record.remark,
     });
@@ -303,7 +303,7 @@ export default function MemberManagement() {
       width: 120,
       render: (balance: number) => (
         <div style={{ fontWeight: 'bold', color: '#52c41a' }}>
-          ¥{balance}
+          ${balance}
         </div>
       ),
     },
@@ -376,7 +376,6 @@ export default function MemberManagement() {
         justifyContent: 'space-between', 
         alignItems: 'center' 
       }}>
-        <h2 style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>{t('memberManagement')}</h2>
         <div>
           <Button icon={<EyeOutlined />} onClick={handleViewAllPurchase} style={{ marginRight: 8 }}>
             {t('memberPurchaseHistory')}
@@ -390,45 +389,30 @@ export default function MemberManagement() {
         </div>
       </div>
       
-      {/* 高级搜索 */}
+      {/* 搜索表单 */}
       <Card style={{ marginBottom: 16 }}>
-        <Collapse
-          items={[
-            {
-              key: 'search',
-              label: (
-                <span>
-                  <FilterOutlined style={{ marginRight: 8 }} />
-                  {t('advancedSearch')}
-                </span>
-              ),
-              children: (
-                <Form
-                  form={form}
-                  layout="inline"
-                  onFinish={handleSearch}
-                >
-                  <Form.Item name="name" label={t('name')}>
-                    <Input placeholder={t('pleaseEnterName')} style={{ width: 200 }} />
-                  </Form.Item>
-                  <Form.Item name="phone" label={t('phone')}>
-                    <Input placeholder={t('pleaseEnterPhone')} style={{ width: 200 }} />
-                  </Form.Item>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-                      {t('search')}
-                    </Button>
-                  </Form.Item>
-                  <Form.Item>
-                    <Button onClick={handleReset} icon={<ReloadOutlined />}>
-                      {t('reset')}
-                    </Button>
-                  </Form.Item>
-                </Form>
-              ),
-            },
-          ]}
-        />
+        <Form
+          form={form}
+          layout="inline"
+          onFinish={handleSearch}
+        >
+          <Form.Item name="name" label={t('name')}>
+            <Input placeholder={t('pleaseEnterName')} style={{ width: 200 }} />
+          </Form.Item>
+          <Form.Item name="phone" label={t('phone')}>
+            <Input placeholder={t('pleaseEnterPhone')} style={{ width: 200 }} />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+              {t('search')}
+            </Button>
+          </Form.Item>
+          <Form.Item>
+            <Button onClick={handleReset} icon={<ReloadOutlined />}>
+              {t('reset')}
+            </Button>
+          </Form.Item>
+        </Form>
       </Card>
 
       {/* 数据表格 */}

@@ -3,6 +3,7 @@
 import { Drawer } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { authManager } from '@/lib/auth';
+import { usePermissions } from '@/lib/usePermissions';
 import { 
   Users, 
   Truck, 
@@ -27,10 +28,11 @@ interface MobileNavProps {
 
 export default function MobileNav({ open, onClose, activePage, onPageChange }: MobileNavProps) {
   const { t, i18n } = useTranslation();
+  const { canAccessPage } = usePermissions();
 
   const menuItems = [
-    { name: 'employeeManagement', icon: Users, color: 'text-stone-600' },
     { name: 'designManagement', icon: Shirt, color: 'text-red-600' },
+    { name: 'employeeManagement', icon: Users, color: 'text-stone-600' },
     { name: 'orderManagement', icon: Truck, color: 'text-green-600' },
     { name: 'hotColdItems', icon: TrendingUp, color: 'text-red-600' },
     { name: 'inventoryRecords', icon: Package, color: 'text-indigo-600' },
@@ -59,7 +61,7 @@ export default function MobileNav({ open, onClose, activePage, onPageChange }: M
       styles={{ body: { padding: 0 } }}
     >
       {/* 顶部用户信息 */}
-      <div className="bg-orange-500 p-6 text-white relative">
+      <div className="bg-gray-900 p-6 text-white relative">
         {/* 关闭按钮 */}
         <button
           onClick={onClose}
@@ -82,27 +84,29 @@ export default function MobileNav({ open, onClose, activePage, onPageChange }: M
 
       {/* 菜单列表 */}
       <div className="py-2">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activePage === item.name;
-          
-          return (
-            <button
-              key={item.name}
-              onClick={() => handleMenuClick(item.name)}
-              className={`w-full flex items-center px-6 py-4 transition-colors ${
-                isActive 
-                  ? 'bg-orange-50 border-l-4 border-orange-500' 
-                  : 'hover:bg-gray-50'
-              }`}
-            >
-              <Icon className={`w-6 h-6 mr-4 ${isActive ? 'text-orange-600' : item.color}`} />
-              <span className={`text-base ${isActive ? 'text-orange-600 font-medium' : 'text-gray-700'}`}>
-                {t(item.name)}
-              </span>
-            </button>
-          );
-        })}
+        {menuItems
+          .filter(item => canAccessPage(item.name))
+          .map((item) => {
+            const Icon = item.icon;
+            const isActive = activePage === item.name;
+            
+            return (
+              <button
+                key={item.name}
+                onClick={() => handleMenuClick(item.name)}
+                className={`w-full flex items-center px-6 py-4 transition-colors ${
+                  isActive 
+                    ? 'bg-gray-900 text-white border-l-4 border-gray-700' 
+                    : 'hover:bg-gray-100'
+                }`}
+              >
+                <Icon className={`w-6 h-6 mr-4 ${isActive ? 'text-white' : item.color}`} />
+                <span className={`text-base ${isActive ? 'text-white font-medium' : 'text-gray-700'}`}>
+                  {t(item.name)}
+                </span>
+              </button>
+            );
+          })}
       </div>
 
       {/* 底部操作 */}

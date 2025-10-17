@@ -123,7 +123,7 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
           <Space wrap>
             {value.map((item, idx) => (
               <Tag key={idx} color="blue">
-                {item.designCode} - ¥{item.price}
+                {item.designCode} - ${item.price}
               </Tag>
             ))}
           </Space>
@@ -152,7 +152,7 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
           fontWeight: 'bold', 
           color: sum < 0 ? '#ff4d4f' : '#52c41a' 
         }}>
-          ¥{sum}
+          ${sum}
         </div>
       ),
     },
@@ -163,7 +163,7 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
       width: 120,
       render: (amount: number) => (
         <div style={{ fontWeight: 'bold', color: '#52c41a' }}>
-          ¥{amount}
+          ${amount}
         </div>
       ),
     },

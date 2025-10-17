@@ -6,6 +6,7 @@ import { ArrowLeftOutlined, EditOutlined, DeleteOutlined, EyeOutlined, PlusOutli
 import ColorSelect from '@/app/components/ColorSelect';
 import { useTranslation } from 'react-i18next';
 import { DesignDetail as DesignDetailType, typeList, ItemData, CreateOrderRequest, CreateItemRequest, WAREHOUSE, colorList, sizeList } from '@/lib/types';
+import { usePermissions } from '@/lib/usePermissions';
 import { api, item, order } from '@/lib/api';
 
 const dev_url = 'http://119.28.104.20';
@@ -18,6 +19,7 @@ interface DesignDetailProps {
 
 export default function DesignDetail({ designId, onBackToList, onRefreshList }: DesignDetailProps) {
   const { t } = useTranslation();
+  const { canUseFeature } = usePermissions();
   
   // 详情数据状态
   const [detailData, setDetailData] = useState<DesignDetailType | null>(null);
@@ -335,15 +337,17 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
         
         {/* 操作按钮 */}
         <div className="flex gap-2 flex-wrap">
-          <Button
-            size="small"
-            type="primary"
-            onClick={() => handleModifyStock(item)}
-            className="flex-1"
-            style={{ minHeight: '32px' }}
-          >
-            修改库存
-          </Button>
+          {canUseFeature('modifyStock') && (
+            <Button
+              size="small"
+              type="primary"
+              onClick={() => handleModifyStock(item)}
+              className="flex-1"
+              style={{ minHeight: '32px' }}
+            >
+              修改库存
+            </Button>
+          )}
           <Button
             size="small"
             onClick={() => handleOrder(item, 'store')}
@@ -360,15 +364,17 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
           >
             客订
           </Button>
-          <Button
-            size="small"
-            danger
-            onClick={() => handleDeleteItem(item)}
-            className="flex-1"
-            style={{ minHeight: '32px' }}
-          >
-            删除
-          </Button>
+          {canUseFeature('deleteItem') && (
+            <Button
+              size="small"
+              danger
+              onClick={() => handleDeleteItem(item)}
+              className="flex-1"
+              style={{ minHeight: '32px' }}
+            >
+              删除
+            </Button>
+          )}
         </div>
       </div>
     </Card>
@@ -388,23 +394,27 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
 
       {/* 操作按钮 */}
       <div className="flex gap-3 mb-4 mt-4">
-        <Button 
-          type="primary" 
-          icon={<EditOutlined />} 
-          onClick={handleEdit}
-          className="flex-1"
-        >
-          编辑
-        </Button>
-        <Button 
-          danger 
-          icon={<DeleteOutlined />} 
-          onClick={handleDelete}
-          className="flex-1"
-          style={{ minHeight: '40px' }}
-        >
-          删除
-        </Button>
+        {canUseFeature('modifyDesign') && (
+          <Button 
+            type="primary" 
+            icon={<EditOutlined />} 
+            onClick={handleEdit}
+            className="flex-1"
+          >
+            编辑
+          </Button>
+        )}
+        {canUseFeature('deleteDesign') && (
+          <Button 
+            danger 
+            icon={<DeleteOutlined />} 
+            onClick={handleDelete}
+            className="flex-1"
+            style={{ minHeight: '40px' }}
+          >
+            删除
+          </Button>
+        )}
       </div>
 
       {/* 商品详情卡片 */}

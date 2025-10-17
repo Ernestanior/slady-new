@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Form, InputNumber, Select, DatePicker, Table, Drawer, Tabs, Modal, message, Collapse } from 'antd';
+import { Button, Form, InputNumber, Select, DatePicker, Table, Drawer, Tabs, Modal, message } from 'antd';
 import { SearchOutlined, ReloadOutlined, FilterOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { CashDrawerData, CashDrawerListRequest, CreateCashDrawerRequest } from '@/lib/types';
@@ -221,42 +221,29 @@ export default function OpeningClosingBalanceDrawer({ visible, onClose }: Openin
       label: '一店',
       children: (
         <div>
-          {/* 高级搜索 */}
-          <Collapse
-            items={[
-              {
-                key: 'search',
-                label: (
-                  <span>
-                    <FilterOutlined style={{ marginRight: 8 }} />{t('advancedSearch')}</span>
-                ),
-                children: (
-                  <Form
-                    form={form}
-                    layout="inline"
-                    onFinish={handleSearch}
-                  >
-                    <Form.Item name="operateDate" label={t('operationTime')}>
-                      <DatePicker.RangePicker 
-                        placeholder={[t('startTime'), t('endTime')]} 
-                        style={{ width: 300 }}
-                      />
-                    </Form.Item>
-                    <Form.Item>
-                      <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-                      {t('search')}
-                      </Button>
-                    </Form.Item>
-                    <Form.Item>
-                      <Button onClick={handleReset} icon={<ReloadOutlined />}>
-                      {t('reset')}
-                      </Button>
-                    </Form.Item>
-                  </Form>
-                ),
-              },
-            ]}
-          />
+          {/* 搜索表单 */}
+          <Form
+            form={form}
+            layout="inline"
+            onFinish={handleSearch}
+          >
+            <Form.Item name="operateDate" label={t('operationTime')}>
+              <DatePicker.RangePicker 
+                placeholder={[t('startTime'), t('endTime')]} 
+                style={{ width: 300 }}
+              />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+              {t('search')}
+              </Button>
+            </Form.Item>
+            <Form.Item>
+              <Button onClick={handleReset} icon={<ReloadOutlined />}>
+              {t('reset')}
+              </Button>
+            </Form.Item>
+          </Form>
 
           {/* 操作按钮 */}
           <div style={{ marginTop: 16, marginBottom: 16 }}>
@@ -295,42 +282,29 @@ export default function OpeningClosingBalanceDrawer({ visible, onClose }: Openin
       label: '二店',
       children: (
         <div>
-          {/* 高级搜索 */}
-          <Collapse
-            items={[
-              {
-                key: 'search',
-                label: (
-                  <span>
-                    <FilterOutlined style={{ marginRight: 8 }} />{t('advancedSearch')}</span>
-                ),
-                children: (
-                  <Form
-                    form={form}
-                    layout="inline"
-                    onFinish={handleSearch}
-                  >
-                    <Form.Item name="operateDate" label={t('operationTime')}>
-                      <DatePicker.RangePicker 
-                        placeholder={[t('startTime'), t('endTime')]} 
-                        style={{ width: 300 }}
-                      />
-                    </Form.Item>
-                    <Form.Item>
-                      <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-                      {t('search')}
-                      </Button>
-                    </Form.Item>
-                    <Form.Item>
-                      <Button onClick={handleReset} icon={<ReloadOutlined />}>
-                      {t('reset')}
-                      </Button>
-                    </Form.Item>
-                  </Form>
-                ),
-              },
-            ]}
-          />
+          {/* 搜索表单 */}
+          <Form
+            form={form}
+            layout="inline"
+            onFinish={handleSearch}
+          >
+            <Form.Item name="operateDate" label={t('operationTime')}>
+              <DatePicker.RangePicker 
+                placeholder={[t('startTime'), t('endTime')]} 
+                style={{ width: 300 }}
+              />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+              {t('search')}
+              </Button>
+            </Form.Item>
+            <Form.Item>
+              <Button onClick={handleReset} icon={<ReloadOutlined />}>
+              {t('reset')}
+              </Button>
+            </Form.Item>
+          </Form>
 
           {/* 操作按钮 */}
           <div style={{ marginTop: 16, marginBottom: 16 }}>

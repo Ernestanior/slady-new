@@ -3,7 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --primary: #f97316;
+  --primary: #1f2937;
   --primary-foreground: #ffffff;
 }
 
@@ -52,8 +52,8 @@ html {
 }
 
 .btn-primary:hover {
-  background-color: #333333;
-  border-color: #333333;
+  background-color: #374151;
+  border-color: #374151;
 }
 
 .text-primary {
@@ -68,49 +68,60 @@ html {
   --tw-ring-color: var(--primary);
 }
 
-/* Ant Design 组件橙色主题覆盖 */
+/* Ant Design 组件黑色主题覆盖 */
 .ant-btn-primary {
-  background-color: #f97316 !important;
-  border-color: #f97316 !important;
+  background-color: #1f2937 !important;
+  border-color: #1f2937 !important;
 }
 
 .ant-btn-primary:hover {
-  background-color: #ea580c !important;
-  border-color: #ea580c !important;
+  background-color: #374151 !important;
+  border-color: #374151 !important;
 }
 
 .ant-btn-primary:focus {
-  background-color: #f97316 !important;
-  border-color: #f97316 !important;
+  background-color: #1f2937 !important;
+  border-color: #1f2937 !important;
 }
 
 .ant-btn-primary:active {
-  background-color: #f97316 !important;
-  border-color: #f97316 !important;
+  background-color: #1f2937 !important;
+  border-color: #1f2937 !important;
 }
 
 /* 链接颜色 */
 a {
-  color: #f97316;
+  color: #1f2937;
 }
 
 a:hover {
-  color: #ea580c;
+  color: #374151;
 }
 
 /* 选中状态 */
 .selected, .active {
-  color: #f97316 !important;
+  color: #1f2937 !important;
 }
 
 /* 边框颜色 */
-.border-orange {
-  border-color: #f97316 !important;
+.border-primary {
+  border-color: #1f2937 !important;
 }
 
 /* 背景色 */
-.bg-orange {
-  background-color: #f97316 !important;
+.bg-primary {
+  background-color: #1f2937 !important;
+}
+
+/* Header 语言选择器样式 */
+header select {
+  color: white !important;
+  background-color: #1f2937 !important;
+}
+
+header select option {
+  color: white !important;
+  background-color: #1f2937 !important;
 }
 
 /* 自定义样式 */

@@ -7,6 +7,7 @@ import { PlusOutlined, SearchOutlined, UploadOutlined, EyeOutlined } from '@ant-
 import ColorSelect from '@/app/components/ColorSelect';
 import { api } from '@/lib/api';
 import { DesignItem, DesignListRequest, typeList, colorList, sizeList, fabricList, WAREHOUSE } from '@/lib/types';
+import { usePermissions } from '@/lib/usePermissions';
 import MobileCardList from '../../MobileCardList';
 import DesignDetail from './DesignDetail';
 import type { RcFile } from 'antd/es/upload';
@@ -15,6 +16,7 @@ const dev_url = 'http://119.28.104.20';
 
 export default function DesignManagement() {
   const { t } = useTranslation();
+  const { canUseFeature } = usePermissions();
   const [loading, setLoading] = useState(false);
   const [designs, setDesigns] = useState<DesignItem[]>([]);
   const [searchText, setSearchText] = useState('');
@@ -343,15 +345,17 @@ export default function DesignManagement() {
         </Button>
 
         {/* 新增商品按钮 */}
-        <Button
-          type="primary"
-          block
-          size="large"
-          icon={<PlusOutlined />}
-          onClick={handleCreate}
-        >
-          新增商品
-        </Button>
+        {canUseFeature('createDesign') && (
+          <Button
+            type="primary"
+            block
+            size="large"
+            icon={<PlusOutlined />}
+            onClick={handleCreate}
+          >
+            新增商品
+          </Button>
+        )}
       </div>
 
       {/* 商品列表 */}

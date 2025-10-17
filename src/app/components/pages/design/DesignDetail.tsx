@@ -5,6 +5,7 @@ import { Button, Descriptions, Tag, Drawer, Form, InputNumber, Select, message, 
 import { ArrowLeftOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { DesignDetail as DesignDetailType, typeList, ItemData } from '@/lib/types';
+import { usePermissions } from '@/lib/usePermissions';
 import { item } from '@/lib/api';
 import ItemTable from './ItemTable';
 
@@ -34,6 +35,7 @@ export default function DesignDetail({
   editForm
 }: DesignDetailProps) {
   const { t } = useTranslation();
+  const { isSaler } = usePermissions();
   const dev_url = 'http://119.28.104.20';
   
   // 库存相关状态
@@ -117,15 +119,17 @@ export default function DesignDetail({
       >{t('backToList')}</Button>
 
       {/* 操作按钮 */}
+      {!isSaler() && (
+
       <div style={{ marginBottom: 24, display: 'flex', gap: '12px' }}>
-        <Button 
-          type="primary" 
-          icon={<EditOutlined />} 
-          onClick={onEdit}
-          size="large"
-        >
-          {t('edit')}
-        </Button>
+          <Button 
+            type="primary" 
+            icon={<EditOutlined />} 
+            onClick={onEdit}
+            size="large"
+          >
+            {t('edit')}
+          </Button>
         <Button 
           danger 
           icon={<DeleteOutlined />} 
@@ -135,6 +139,7 @@ export default function DesignDetail({
           {t('deleteDesign')}
         </Button>
       </div>
+        )}
 
       {/* 商品详情 */}
       <div style={{ backgroundColor: '#fff', padding: 24, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
@@ -188,11 +193,13 @@ export default function DesignDetail({
                 </span>
               </Descriptions.Item>
 
-              <Descriptions.Item label={t('purchasePrice')}>
-                <span style={{ fontSize: 16, color: '#666' }}>
-                  ${detailData.purchasePrice}
-                </span>
-              </Descriptions.Item>
+              {!isSaler() && (
+                <Descriptions.Item label={t('purchasePrice')}>
+                  <span style={{ fontSize: 16, color: '#666' }}>
+                    ${detailData.purchasePrice}
+                  </span>
+                </Descriptions.Item>
+              )}
 
               <Descriptions.Item label={t('stock')}>
                 <span style={{ fontSize: 16, color: detailData.stock > 0 ? '#52c41a' : '#ff4d4f' }}>
@@ -240,50 +247,44 @@ export default function DesignDetail({
       <div style={{ backgroundColor: '#fff', padding: 24, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', marginTop: 24 }}>
         <h3 style={{ marginBottom: 16, fontSize: 18, fontWeight: 600 }}>{t('stockManagement')}</h3>
         <Spin spinning={itemsLoading}>
-          <Tabs
-            defaultActiveKey="slady"
-            items={[
-              {
-                key: 'slady',
-                label: 'Slady一店',
-                children: (
-                  <ItemTable
-                    data={sladyItems}
-                    loading={itemsLoading}
-                    warehouseName="Slady一店"
-                    designId={detailData?.id || 0}
-                    onRefresh={handleRefreshItems}
-                  />
-                ),
-              },
-              {
-                key: 'sl2',
-                label: 'SL二店',
-                children: (
-                  <ItemTable
-                    data={sl2Items}
-                    loading={itemsLoading}
-                    warehouseName="SL二店"
-                    designId={detailData?.id || 0}
-                    onRefresh={handleRefreshItems}
-                  />
-                ),
-              },
-              {
-                key: 'live',
-                label: 'Live直播间',
-                children: (
-                  <ItemTable
-                    data={liveItems}
-                    loading={itemsLoading}
-                    warehouseName="Live直播间"
-                    designId={detailData?.id || 0}
-                    onRefresh={handleRefreshItems}
-                  />
-                ),
-              },
-            ]}
-          />
+          {/* 前两个表格在同一行 */}
+          <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+            {/* Slady一店 */}
+            <div style={{ flex: 1 }}>
+              <h4 style={{ marginBottom: 12, fontSize: 16, fontWeight: 600, color: '#333' }}>Slady一店</h4>
+              <ItemTable
+                data={sladyItems}
+                loading={itemsLoading}
+                warehouseName="Slady一店"
+                designId={detailData?.id || 0}
+                onRefresh={handleRefreshItems}
+              />
+            </div>
+            
+            {/* SL二店 */}
+            <div style={{ flex: 1 }}>
+              <h4 style={{ marginBottom: 12, fontSize: 16, fontWeight: 600, color: '#333' }}>SL二店</h4>
+              <ItemTable
+                data={sl2Items}
+                loading={itemsLoading}
+                warehouseName="SL二店"
+                designId={detailData?.id || 0}
+                onRefresh={handleRefreshItems}
+              />
+            </div>
+          </div>
+          
+          {/* 第三个表格换行显示 */}
+          <div>
+            <h4 style={{ marginBottom: 12, fontSize: 16, fontWeight: 600, color: '#333' }}>Live直播间</h4>
+            <ItemTable
+              data={liveItems}
+              loading={itemsLoading}
+              warehouseName="Live直播间"
+              designId={detailData?.id || 0}
+              onRefresh={handleRefreshItems}
+            />
+          </div>
         </Spin>
       </div>
 

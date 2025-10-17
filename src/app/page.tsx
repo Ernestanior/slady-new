@@ -1,46 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import AuthGuard from './components/AuthGuard';
+import ResponsiveRouter from './components/ResponsiveRouter';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Content from './components/Content';
 
 export default function Home() {
-  const router = useRouter();
-  const [activePage, setActivePage] = useState('employeeManagement');
+  const [activePage, setActivePage] = useState('designManagement');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
-  const [isChecking, setIsChecking] = useState(true);
-
-  // 设备检测 - 手机自动跳转到mobile路由
-  useEffect(() => {
-    const checkDevice = () => {
-      const isMobile = /iPhone|Android|Mobile/i.test(navigator.userAgent) || window.innerWidth < 768;
-      
-      if (isMobile) {
-        router.push('/mobile');
-      } else {
-        setIsChecking(false);
-      }
-    };
-
-    checkDevice();
-  }, [router]);
 
   const toggleHeader = () => {
     setHeaderCollapsed(!headerCollapsed);
   };
 
-  // 检测中显示loading
-  if (isChecking) {
-    return null;
-  }
-
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gray-50 min-w-[1200px] overflow-x-auto">
+      <ResponsiveRouter>
+        <div className="min-h-screen bg-gray-50 min-w-[1200px] overflow-x-auto">
         {/* Header 容器 - 带过渡效果 */}
         <div 
           className="transition-all duration-300 ease-in-out overflow-hidden"
@@ -84,9 +63,10 @@ export default function Home() {
           />
           
           {/* Content */}
-          <Content activePage={activePage} sidebarCollapsed={sidebarCollapsed} />
+          <Content activePage={activePage} sidebarCollapsed={sidebarCollapsed} setActivePage={setActivePage} />
         </div>
-      </div>
+        </div>
+      </ResponsiveRouter>
     </AuthGuard>
   );
 }

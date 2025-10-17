@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Modal, Drawer, Form, Input, InputNumber, Select, message, Space, DatePicker, Collapse, Pagination, Image, Tag, Spin } from 'antd';
+import { Card, Button, Modal, Drawer, Form, Input, InputNumber, Select, message, Space, DatePicker, Pagination, Image, Tag, Spin } from 'antd';
 import { MoreOutlined, EditOutlined, DeleteOutlined, SendOutlined, CheckOutlined, ExclamationCircleOutlined, ReloadOutlined, CloseOutlined, PrinterOutlined, SearchOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { OrderData, ModifyOrderRequest, colorList, sizeList, WAREHOUSE } from '@/lib/types';
@@ -30,7 +30,6 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
   const [editDrawerVisible, setEditDrawerVisible] = useState(false);
   const [sentDrawerVisible, setSentDrawerVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
-  const [searchCollapsed, setSearchCollapsed] = useState(true);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 20,
@@ -369,7 +368,7 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
             <div className="text-xs text-gray-600 space-y-1">
               <div className="flex items-center justify-between">
                 <span>代码: {order.designCode}</span>
-                <span className="text-orange-600 font-semibold">¥{order.salePrice}</span>
+                <span className="text-orange-600 font-semibold">${order.salePrice}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span>颜色: {getColorTranslation(order.color)}</span>
@@ -433,15 +432,8 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
     <div className="space-y-4">
       {/* 搜索和操作 */}
       <div className="space-y-3">
-        {/* 搜索按钮 */}
+        {/* 操作按钮 */}
         <div className="flex gap-2">
-          <Button
-            icon={<SearchOutlined />}
-            onClick={() => setSearchCollapsed(!searchCollapsed)}
-            className="flex-1"
-          >
-            {searchCollapsed ? '高级搜索' : '收起搜索'}
-          </Button>
           <Button
             icon={<PrinterOutlined />}
             onClick={handlePrint}
@@ -453,50 +445,39 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
           </Button>
         </div>
 
-        {/* 高级搜索 */}
-        <Collapse
-          activeKey={searchCollapsed ? [] : ['search']}
-          items={[
-            {
-              key: 'search',
-              label: '高级搜索',
-              children: (
-                <Form form={searchForm} layout="vertical">
-                  <div className="grid grid-cols-1 gap-3">
-                    <Form.Item name="design" label="商品代码">
-                      <Input placeholder="请输入商品代码" />
-                    </Form.Item>
+        {/* 搜索表单 */}
+        <Form form={searchForm} layout="vertical" onFinish={handleSearch}>
+          <div className="grid grid-cols-1 gap-3">
+            <Form.Item name="design" label="商品代码">
+              <Input placeholder="请输入商品代码" />
+            </Form.Item>
                     
-                    <Form.Item name="remark" label="备注">
-                      <Input placeholder="请输入备注" />
-                    </Form.Item>
-                    
-                    <Form.Item name="status" label="状态">
-                      <Select
-                        mode="multiple"
-                        placeholder="请选择状态"
-                        options={statusOptions}
-                      />
-                    </Form.Item>
-                    
-                    <Form.Item name="dateRange" label="日期范围">
-                      <DatePicker.RangePicker style={{ width: '100%' }} />
-                    </Form.Item>
-                  </div>
-                  
-                  <div className="flex gap-2 mt-4">
-                    <Button type="primary" onClick={handleSearch} className="flex-1">
-                      搜索
-                    </Button>
-                    <Button onClick={handleReset} className="flex-1">
-                      重置
-                    </Button>
-                  </div>
-                </Form>
-              ),
-            },
-          ]}
-        />
+            <Form.Item name="remark" label="备注">
+              <Input placeholder="请输入备注" />
+            </Form.Item>
+            
+            <Form.Item name="status" label="状态">
+              <Select
+                mode="multiple"
+                placeholder="请选择状态"
+                options={statusOptions}
+              />
+            </Form.Item>
+            
+            <Form.Item name="dateRange" label="日期范围">
+              <DatePicker.RangePicker style={{ width: '100%' }} />
+            </Form.Item>
+          </div>
+          
+          <div className="flex gap-2 mt-4">
+            <Button type="primary" htmlType="submit" className="flex-1">
+              搜索
+            </Button>
+            <Button onClick={handleReset} className="flex-1">
+              重置
+            </Button>
+          </div>
+        </Form>
       </div>
 
       {/* 订单列表 */}

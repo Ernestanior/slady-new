@@ -30,8 +30,8 @@ export default function Sidebar({ activePage, setActivePage, isCollapsed, setIsC
   const { canAccessPage } = usePermissions();
 
   const allMenuItems = [
-    { name: 'employeeManagement', icon: Users, color: 'text-stone-600', bgColor: 'bg-stone-50', hoverColor: 'group-hover:text-stone-700' },
     { name: 'designManagement', icon: Shirt, color: 'text-red-600', bgColor: 'bg-red-50', hoverColor: 'group-hover:text-red-700' },
+    { name: 'employeeManagement', icon: Users, color: 'text-stone-600', bgColor: 'bg-stone-50', hoverColor: 'group-hover:text-stone-700' },
     { name: 'orderManagement', icon: Truck, color: 'text-green-600', bgColor: 'bg-green-50', hoverColor: 'group-hover:text-green-700' },
     // { name: 'orderHistory', icon: History, color: 'text-purple-600', bgColor: 'bg-purple-50', hoverColor: 'group-hover:text-purple-700' },
     { name: 'hotColdItems', icon: TrendingUp, color: 'text-red-600', bgColor: 'bg-red-50', hoverColor: 'group-hover:text-red-700' },
@@ -75,26 +75,26 @@ export default function Sidebar({ activePage, setActivePage, isCollapsed, setIsC
                   onClick={() => setActivePage(item.name)}
                   className={`group w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-4'} py-3 md:py-3.5 rounded-lg transition-colors duration-200 min-h-[44px] ${
                     activePage === item.name
-                      ? 'bg-orange-50 text-orange-700 border-l-4 border-orange-500 font-medium'
-                      : 'text-gray-900 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-gray-900 text-white border-l-4 border-gray-700 font-medium'
+                      : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                   }`}
                   title={isCollapsed ? t(item.name) : undefined}
                 >
                   <div className={`${!isCollapsed ? 'mr-3' : ''} flex-shrink-0 p-1.5 rounded-lg transition-all duration-200 ${
                     activePage === item.name 
-                      ? 'bg-orange-100' 
+                      ? 'bg-gray-800' 
                       : `${item.bgColor} group-hover:scale-110`
                   }`}>
                     <Icon className={`w-4 h-4 transition-colors duration-200 ${
                       activePage === item.name 
-                        ? 'text-orange-600' 
+                        ? 'text-white' 
                         : `${item.color} ${item.hoverColor}`
                     }`} />
                   </div>
                   {!isCollapsed && (
                     <span className={`truncate ${
                       activePage === item.name
-                        ? 'text-orange-700'
+                        ? 'text-white'
                         : 'text-gray-900'
                     }`}>{t(item.name)}</span>
                   )}

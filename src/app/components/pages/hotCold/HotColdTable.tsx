@@ -124,7 +124,7 @@ export default function HotColdTable({
           fontWeight: 'bold',
           color: '#262626'
         }}>
-          ¥{price}
+          ${price}
         </div>
       ),
     },
@@ -135,7 +135,7 @@ export default function HotColdTable({
       key: 'hot',
       label: (
         <span>
-          <FireOutlined style={{ color: '#ff4d4f' }} />
+          <FireOutlined style={{ color: '#ff4d4f',marginRight:5 }} />
           {t('hotItemsRanking')}
         </span>
       ),
@@ -155,7 +155,7 @@ export default function HotColdTable({
       key: 'cold',
       label: (
         <span>
-          <MinusCircleOutlined style={{ color: '#1890ff' }} />
+          <MinusCircleOutlined style={{ color: '#1890ff',marginRight:5 }} />
           {t('coldItemsRanking')}
         </span>
       ),

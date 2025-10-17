@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePermissions } from '@/lib/usePermissions';
 import EmployeeManagement from './pages/employee';
@@ -15,13 +16,38 @@ import OrderHistory from './pages/orderHistory/index';
 interface ContentProps {
   activePage: string;
   sidebarCollapsed?: boolean;
+  setActivePage?: (page: string) => void;
 }
 
-export default function Content({ activePage, sidebarCollapsed = false }: ContentProps) {
+export default function Content({ activePage, sidebarCollapsed = false, setActivePage }: ContentProps) {
   const { t } = useTranslation();
-  const { canAccessPage } = usePermissions();
+  const { canAccessPage, loading } = usePermissions();
+
+  // 检查当前页面是否可访问，如果不可访问则切换到第一个可访问的页面
+  useEffect(() => {
+    // 等待权限加载完成后再检查
+    if (!loading && !canAccessPage(activePage) && setActivePage) {
+      const accessiblePages = ['designManagement', 'employeeManagement', 'orderManagement', 'hotColdItems', 'inventoryRecords', 'employeeHistory', 'memberManagement', 'billManagement'];
+      const firstAccessiblePage = accessiblePages.find(page => canAccessPage(page));
+      if (firstAccessiblePage) {
+        setActivePage(firstAccessiblePage);
+      }
+    }
+  }, [activePage, canAccessPage, setActivePage, loading]);
 
   const renderPage = () => {
+    // 如果权限还在加载中，显示loading
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">加载中...</p>
+          </div>
+        </div>
+      );
+    }
+
     // 检查页面访问权限
     if (!canAccessPage(activePage)) {
       return (
@@ -53,7 +79,7 @@ export default function Content({ activePage, sidebarCollapsed = false }: Conten
       case 'billManagement':
         return <BillManagement />;
       default:
-        return <EmployeeManagement />;
+        return <Design />;
     }
   };
 
