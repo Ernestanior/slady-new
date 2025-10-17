@@ -38,6 +38,7 @@ export default function UniversalTable({
   onAdd,
   addButtonText = '新增',
   addButtonIcon = <PlusOutlined />,
+  showAddButton = true,
   editDrawer,
   deleteModal,
   actions = [],
@@ -182,7 +183,7 @@ export default function UniversalTable({
 
       {/* 表格工具栏 */}
       <div className="flex justify-end items-center mb-4">
-        {onAdd && (
+        {onAdd && showAddButton && (
           <Button
             type="primary"
             icon={addButtonIcon}
@@ -202,7 +203,7 @@ export default function UniversalTable({
         pagination={pagination}
         scroll={{
           x: 'max-content',
-          y: 400,
+          y: 800,
           ...scroll,
         }}
         size={size}

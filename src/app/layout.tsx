@@ -4,6 +4,9 @@ import "./globals.css";
 import 'antd/dist/reset.css';
 import { App as AntdApp } from 'antd';
 import I18nProvider from './components/I18nProvider';
+import { ColorManagerProvider } from '@/lib/colorManager';
+import { NotificationManagerProvider } from '@/lib/notificationManager';
+import { NotificationUtils } from '@/lib/notificationUtils';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,9 +34,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <I18nProvider>
-          <AntdApp>
-            {children}
-          </AntdApp>
+          <ColorManagerProvider>
+            <AntdApp>
+              <NotificationManagerProvider>
+                <NotificationUtils />
+                {children}
+              </NotificationManagerProvider>
+            </AntdApp>
+          </ColorManagerProvider>
         </I18nProvider>
       </body>
     </html>

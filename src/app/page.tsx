@@ -1,19 +1,42 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import AuthGuard from './components/AuthGuard';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Content from './components/Content';
 
 export default function Home() {
+  const router = useRouter();
   const [activePage, setActivePage] = useState('employeeManagement');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
+
+  // 设备检测 - 手机自动跳转到mobile路由
+  useEffect(() => {
+    const checkDevice = () => {
+      const isMobile = /iPhone|Android|Mobile/i.test(navigator.userAgent) || window.innerWidth < 768;
+      
+      if (isMobile) {
+        router.push('/mobile');
+      } else {
+        setIsChecking(false);
+      }
+    };
+
+    checkDevice();
+  }, [router]);
 
   const toggleHeader = () => {
     setHeaderCollapsed(!headerCollapsed);
   };
+
+  // 检测中显示loading
+  if (isChecking) {
+    return null;
+  }
 
   return (
     <AuthGuard>

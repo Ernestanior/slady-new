@@ -5,6 +5,16 @@ export interface UserBasicResponse {
   data: User;
 }
 
+// 用户类型枚举
+export enum E_USER_TYPE {
+  ADMIN = "ADMIN",
+  SALER = "SALER", 
+  FINANCE = "FINANCE",
+  LOGISTICS = "LOGISTICS",
+  SUPERADMIN = "SUPERADMIN",
+  PRODUCTMANAGEMENT = "PRODUCTMANAGEMENT"
+}
+
 // 用户相关类型定义
 export interface User {
   id: number;

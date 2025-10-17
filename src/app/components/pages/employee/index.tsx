@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { User, UserFormData } from '@/lib/types';
 import { USER_PERMISSIONS } from '@/lib/endpoints';
+import { usePermissions } from '@/lib/usePermissions';
 import UniversalTable from '../../UniversalTable';
 import { TableColumn, TableAction, AdvancedSearchConfig, DrawerConfig, DeleteConfig } from '@/lib/table-types';
 
@@ -14,6 +15,7 @@ const { Option } = Select;
 
 export default function EmployeeManagement() {
   const { t } = useTranslation();
+  const { canUseFeature } = usePermissions();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -201,8 +203,8 @@ export default function EmployeeManagement() {
     },
   ];
 
-  // 操作配置
-  const actions: TableAction[] = [
+  // 操作配置 - 根据权限过滤
+  const allActions: TableAction[] = [
     {
       key: 'edit',
       label: t('edit'),
@@ -217,6 +219,17 @@ export default function EmployeeManagement() {
       danger: true,
     },
   ];
+
+  const actions = allActions.filter(action => {
+    switch (action.key) {
+      case 'edit':
+        return canUseFeature('editEmployee');
+      case 'delete':
+        return canUseFeature('deleteEmployee');
+      default:
+        return true;
+    }
+  });
 
   // 高级搜索配置
   const advancedSearch: AdvancedSearchConfig = {
@@ -325,6 +338,7 @@ export default function EmployeeManagement() {
           advancedSearch={advancedSearch}
           onAdd={handleAdd}
           addButtonText={t('addEmployee')}
+          showAddButton={canUseFeature('createEmployee')}
           editDrawer={editDrawer}
           deleteModal={deleteModal}
           actions={actions}

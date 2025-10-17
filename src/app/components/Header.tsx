@@ -1,39 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { authManager } from '@/lib/auth';
-import { api } from '@/lib/api';
-import { User } from '@/lib/types';
+import { usePermissions } from '@/lib/usePermissions';
 
 export default function Header() {
   const { t, i18n } = useTranslation();
-  const [userInfo, setUserInfo] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // 获取用户基本信息
-  const fetchUserInfo = async () => {
-    try {
-      const response = await api.user.getBasic();
-      if (response.code === 200) {
-        setUserInfo(response.data);
-      }
-    } catch (error) {
-      console.error('获取用户信息失败:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { userInfo, loading } = usePermissions();
 
   // 切换语言
   const handleLanguageChange = (language: string) => {
     const langCode = language === '中文' ? 'zh' : 'en';
     i18n.changeLanguage(langCode);
   };
-
-  useEffect(() => {
-    fetchUserInfo();
-  }, []);
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 px-4 md:px-6 py-3 md:py-4 min-w-full sticky top-0 z-50">

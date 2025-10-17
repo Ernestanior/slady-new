@@ -138,7 +138,7 @@ export default function DesignDetail({
 
       {/* 商品详情 */}
       <div style={{ backgroundColor: '#fff', padding: 24, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-        <div style={{ display: 'flex', gap: '40px' }}>
+        <div style={{ display: 'flex', gap: '40px', maxHeight: '400px' }}>
           {/* 左侧图片 */}
           <div style={{ flexShrink: 0 }}>
             <img 
@@ -160,38 +160,42 @@ export default function DesignDetail({
           </div>
 
           {/* 右侧详细信息 */}
-          <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: 28, fontWeight: 'bold', marginBottom: 24 }}>
+          <div style={{ flex: 1, maxWidth: '600px', overflowY: 'auto' }}>
+            <h1 style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 16 }}>
               {detailData.design}
             </h1>
 
-            <Descriptions column={1} labelStyle={{ fontWeight: 600, width: 120 }}>
+            <Descriptions 
+              column={2} 
+              labelStyle={{ fontWeight: 600, width: 100 }}
+              size="small"
+            >
               <Descriptions.Item label={t('designId')}>
                 {detailData.id}
               </Descriptions.Item>
               
               <Descriptions.Item label={t('type')}>
                 {detailData.type.split(',').map((type, index) => (
-                  <Tag color="blue" key={index} style={{ marginRight: 4 }}>
+                  <Tag color="blue" key={index} style={{ marginRight: 4, marginBottom: 4 }}>
                     {typeList.find(t => t.value === type.trim())?.label || type}
                   </Tag>
                 ))}
               </Descriptions.Item>
 
               <Descriptions.Item label={t('salePrice')}>
-                <span style={{ fontSize: 24, color: '#fa9829', fontWeight: 'bold' }}>
-                  ¥{detailData.salePrice}
+                <span style={{ fontSize: 20, color: '#fa9829', fontWeight: 'bold' }}>
+                  ${detailData.salePrice}
                 </span>
               </Descriptions.Item>
 
               <Descriptions.Item label={t('purchasePrice')}>
-                <span style={{ fontSize: 20, color: '#666' }}>
-                  ¥{detailData.purchasePrice}
+                <span style={{ fontSize: 16, color: '#666' }}>
+                  ${detailData.purchasePrice}
                 </span>
               </Descriptions.Item>
 
               <Descriptions.Item label={t('stock')}>
-                <span style={{ fontSize: 18, color: detailData.stock > 0 ? '#52c41a' : '#ff4d4f' }}>
+                <span style={{ fontSize: 16, color: detailData.stock > 0 ? '#52c41a' : '#ff4d4f' }}>
                   {detailData.stock}
                 </span>
               </Descriptions.Item>
@@ -205,19 +209,23 @@ export default function DesignDetail({
               </Descriptions.Item>
 
               <Descriptions.Item label={t('color')}>
-                {detailData.color.map((color, index) => (
-                  <Tag key={index} style={{ marginRight: 4 }}>
-                    {color}
-                  </Tag>
-                ))}
+                <div style={{ maxWidth: '200px' }}>
+                  {detailData.color.map((color, index) => (
+                    <Tag key={index} style={{ marginRight: 4, marginBottom: 4 }}>
+                      {color}
+                    </Tag>
+                  ))}
+                </div>
               </Descriptions.Item>
 
               <Descriptions.Item label={t('size')}>
-                {detailData.size.map((size, index) => (
-                  <Tag key={index} style={{ marginRight: 4 }}>
-                    {size}
-                  </Tag>
-                ))}
+                <div style={{ maxWidth: '200px' }}>
+                  {detailData.size.map((size, index) => (
+                    <Tag key={index} style={{ marginRight: 4, marginBottom: 4 }}>
+                      {size}
+                    </Tag>
+                  ))}
+                </div>
               </Descriptions.Item>
 
               <Descriptions.Item label={t('createTime')}>

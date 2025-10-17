@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslation } from 'react-i18next';
+import { usePermissions } from '@/lib/usePermissions';
 import EmployeeManagement from './pages/employee';
 import HotColdItems from './pages/hotCold';
 import InventoryRecords from './pages/inventory';
@@ -18,8 +19,20 @@ interface ContentProps {
 
 export default function Content({ activePage, sidebarCollapsed = false }: ContentProps) {
   const { t } = useTranslation();
+  const { canAccessPage } = usePermissions();
 
   const renderPage = () => {
+    // 检查页面访问权限
+    if (!canAccessPage(activePage)) {
+      return (
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('accessDenied')}</h2>
+            <p className="text-gray-600">{t('noPermissionToAccess')}</p>
+          </div>
+        </div>
+      );
+    }
     switch (activePage) {
       case 'employeeManagement':
         return <EmployeeManagement />;

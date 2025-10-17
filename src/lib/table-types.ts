@@ -80,6 +80,7 @@ export interface UniversalTableProps {
   onAdd?: () => void;
   addButtonText?: string;
   addButtonIcon?: ReactNode;
+  showAddButton?: boolean;
   
   // 编辑功能
   editDrawer?: DrawerConfig;

@@ -136,7 +136,7 @@ export default function InventoryRecords() {
       fixed: 'left' as const,
       render: (photo: string) => (
         <img
-          style={{ height: 150, width: 120, objectFit: 'cover' }}
+          style={{ height: 100, width: 80, objectFit: 'cover' }}
           alt={t('productImage')}
           src={dev_url + photo}
           onError={(e) => {

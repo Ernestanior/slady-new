@@ -5,6 +5,7 @@ import { Input, Spin, Card, Row, Col, Button } from 'antd';
 import { SearchOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { DesignItem } from '@/lib/types';
+import { usePermissions } from '@/lib/usePermissions';
 import TypeMultiSelect from '../../TypeMultiSelect';
 import TypeQuickSelect from '../../TypeQuickSelect';
 
@@ -48,6 +49,7 @@ export default function DesignList({
   hasMore
 }: DesignListProps) {
   const { t } = useTranslation();
+  const { canUseFeature } = usePermissions();
   const scrollListRef = useRef<HTMLDivElement>(null);
   const dev_url = 'http://119.28.104.20';
 
@@ -108,13 +110,15 @@ export default function DesignList({
                   >
                     {t('inStock')}
                   </Button>
-                  <Button 
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={onOpenCreate}
-                  >
-                    {t('create')}
-                  </Button>
+                  {canUseFeature('createDesign') && (
+                    <Button 
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      onClick={onOpenCreate}
+                    >
+                      {t('create')}
+                    </Button>
+                  )}
                 </div>
               </div>
             </Col>
@@ -180,14 +184,14 @@ export default function DesignList({
                     {item.design}
                   </h3>
                   <div style={{ marginBottom: 5, fontSize: '14px', color: '#666' }}>
-                    类型：{item.type}
+                    {t('type')}：{item.type}
                   </div>
                   <div style={{ marginBottom: 5, fontSize: '14px', color: '#666' }}>
-                    库存：{item.stock || 0}
+                    {t('stock')}：{item.stock || 0}
                   </div>
                   <div style={{ fontSize: '14px', color: '#666' }}>
-                    价格：<span style={{ color: "#fa9829", fontWeight: 'bold' }}>
-                      ¥{item.salePrice || 0}
+                    {t('price')}：<span style={{ color: "#fa9829", fontWeight: 'bold' }}>
+                      ${item.salePrice || 0}
                     </span>
                   </div>
                 </div>

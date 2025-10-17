@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { OrderData, ModifyOrderRequest, colorList, sizeList, WAREHOUSE } from '@/lib/types';
 import { order } from '@/lib/api';
 import moment from 'moment';
+import { useNotification } from '@/lib/notificationManager';
 
 interface OrderListProps {
   warehouseName: string;
@@ -24,6 +25,7 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh },
   
   // 状态管理
   const [loading, setLoading] = useState(false);
+  const [printLoading, setPrintLoading] = useState(false);
   const [data, setData] = useState<OrderData[]>([]);
   const [editDrawerVisible, setEditDrawerVisible] = useState(false);
   const [sentDrawerVisible, setSentDrawerVisible] = useState(false);
@@ -35,6 +37,40 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh },
     total: 0,
   });
 
+  const notification = useNotification();
+  
+  // 颜色翻译映射 - 支持中英文切换
+  const getColorTranslation = (color: string) => {
+    const colorMap: Record<string, string> = {
+      'Black': t('colorBlack'),
+      'White': t('colorWhite'),
+      'Grey': t('colorGrey'),
+      'Red': t('colorRed'),
+      'Orange': t('colorOrange'),
+      'Yellow': t('colorYellow'),
+      'Green': t('colorGreen'),
+      'Blue': t('colorBlue'),
+      'Purple': t('colorPurple'),
+      'Pink': t('colorPink'),
+      'Brown': t('colorBrown'),
+      'Beige': t('colorBeige'),
+      'Khaki': t('colorKhaki'),
+      'Stripes': t('colorStripes'),
+      'Grid': t('colorGrid'),
+      'Champagne': t('colorChampagne'),
+      'Navy': t('colorNavy'),
+      'Sky': t('colorSky'),
+      'Mustard': t('colorMustard'),
+      'Mint': t('colorMint'),
+      'Peach': t('colorPeach'),
+      'Cream': t('colorCream'),
+      'Charcoal': t('colorCharcoal'),
+      'Silver': t('colorSilver'),
+      'Gold': t('colorGold'),
+    };
+    return colorMap[color] || color;
+  };
+  
   // 状态选项
   const statusOptions = [
     { value: "0", label: t('pending') },
@@ -121,6 +157,9 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh },
 
   // 打印/导出
   const handlePrint = async () => {
+    if (printLoading) return; // 防止重复点击
+    
+    setPrintLoading(true);
     try {
       const formValues = searchForm.getFieldsValue();
       
@@ -147,24 +186,22 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh },
         params.startDate = formValues.dateRange[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
         params.endDate = formValues.dateRange[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
         delete params.dateRange;
+        const res = await order.export(params);
+        console.log(res);
+        if (res.code === 200) {
+          window.open(dev_url + res.data);
+          notification.success('导出成功');
+        } else {
+          notification.error(res.msg);
+        }
+      } else {
+        notification.error('请输入时间段');
       }
-      
-      const blob = await order.export(params);
-      
-      // 创建下载链接
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `订单列表_${warehouseName}_${moment().format('YYYY-MM-DD')}.xlsx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      message.success('导出成功');
     } catch (error) {
       console.error('导出失败:', error);
       message.error('导出失败，请稍后重试');
+    } finally {
+      setPrintLoading(false);
     }
   };
 
@@ -322,44 +359,44 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh },
     items: [
       {
         key: 'edit',
-        label: '修改订单',
+        label: t('modifyOrder'),
         icon: <EditOutlined />,
         onClick: () => handleEdit(orderData),
       },
       {
         key: 'delete',
-        label: '删除订单',
+        label: t('deleteOrder'),
         icon: <DeleteOutlined />,
         danger: true,
         onClick: () => handleDelete(orderData),
       },
       {
         key: 'sent',
-        label: '发货',
+        label: t('shipped'),
         icon: <SendOutlined />,
         onClick: () => handleSent(orderData),
       },
       {
         key: 'ok',
-        label: '完成',
+        label: t('completed'),
         icon: <CheckOutlined />,
-        onClick: () => handleStatusChange(orderData, '2', '完成'),
+        onClick: () => handleStatusChange(orderData, '2', t('completed')),
       },
       {
         key: 'out_of_stock',
-        label: '缺货',
+        label: t('outOfStock'),
         icon: <ExclamationCircleOutlined />,
-        onClick: () => handleStatusChange(orderData, '3', '缺货'),
+        onClick: () => handleStatusChange(orderData, '3', t('outOfStock')),
       },
       {
         key: 'damaged',
-        label: '损坏',
+        label: t('damaged'),
         icon: <CloseOutlined />,
-        onClick: () => handleStatusChange(orderData, '4', '损坏'),
+        onClick: () => handleStatusChange(orderData, '4', t('damaged')),
       },
       {
         key: 'reset',
-        label: '重置状态',
+        label: t('resetStatus'),
         icon: <ReloadOutlined />,
         onClick: () => handleResetStatus(orderData),
       },
@@ -374,7 +411,7 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh },
       fixed: 'left' as const,
       render: (item: string) => (
         <img 
-          style={{ height: 150, width: 120, objectFit: 'cover' }} 
+          style={{ height: 100, width: 80, objectFit: 'cover' }} 
           alt="" 
           src={dev_url + item}
           onError={(e) => {
@@ -401,6 +438,12 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh },
       dataIndex: 'color',
       key: 'color',
       width: 100,
+      render: (color: string) => {
+        // 如果颜色是数组，取第一个元素
+        const colorValue = Array.isArray(color) ? color[0] : color;
+        // 翻译颜色名称
+        return getColorTranslation(colorValue);
+      },
     },
     {
       title: t('orderSize'),
@@ -521,7 +564,7 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh },
             fetchOrders(page);
           },
         }}
-        scroll={{ x: 1200, y: 600 }}
+        scroll={{ x: 1200, y: 2000 }}
       />
 
       {/* 打印按钮 */}
@@ -535,9 +578,11 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh },
           type="primary" 
           icon={<PrinterOutlined />}
           onClick={handlePrint}
+          loading={printLoading}
+          disabled={printLoading}
           size="large"
         >
-          打印
+          {printLoading ? '打印中...' : '打印'}
         </Button>
       </div>
 

@@ -6,13 +6,13 @@ import { useTranslation } from 'react-i18next';
 import { PrintDailyReportRequest } from '@/lib/types';
 import { printService } from '@/lib/api';
 import moment from 'moment';
+import { saler } from './PrintReceipt';
 
 interface PrintDailyReportDrawerProps {
   visible: boolean;
   onClose: () => void;
 }
 
-const saler = ['Serene', 'Sandy', 'Xiao Li', 'Yen', 'Staff'];
 const counter = [
   { label: 'Slady Fashion', value: 1 },
   { label: 'SL Studio', value: 2 }

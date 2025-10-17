@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Spin, notification, message } from 'antd';
+import { Button, Spin, notification, message,Image as AntdImage } from 'antd';
 import { LeftOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import {
@@ -341,20 +341,22 @@ export default function ImageGallery({
           <>
             <section style={{ display: "flex", flexWrap: "wrap", marginTop: 20 }}>
               {t('coverColon')}
-              <img 
+              <AntdImage 
                 style={{ width: 200 }} 
                 src={cover[0]?.url || dev_url + coverPath}
                 alt={t('cover')}
+                preview={{src:dev_url + coverPath}}
               />
             </section>
             <section style={{ display: "flex", flexWrap: "wrap", marginTop: 20 }}>
               {t('imagesColon')}
               {imgList.map((res: any) => (
                 <div key={res} style={{ width: 200, marginRight: 20, cursor: "pointer" }}>
-                  <img 
+                  <AntdImage 
                     style={{ width: "100%" }} 
                     src={dev_url + res}
                     alt={t('productImage')}
+                    preview={{src:dev_url + res}}
                   />
                 </div>
               ))}

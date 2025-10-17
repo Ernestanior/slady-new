@@ -3,9 +3,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button, Drawer, Form, InputNumber, Select, Space, Divider, App, notification, message, Input } from 'antd';
 import { PlusOutlined, MinusCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import ColorSelect from '../../ColorSelect';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { DesignItem, DesignListRequest, SearchPageParams, DesignDetail as DesignDetailType, ModifyDesignRequest, typeList, colorList, fabricList, sizeList, WAREHOUSE, CreateDesignRequest } from '@/lib/types';
+import { usePermissions } from '@/lib/usePermissions';
 import ImageUpload from '../../ImageUpload';
 import DesignList from './DesignList';
 import DesignDetail from './DesignDetail';
@@ -15,6 +17,7 @@ import type { UploadFile, RcFile } from 'antd/es/upload/interface';
 export default function Design() {
   const { modal } = App.useApp();
   const { t } = useTranslation();
+  const { canUseFeature } = usePermissions();
   
   // 视图状态：'list'、'detail' 或 'images'
   const [currentView, setCurrentView] = useState<'list' | 'detail' | 'images'>('list');
@@ -53,11 +56,12 @@ export default function Design() {
   // 创建商品相关状态
   const [createDrawerVisible, setCreateDrawerVisible] = useState(false);
   const [createForm] = Form.useForm();
+  
   const [imgCover, setImgCover] = useState<UploadFile[]>([]);
   const [createImgList, setCreateImgList] = useState<UploadFile[]>([]);
   const [newFabric, setNewFabric] = useState<string[]>([...fabricList]);
   const [fabric, setFabric] = useState('');
-  const inputRef = useRef<any>(null);
+  const fabricInputRef = useRef<any>(null);
   let fabricIndex = 0;
   
   // 图片浏览相关状态
@@ -100,12 +104,12 @@ export default function Design() {
           setAllData(prev => [...prev, ...newData]);
         }
         
-        setPagination({
-          page: response.data.number,
+        setPagination(prev => ({
+          page: reset ? 1 : prev.page + 1,
           pageSize: response.data.size,
           total: response.data.totalElements,
           totalPages: response.data.totalPages
-        });
+        }));
         
         setHasMore(response.data.number < response.data.totalPages - 1);
       }
@@ -309,7 +313,7 @@ export default function Design() {
     setNewFabric([...newFabric, fabric || `New item ${fabricIndex++}`]);
     setFabric('');
     setTimeout(() => {
-      inputRef.current?.focus();
+      fabricInputRef.current?.focus();
     }, 0);
   };
 
@@ -548,7 +552,10 @@ export default function Design() {
               { type: 'array', min: 1, message: t('pleaseSelectAtLeastOne') + t('color') }
             ]}
           >
-            <Select mode="multiple" placeholder={t('color')} options={colorList.map(c => ({ label: c, value: c }))} />
+            <ColorSelect 
+              mode="multiple" 
+              placeholder={t('color')} 
+            />
           </Form.Item>
 
           <Form.Item 
@@ -587,7 +594,7 @@ export default function Design() {
                             <Space style={{ padding: '0 8px 4px' }}>
                               <Input
                                 placeholder={t('fabric')}
-                                ref={inputRef}
+                                ref={fabricInputRef}
                                 value={fabric}
                                 onChange={(e) => setFabric(e.target.value)}
                               />

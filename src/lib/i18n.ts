@@ -10,6 +10,10 @@ const zhTranslations = {
   loading: '加载中...',
   userInfoNotFound: '未获取到用户信息',
   
+  // Permissions
+  accessDenied: '访问被拒绝',
+  noPermissionToAccess: '您没有权限访问此页面',
+  
   // Sidebar
   designManagement: '商品管理',
   orderManagement: '订单管理',
@@ -52,6 +56,32 @@ const zhTranslations = {
   addItem: '新增商品',
   warehouse: '仓库',
   color: '颜色',
+  // 颜色翻译
+  colorBlack: '黑色',
+  colorWhite: '白色',
+  colorGrey: '灰色',
+  colorRed: '红色',
+  colorOrange: '橙色',
+  colorYellow: '黄色',
+  colorGreen: '绿色',
+  colorBlue: '蓝色',
+  colorPurple: '紫色',
+  colorPink: '粉色',
+  colorBrown: '棕色',
+  colorBeige: '米色',
+  colorKhaki: '卡其色',
+  colorStripes: '条纹',
+  colorGrid: '格子',
+  colorChampagne: '香槟色',
+  colorNavy: '海军蓝',
+  colorSky: '天蓝色',
+  colorMustard: '芥末色',
+  colorMint: '薄荷绿',
+  colorPeach: '桃色',
+  colorCream: '奶油色',
+  colorCharcoal: '炭灰色',
+  colorSilver: '银色',
+  colorGold: '金色',
   size: '尺寸',
   remark: '备注',
   amount: '数量',
@@ -364,6 +394,14 @@ const zhTranslations = {
   notFound: '未找到',
   serverError: '服务器错误',
   unknownError: '未知错误',
+  
+  // Mobile
+  searchNameOrPhone: '搜索姓名或电话',
+  noEmployees: '暂无员工',
+  noMembers: '暂无会员',
+  leaveBlankToKeep: '留空则不修改',
+  managementSystem: '管理系统',
+  noAccount: '无账号',
 };
 
 // 英文翻译
@@ -373,6 +411,10 @@ const enTranslations = {
   logout: 'Logout',
   loading: 'Loading...',
   userInfoNotFound: 'User info not found',
+  
+  // Permissions
+  accessDenied: 'Access Denied',
+  noPermissionToAccess: 'You do not have permission to access this page',
   
   // Sidebar
   designManagement: 'Design Management',
@@ -416,6 +458,32 @@ const enTranslations = {
   addItem: 'Add Item',
   warehouse: 'Warehouse',
   color: 'Color',
+  // Color translations
+  colorBlack: 'Black',
+  colorWhite: 'White',
+  colorGrey: 'Grey',
+  colorRed: 'Red',
+  colorOrange: 'Orange',
+  colorYellow: 'Yellow',
+  colorGreen: 'Green',
+  colorBlue: 'Blue',
+  colorPurple: 'Purple',
+  colorPink: 'Pink',
+  colorBrown: 'Brown',
+  colorBeige: 'Beige',
+  colorKhaki: 'Khaki',
+  colorStripes: 'Stripes',
+  colorGrid: 'Grid',
+  colorChampagne: 'Champagne',
+  colorNavy: 'Navy',
+  colorSky: 'Sky',
+  colorMustard: 'Mustard',
+  colorMint: 'Mint',
+  colorPeach: 'Peach',
+  colorCream: 'Cream',
+  colorCharcoal: 'Charcoal',
+  colorSilver: 'Silver',
+  colorGold: 'Gold',
   size: 'Size',
   remark: 'Remark',
   amount: 'Amount',
@@ -474,11 +542,11 @@ const enTranslations = {
   deleteFailedRetry: 'Deletion failed, please try again later',
   stockModifySuccess: 'Stock modified successfully',
   modifyStockFailedRetry: 'Failed to modify stock, please try again later',
-  storeAdjustment: 'Store Adjustment',
+  storeAdjustment: 'Restore',
   customerOrder: 'Customer Order',
   addItemSuccess: 'Item added successfully',
   addItemFailedRetry: 'Failed to add item, please try again later',
-  storeAdjustmentSuccess: 'Store adjustment successful',
+  storeAdjustmentSuccess: 'Restore successful',
   customerOrderSuccess: 'Customer order successful',
   createOrderFailedRetry: 'Failed to create order, please try again later',
   operation: 'Operation',
@@ -486,7 +554,7 @@ const enTranslations = {
   cannotBeLessThanZero: ' cannot be less than 0',
   mustBeGreaterThanZero: ' must be greater than 0',
   confirmModify: 'Confirm Modify',
-  confirmStoreAdjustment: 'Confirm Store Adjustment',
+  confirmStoreAdjustment: 'Confirm Restore',
   confirmCustomerOrder: 'Confirm Customer Order',
   confirmAdd: 'Confirm Add',
   fetchImagesFailed: 'Failed to fetch images',
@@ -726,6 +794,14 @@ const enTranslations = {
   notFound: 'Not Found',
   serverError: 'Server Error',
   unknownError: 'Unknown Error',
+  
+  // Mobile
+  searchNameOrPhone: 'Search name or phone',
+  noEmployees: 'No employees',
+  noMembers: 'No members',
+  leaveBlankToKeep: 'Leave blank to keep unchanged',
+  managementSystem: 'Management System',
+  noAccount: 'No account',
 };
 
 i18n

@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Shirt
 } from 'lucide-react';
+import { usePermissions } from '@/lib/usePermissions';
 
 interface SidebarProps {
   activePage: string;
@@ -26,8 +27,9 @@ interface SidebarProps {
 
 export default function Sidebar({ activePage, setActivePage, isCollapsed, setIsCollapsed }: SidebarProps) {
   const { t } = useTranslation();
+  const { canAccessPage } = usePermissions();
 
-  const menuItems = [
+  const allMenuItems = [
     { name: 'employeeManagement', icon: Users, color: 'text-stone-600', bgColor: 'bg-stone-50', hoverColor: 'group-hover:text-stone-700' },
     { name: 'designManagement', icon: Shirt, color: 'text-red-600', bgColor: 'bg-red-50', hoverColor: 'group-hover:text-red-700' },
     { name: 'orderManagement', icon: Truck, color: 'text-green-600', bgColor: 'bg-green-50', hoverColor: 'group-hover:text-green-700' },
@@ -38,6 +40,9 @@ export default function Sidebar({ activePage, setActivePage, isCollapsed, setIsC
     { name: 'memberManagement', icon: UserCheck, color: 'text-pink-600', bgColor: 'bg-pink-50', hoverColor: 'group-hover:text-pink-700' },
     { name: 'billManagement', icon: CreditCard, color: 'text-yellow-600', bgColor: 'bg-yellow-50', hoverColor: 'group-hover:text-yellow-700' }
   ];
+
+  // 根据权限过滤菜单项
+  const menuItems = allMenuItems.filter(item => canAccessPage(item.name));
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);

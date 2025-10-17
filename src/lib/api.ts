@@ -268,10 +268,8 @@ export const order = {
   },
   
   // 导出订单
-  export: async (params: OrderPageRequest): Promise<Blob> => {
-    const response = await apiClient.post('/order/export', params, {
-      responseType: 'blob'
-    });
+  export: async (params: OrderPageRequest) => {
+    const response = await apiClient.post('/order/export', params);
     return response.data;
   },
 };

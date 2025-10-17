@@ -24,7 +24,7 @@ const calcFinalPrice = (price: number = 0, discountPercent: number = 0, discount
 };
 
 export const shops = ['', 'SL Studio Pte. Ltd.', 'Slady Fashion Pte. Ltd.'];
-export const saler = ['Serene', 'Sandy', 'Xiao Li', 'Yen', 'Staff'];
+export const saler = ['Serene', 'Sandy', 'Jewaa', 'Yen', 'QiQi', 'Staff'];
 export const paymentList = ['Bank Transfer/Pay Now', 'Cash', 'Nets', 'VISA', 'Master', 'Union', 'Slady Voucher', 'AMEX', 'Mall Voucher'];
 
 let index = 0;

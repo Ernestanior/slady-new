@@ -5,6 +5,7 @@ import { Table, Button, Card, message, Pagination, Space, Tag, Row, Drawer, Form
 import { ArrowLeftOutlined, PlusOutlined, MinusCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { MemberData, MemberPurchaseRecord, MemberPurchaseRequest, CreatePurchaseRecordRequest } from '@/lib/types';
+import { usePermissions } from '@/lib/usePermissions';
 import { member } from '@/lib/api';
 import moment from 'moment';
 
@@ -15,6 +16,7 @@ interface MemberPurchaseHistoryProps {
 
 export default function MemberPurchaseHistory({ memberData, onBackToList }: MemberPurchaseHistoryProps) {
   const { t } = useTranslation();
+  const { canUseFeature } = usePermissions();
   const [form] = Form.useForm();
   const [data, setData] = useState<MemberPurchaseRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -237,7 +239,7 @@ export default function MemberPurchaseHistory({ memberData, onBackToList }: Memb
       width: 100,
       render: (sum: number) => (
         <div style={{ fontWeight: 'bold', color: '#262626' }}>
-          ¥{sum}
+          ${sum}
         </div>
       ),
     },
@@ -248,7 +250,7 @@ export default function MemberPurchaseHistory({ memberData, onBackToList }: Memb
       width: 120,
       render: (amount: number) => (
         <div style={{ fontWeight: 'bold', color: '#52c41a' }}>
-          ¥{amount}
+          ${amount}
         </div>
       ),
     },
@@ -258,7 +260,7 @@ export default function MemberPurchaseHistory({ memberData, onBackToList }: Memb
       key: 'remark',
       width: 150,
     },
-    {
+    ...(canUseFeature('deletePurchaseRecord') ? [{
       title: t('operation'),
       key: 'action',
       width: 100,
@@ -268,7 +270,7 @@ export default function MemberPurchaseHistory({ memberData, onBackToList }: Memb
           {t('delete')}
         </Button>
       ),
-    },
+    }] : []),
   ];
 
   return (

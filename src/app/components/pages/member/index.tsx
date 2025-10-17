@@ -5,6 +5,7 @@ import { Table, Form, Input, Button, Card, message, Pagination, Collapse, Modal,
 import { SearchOutlined, ReloadOutlined, FilterOutlined, EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined, MoreOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { MemberData, MemberListRequest, ModifyMemberRequest, TopUpMemberRequest, MemberPurchaseRecord, MemberPurchaseRequest, CreateMemberRequest } from '@/lib/types';
+import { usePermissions } from '@/lib/usePermissions';
 import { member } from '@/lib/api';
 import moment from 'moment';
 import MemberPurchaseHistory from './MemberPurchaseHistory';
@@ -13,6 +14,7 @@ import MemberTopUpHistory from './MemberTopUpHistory';
 
 export default function MemberManagement() {
   const { t } = useTranslation();
+  const { canUseFeature } = usePermissions();
   const [form] = Form.useForm();
   const [modifyForm] = Form.useForm();
   const [topUpForm] = Form.useForm();
@@ -311,23 +313,29 @@ export default function MemberManagement() {
       width: 80,
       fixed: 'right' as const,
       render: (_: any, record: MemberData) => {
-        const menu = (
-          <Menu>
-            <Menu.Item key="modify" icon={<EditOutlined />} onClick={() => handleModify(record)}>
-              {t('modify')}
-            </Menu.Item>
-            <Menu.Item key="topUp" icon={<PlusOutlined />} onClick={() => handleTopUp(record)}>
-              {t('topUp')}
-            </Menu.Item>
-            <Menu.Item key="detail" icon={<EyeOutlined />} onClick={() => handleViewPurchase(record)}>
-              {t('detailRecord')}
-            </Menu.Item>
-            <Menu.Divider />
+        const menuItems = [
+          <Menu.Item key="modify" icon={<EditOutlined />} onClick={() => handleModify(record)}>
+            {t('modify')}
+          </Menu.Item>,
+          <Menu.Item key="topUp" icon={<PlusOutlined />} onClick={() => handleTopUp(record)}>
+            {t('topUp')}
+          </Menu.Item>,
+          <Menu.Item key="detail" icon={<EyeOutlined />} onClick={() => handleViewPurchase(record)}>
+            {t('detailRecord')}
+          </Menu.Item>,
+        ];
+
+        // 只有有删除权限的用户才能看到删除选项
+        if (canUseFeature('deleteMember')) {
+          menuItems.push(
+            <Menu.Divider key="divider" />,
             <Menu.Item key="delete" danger icon={<DeleteOutlined />} onClick={() => handleDelete(record)}>
               {t('delete')}
             </Menu.Item>
-          </Menu>
-        );
+          );
+        }
+
+        const menu = <Menu>{menuItems}</Menu>;
 
         return (
           <Dropdown overlay={menu} trigger={['click']}>

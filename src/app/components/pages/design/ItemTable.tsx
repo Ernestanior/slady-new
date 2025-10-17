@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Table, Button, Modal, Drawer, Form, InputNumber, Input, message, App, Select } from 'antd';
+import React, { useState, useRef } from 'react';
+import { Table, Button, Modal, Drawer, Form, InputNumber, Input, message, App, Select, Space, Divider } from 'antd';
 import { DeleteOutlined, EditOutlined, PlusOutlined, ShoppingOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import ColorSelect from '../../ColorSelect';
 import { useTranslation } from 'react-i18next';
 import { ItemData, CreateOrderRequest, CreateItemRequest, WAREHOUSE, colorList, sizeList } from '@/lib/types';
+import { usePermissions } from '@/lib/usePermissions';
 import { item, order } from '@/lib/api';
 
 interface ItemTableProps {
@@ -18,6 +20,7 @@ interface ItemTableProps {
 export default function ItemTable({ data, loading, warehouseName, designId, onRefresh }: ItemTableProps) {
   const { t } = useTranslation();
   const { modal } = App.useApp();
+  const { canUseFeature } = usePermissions();
   const [form] = Form.useForm();
   const [stockForm] = Form.useForm();
   const [orderForm] = Form.useForm();
@@ -28,6 +31,7 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
   const [createDrawerVisible, setCreateDrawerVisible] = useState(false);
   const [orderType, setOrderType] = useState<'store' | 'customer'>('store');
   const [currentItem, setCurrentItem] = useState<ItemData | null>(null);
+  
 
   const warehouseOptions = [
     { label: WAREHOUSE.SLADY, value: WAREHOUSE.SLADY },
@@ -48,7 +52,7 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
           message.success(t('deleteSuccess'));
           onRefresh();
         } catch (error) {
-          console.error('Delete item failed:', error);
+          console.error('删除失败:', error);
           message.error(t('deleteFailedRetry'));
         }
       },
@@ -71,7 +75,7 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
         onRefresh();
       }
     } catch (error) {
-      console.error('Modify stock failed:', error);
+      console.error('修改库存失败:', error);
       message.error(t('modifyStockFailedRetry'));
     }
   };
@@ -107,7 +111,7 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
       setCreateDrawerVisible(false);
       onRefresh();
     } catch (error) {
-      console.error('Create item failed:', error);
+      console.error('新增商品失败:', error);
       message.error(t('addItemFailedRetry'));
     }
   };
@@ -131,7 +135,7 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
         onRefresh();
       }
     } catch (error) {
-      console.error('Create order failed:', error);
+      console.error('创建订单失败:', error);
       message.error(t('createOrderFailedRetry'));
     }
   };
@@ -162,14 +166,16 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
       key: 'action',
       render: (_: any, record: ItemData) => (
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            onClick={() => handleModifyStock(record)}
-            size="small"
-          >
-            {t('modifyStock')}
-          </Button>
+          {canUseFeature('modifyStock') && (
+            <Button
+              type="link"
+              icon={<EditOutlined />}
+              onClick={() => handleModifyStock(record)}
+              size="small"
+            >
+              {t('modifyStock')}
+            </Button>
+          )}
           <Button
             type="link"
             icon={<PlusOutlined />}
@@ -186,15 +192,17 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
           >
             {t('customerOrder')}
           </Button>
-          <Button
-            type="link"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record)}
-            size="small"
-          >
-            {t('delete')}
-          </Button>
+          {canUseFeature('deleteItem') && (
+            <Button
+              type="link"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleDelete(record)}
+              size="small"
+            >
+              {t('delete')}
+            </Button>
+          )}
         </div>
       ),
     },
@@ -204,13 +212,15 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
     <>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h4 style={{ margin: 0 }}>{warehouseName} {t('stock')}</h4>
-        <Button
-          type="primary"
-          icon={<PlusCircleOutlined />}
-          onClick={handleCreate}
-        >
-          {t('addItem')}
-        </Button>
+        {canUseFeature('createItem') && (
+          <Button
+            type="primary"
+            icon={<PlusCircleOutlined />}
+            onClick={handleCreate}
+          >
+            {t('addItem')}
+          </Button>
+        )}
       </div>
       
       <Table
@@ -341,10 +351,9 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
               { type: 'array', min: 1, message: t('pleaseSelectAtLeastOne') + t('color') }
             ]}
           >
-            <Select
+            <ColorSelect
               mode="multiple"
               placeholder={t('color')}
-              options={colorList.map(color => ({ label: color, value: color }))}
             />
           </Form.Item>
           
