@@ -60,8 +60,9 @@ export default function InventoryRecords() {
           try {
             const bodyData = JSON.parse(item.body);
             return {
+              ...bodyData,
               ...item,
-              ...bodyData
+
             };
           } catch (error) {
             console.error('解析 body 数据失败:', error);
@@ -206,11 +207,7 @@ export default function InventoryRecords() {
       dataIndex: 'createDate',
       key: 'createDate',
       width: 180,
-      render: (value: string) => (
-        <div style={{ color: '#595959' }}>
-          {moment(value).format('YYYY-MM-DD HH:mm:ss')}
-        </div>
-      ),
+      
     },
   ];
 

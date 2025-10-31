@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { 
   Users, 
@@ -28,6 +29,8 @@ interface SidebarProps {
 export default function Sidebar({ activePage, setActivePage, isCollapsed, setIsCollapsed }: SidebarProps) {
   const { t } = useTranslation();
   const { canAccessPage } = usePermissions();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const allMenuItems = [
     { name: 'designManagement', icon: Shirt, color: 'text-red-600', bgColor: 'bg-red-50', hoverColor: 'group-hover:text-red-700' },
@@ -43,6 +46,16 @@ export default function Sidebar({ activePage, setActivePage, isCollapsed, setIsC
 
   // 根据权限过滤菜单项
   const menuItems = allMenuItems.filter(item => canAccessPage(item.name));
+
+  // 处理页面切换，同时更新URL参数
+  const handlePageChange = (pageName: string) => {
+    setActivePage(pageName);
+    
+    // 更新URL参数
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', pageName);
+    router.push(`/?${params.toString()}`, { scroll: false });
+  };
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
@@ -72,7 +85,7 @@ export default function Sidebar({ activePage, setActivePage, isCollapsed, setIsC
             return (
               <li key={item.name}>
                 <button
-                  onClick={() => setActivePage(item.name)}
+                  onClick={() => handlePageChange(item.name)}
                   className={`group w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'px-4'} py-3 md:py-3.5 rounded-lg transition-colors duration-200 min-h-[44px] ${
                     activePage === item.name
                       ? 'bg-gray-900 text-white border-l-4 border-gray-700 font-medium'

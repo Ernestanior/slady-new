@@ -60,7 +60,7 @@ export default function DesignManagement() {
         setDesigns(response.data.content || []);
       }
     } catch (error) {
-      message.error('获取商品列表失败');
+      message.error(t('fetchDesignListFailed'));
     } finally {
       setLoading(false);
     }
@@ -101,8 +101,8 @@ export default function DesignManagement() {
       // 验证封面图片
       if (!imgCover.length) {
         notification.error({
-          message: '表单验证失败',
-          description: '请上传封面图片',
+          message: t('formValidationFailed'),
+          description: t('pleaseUploadCoverImage'),
           placement: 'topRight',
         });
         return;
@@ -111,8 +111,8 @@ export default function DesignManagement() {
       // 验证商品图片
       if (!createImgList.length) {
         notification.error({
-          message: '表单验证失败',
-          description: '请上传商品图片',
+          message: t('formValidationFailed'),
+          description: t('pleaseUploadProductImages'),
           placement: 'topRight',
         });
         return;
@@ -134,8 +134,8 @@ export default function DesignManagement() {
 
       if (uploadCoverResult.code !== 200) {
         notification.error({
-          message: '上传失败',
-          description: '封面图片上传失败',
+          message: t('uploadFailed'),
+          description: t('coverImageUploadFailed'),
           placement: 'topRight',
         });
         return;
@@ -150,8 +150,8 @@ export default function DesignManagement() {
 
       if (uploadImgResult.code !== 200) {
         notification.error({
-          message: '上传失败',
-          description: '商品图片上传失败',
+          message: t('uploadFailed'),
+          description: t('productImagesUploadFailed'),
           placement: 'topRight',
         });
         return;
@@ -179,20 +179,20 @@ export default function DesignManagement() {
         const itemResult = await api.item.create(createItemData);
 
         if (itemResult.code === 200) {
-          message.success('创建成功');
+          message.success(t('createSuccess'));
           setCreateDrawerOpen(false);
           fetchDesigns();
         } else {
           notification.error({
-            message: '创建失败',
-            description: itemResult.msg || '创建Item失败',
+            message: t('createFailed'),
+            description: itemResult.msg || t('createItemFailed'),
             placement: 'topRight',
           });
         }
       } else {
         notification.error({
-          message: '创建失败',
-          description: designResult.msg || '创建商品失败',
+          message: t('createFailed'),
+          description: designResult.msg || t('createDesignFailed'),
           placement: 'topRight',
         });
       }
@@ -202,14 +202,14 @@ export default function DesignManagement() {
       if (error.errorFields && error.errorFields.length > 0) {
         const firstError = error.errorFields[0];
         notification.error({
-          message: '表单验证失败',
-          description: firstError.errors[0] || '请检查必填字段',
+          message: t('formValidationFailed'),
+          description: firstError.errors[0] || t('pleaseCheckRequiredFields'),
           placement: 'topRight',
         });
       } else {
         notification.error({
-          message: '创建失败',
-          description: error.message || '创建商品失败，请重试',
+          message: t('createFailed'),
+          description: error.message || t('createDesignFailedRetry'),
           placement: 'topRight',
         });
       }
@@ -245,7 +245,7 @@ export default function DesignManagement() {
             />
           ) : (
             <div className="w-20 h-20 bg-gray-200 rounded flex items-center justify-center">
-              <span className="text-gray-400 text-xs">无图</span>
+              <span className="text-gray-400 text-xs">{t('noImage')}</span>
             </div>
           )}
         </div>
@@ -257,8 +257,8 @@ export default function DesignManagement() {
               <h3 className="text-sm font-semibold text-gray-800 truncate">
                 {item.design}
               </h3>
-              <div>类型: {item.type}</div>
-              <div className="text-gray-400">库存: {item.stock || 0}</div>
+              <div>{t('type')}: {item.type}</div>
+              <div className="text-gray-400">{t('stock')}: {item.stock || 0}</div>
 
               {item.salePrice && (
                 <div className="text-orange-600 font-semibold">
@@ -271,7 +271,7 @@ export default function DesignManagement() {
               type="primary"
               onClick={() => handleViewDetail(item)}
             >
-              查看详情
+              {t('viewDetails')}
             </Button>
           </div>
 
@@ -298,7 +298,7 @@ export default function DesignManagement() {
       <div className="mb-4 space-y-3">
         <div className="flex gap-2">
           <Input
-            placeholder="搜索商品代码"
+            placeholder={t('searchDesignCode')}
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
@@ -312,14 +312,14 @@ export default function DesignManagement() {
             icon={<SearchOutlined />}
             onClick={handleSearch}
           >
-            搜索
+            {t('search')}
           </Button>
         </div>
 
         {/* 类型筛选 */}
         <Select
           mode="multiple"
-          placeholder="选择商品类型"
+          placeholder={t('selectDesignType')}
           value={selectedTypes}
           onChange={setSelectedTypes}
           size="large"
@@ -341,7 +341,7 @@ export default function DesignManagement() {
           onClick={toggleHasStock}
           style={{marginTop:10,marginBottom:10}}
         >
-          {hasStock === 1 ? '✓ ' : ''}有库存的商品
+          {hasStock === 1 ? '✓ ' : ''}{t('productsWithStock')}
         </Button>
 
         {/* 新增商品按钮 */}
@@ -353,7 +353,7 @@ export default function DesignManagement() {
             icon={<PlusOutlined />}
             onClick={handleCreate}
           >
-            新增商品
+            {t('addItem')}
           </Button>
         )}
       </div>
@@ -363,12 +363,12 @@ export default function DesignManagement() {
         loading={loading}
         data={designs}
         renderCard={renderDesignCard}
-        emptyText="暂无商品"
+        emptyText={t('noItems')}
       />
 
       {/* 新增商品抽屉 */}
       <Drawer
-        title="新增商品"
+        title={t('addItem')}
         placement="bottom"
         onClose={() => setCreateDrawerOpen(false)}
         open={createDrawerOpen}
@@ -381,21 +381,21 @@ export default function DesignManagement() {
         >
           <Form.Item
             name="design"
-            label="商品代码"
-            rules={[{ required: true, message: '请输入商品代码' }]}
+            label={t('designCode')}
+            rules={[{ required: true, message: t('pleaseEnterDesignCode') }]}
           >
-            <Input size="large" placeholder="请输入商品代码" />
+            <Input size="large" placeholder={t('pleaseEnterDesignCode')} />
           </Form.Item>
 
           <Form.Item
             name="type"
-            label="商品类型"
+            label={t('designType')}
             rules={[
-              { required: true, message: '请选择商品类型' },
-              { type: 'array', min: 1, message: '请至少选择一个类型' }
+              { required: true, message: t('pleaseSelectDesignType') },
+              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneType') }
             ]}
           >
-            <Select size="large" placeholder="请选择商品类型" mode="multiple">
+            <Select size="large" placeholder={t('pleaseSelectDesignType')} mode="multiple">
               {typeList.map(type => (
                 <Select.Option key={type.value} value={type.value}>
                   {type.label}

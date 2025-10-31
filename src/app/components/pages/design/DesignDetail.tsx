@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button, Descriptions, Tag, Drawer, Form, InputNumber, Select, message, Input, Spin, Tabs } from 'antd';
-import { ArrowLeftOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { DesignDetail as DesignDetailType, typeList, ItemData } from '@/lib/types';
 import { usePermissions } from '@/lib/usePermissions';
@@ -35,7 +35,7 @@ export default function DesignDetail({
   editForm
 }: DesignDetailProps) {
   const { t } = useTranslation();
-  const { isSaler } = usePermissions();
+  const { isSaler, canUseFeature } = usePermissions();
   const dev_url = 'http://119.28.104.20';
   
   // 库存相关状态
@@ -43,6 +43,7 @@ export default function DesignDetail({
   const [sladyItems, setSladyItems] = useState<ItemData[]>([]);
   const [sl2Items, setSl2Items] = useState<ItemData[]>([]);
   const [liveItems, setLiveItems] = useState<ItemData[]>([]);
+  const [createDrawerVisible, setCreateDrawerVisible] = useState(false);
 
   // 获取库存数据
   const fetchItems = async (designId: number) => {
@@ -110,8 +111,9 @@ export default function DesignDetail({
 
   return (
     <div className="p-6">
-      {/* 返回按钮 */}
-      <Button 
+      <div style={{ marginBottom: 24, display: 'flex', gap: '12px' }}>
+{/* 返回按钮 */}
+<Button 
         icon={<ArrowLeftOutlined />} 
         onClick={onBackToList} 
         size="large"
@@ -121,15 +123,17 @@ export default function DesignDetail({
       {/* 操作按钮 */}
       {!isSaler() && (
 
-      <div style={{ marginBottom: 24, display: 'flex', gap: '12px' }}>
+      <div >
           <Button 
             type="primary" 
             icon={<EditOutlined />} 
             onClick={onEdit}
             size="large"
+            style={{marginRight:10}}
           >
             {t('edit')}
           </Button>
+          
         <Button 
           danger 
           icon={<DeleteOutlined />} 
@@ -140,6 +144,8 @@ export default function DesignDetail({
         </Button>
       </div>
         )}
+      </div>
+      
 
       {/* 商品详情 */}
       <div style={{ backgroundColor: '#fff', padding: 24, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
@@ -238,6 +244,10 @@ export default function DesignDetail({
               <Descriptions.Item label={t('createTime')}>
                 {detailData.createDate}
               </Descriptions.Item>
+
+              <Descriptions.Item label={t('remark')}>
+                {detailData.remark}
+              </Descriptions.Item>
             </Descriptions>
           </div>
         </div>
@@ -245,7 +255,18 @@ export default function DesignDetail({
 
       {/* 库存管理 */}
       <div style={{ backgroundColor: '#fff', padding: 24, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', marginTop: 24 }}>
-        <h3 style={{ marginBottom: 16, fontSize: 18, fontWeight: 600 }}>{t('stockManagement')}</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>{t('stockManagement')}</h3>
+          {canUseFeature('createItem') && (
+            <Button
+              type="primary"
+              icon={<PlusCircleOutlined />}
+              onClick={() => setCreateDrawerVisible(true)}
+            >
+              {t('addItem')}
+            </Button>
+          )}
+        </div>
         <Spin spinning={itemsLoading}>
           {/* 前两个表格在同一行 */}
           <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
@@ -258,6 +279,9 @@ export default function DesignDetail({
                 warehouseName="Slady一店"
                 designId={detailData?.id || 0}
                 onRefresh={handleRefreshItems}
+                showAddButton={false}
+                createDrawerVisible={createDrawerVisible}
+                setCreateDrawerVisible={setCreateDrawerVisible}
               />
             </div>
             
@@ -270,6 +294,7 @@ export default function DesignDetail({
                 warehouseName="SL二店"
                 designId={detailData?.id || 0}
                 onRefresh={handleRefreshItems}
+                showAddButton={false}
               />
             </div>
           </div>
@@ -283,6 +308,7 @@ export default function DesignDetail({
               warehouseName="Live直播间"
               designId={detailData?.id || 0}
               onRefresh={handleRefreshItems}
+              showAddButton={false}
             />
           </div>
         </Spin>
@@ -345,14 +371,12 @@ export default function DesignDetail({
             name="purchasePrice"
             rules={[
               { required: true, message: '请输入采购价格' },
-              { type: 'number', min: 0, message: '采购价格必须大于等于0' }
             ]}
           >
             <InputNumber
               placeholder={t('purchasePrice')}
               style={{ width: '100%' }}
               min={0}
-              precision={2}
             />
           </Form.Item>
 
@@ -361,7 +385,6 @@ export default function DesignDetail({
             name="salePrice"
             rules={[
               { required: true, message: '请输入销售价格' },
-              { pattern: /^\d+(\.\d{1,2})?$/, message: '请输入正确的价格格式（最多两位小数）' }
             ]}
           >
             <Input placeholder={t('salePrice')} />

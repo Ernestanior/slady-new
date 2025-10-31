@@ -1,16 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import AuthGuard from './components/AuthGuard';
 import ResponsiveRouter from './components/ResponsiveRouter';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Content from './components/Content';
 
-export default function Home() {
+// 内部组件处理useSearchParams
+function HomeContent() {
+  const searchParams = useSearchParams();
   const [activePage, setActivePage] = useState('designManagement');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
+
+  // 从URL参数获取当前页面，如果没有则使用默认值
+  useEffect(() => {
+    const page = searchParams.get('page');
+    if (page) {
+      setActivePage(page);
+    }
+  }, [searchParams]);
 
   const toggleHeader = () => {
     setHeaderCollapsed(!headerCollapsed);
@@ -68,5 +79,21 @@ export default function Home() {
         </div>
       </ResponsiveRouter>
     </AuthGuard>
+  );
+}
+
+// 主组件，包装Suspense
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">加载中...</p>
+        </div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

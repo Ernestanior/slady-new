@@ -184,16 +184,16 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
         console.log(res);
         if (res.code === 200) {
           window.open(dev_url + res.data);
-          notification.success('导出成功');
+          notification.success(t('exportSuccess'));
         } else {
           notification.error(res.msg);
         }
       } else {        
-        notification.error("请输入日期");
+        notification.error(t('pleaseEnterDate'));
       }
     } catch (error) {
       console.error('导出失败:', error);
-      message.error('导出失败，请稍后重试');
+      message.error(t('exportFailed'));
     } finally {
       setExportLoading(false);
     }
@@ -209,7 +209,7 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
       '4': { text: t('damaged'), color: '#722ed1' },
     };
       
-    const statusInfo = statusMap[status] || { text: '未知', color: '#d9d9d9' };
+    const statusInfo = statusMap[status] || { text: t('unknown'), color: '#d9d9d9' };
     return <span style={{ color: statusInfo.color, fontWeight: 'bold' }}>{statusInfo.text}</span>;
   };
 
@@ -239,13 +239,13 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
         };
         
         await order.modify(updateData);
-        message.success('修改成功');
+        message.success(t('modifySuccess'));
         setEditDrawerVisible(false);
         fetchOrders(pagination.current);
       }
     } catch (error) {
       console.error('修改失败:', error);
-      message.error('修改失败，请重试');
+      message.error(t('modifyFailed'));
     }
   };
 
@@ -268,13 +268,13 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
         };
         
         await order.modify(updateData);
-        message.success('发货成功');
+        message.success(t('shippedSuccess'));
         setSentDrawerVisible(false);
         fetchOrders(pagination.current);
       }
     } catch (error) {
       console.error('发货失败:', error);
-      message.error('发货失败，请重试');
+      message.error(t('shippedFailed'));
     }
   };
 
@@ -293,13 +293,13 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
     if (!deleteOrderData) return;
     try {
       await order.delete([deleteOrderData.id]);
-      message.success('删除成功');
+      message.success(t('deleteSuccess'));
       setDeleteDrawerVisible(false);
       setDeleteOrderData(null);
       fetchOrders(pagination.current);
     } catch (error) {
       console.error('删除失败:', error);
-      message.error('删除失败，请重试');
+      message.error(t('deleteFailed'));
     }
   };
 
@@ -325,14 +325,14 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
         status: statusValue,
         pendingDate: '',
       });
-      message.success(`${statusText}成功`);
+      message.success(`${statusText}${t('success')}`);
       setStatusDrawerVisible(false);
       setStatusOrderData(null);
       setStatusValue('');
       fetchOrders(pagination.current);
     } catch (error) {
       console.error('状态修改失败:', error);
-      message.error('状态修改失败，请重试');
+      message.error(t('statusModifyFailed'));
     }
   };
 
@@ -367,20 +367,20 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
 
             <div className="text-xs text-gray-600 space-y-1">
               <div className="flex items-center justify-between">
-                <span>代码: {order.designCode}</span>
+                <span>{t('code')}: {order.designCode}</span>
                 <span className="text-orange-600 font-semibold">${order.salePrice}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span>颜色: {getColorTranslation(order.color)}</span>
-                <span>尺码: {order.size}</span>
+                <span>{t('color')}: {getColorTranslation(order.color)}</span>
+                <span>{t('size')}: {order.size}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span>数量: {order.amount}</span>
-                <span>时间: {moment(order.date).format('MM-DD HH:mm')}</span>
+                <span>{t('quantity')}: {order.amount}</span>
+                <span>{t('time')}: {moment(order.date).format('MM-DD HH:mm')}</span>
               </div>
               {order.remark && (
                 <div className="text-gray-500">
-                  备注: {order.remark}
+                  {t('remark')}: {order.remark}
                 </div>
               )}
             </div>
@@ -441,40 +441,40 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
             disabled={exportLoading}
             className="flex-1"
           >
-            {exportLoading ? '导出中...' : '导出'}
+{exportLoading ? t('exporting') : t('export')}
           </Button>
         </div>
 
         {/* 搜索表单 */}
         <Form form={searchForm} layout="vertical" onFinish={handleSearch}>
-          <div className="grid grid-cols-1 gap-3">
-            <Form.Item name="design" label="商品代码">
-              <Input placeholder="请输入商品代码" />
+          <div className="grid grid-cols-1">
+            <Form.Item name="design" label={t('designCode')}>
+              <Input placeholder={t('pleaseEnterDesignCode')} />
             </Form.Item>
                     
-            <Form.Item name="remark" label="备注">
-              <Input placeholder="请输入备注" />
+            <Form.Item name="remark" label={t('remark')}>
+              <Input placeholder={t('pleaseEnterRemark')} />
             </Form.Item>
             
-            <Form.Item name="status" label="状态">
+            <Form.Item name="status" label={t('status')}>
               <Select
                 mode="multiple"
-                placeholder="请选择状态"
+                placeholder={t('pleaseSelectStatus')}
                 options={statusOptions}
               />
             </Form.Item>
             
-            <Form.Item name="dateRange" label="日期范围">
+            <Form.Item name="dateRange" label={t('dateRange')}>
               <DatePicker.RangePicker style={{ width: '100%' }} />
             </Form.Item>
           </div>
           
           <div className="flex gap-2 mt-4">
             <Button type="primary" htmlType="submit" className="flex-1">
-              搜索
+              {t('search')}
             </Button>
             <Button onClick={handleReset} className="flex-1">
-              重置
+              {t('reset')}
             </Button>
           </div>
         </Form>
@@ -486,7 +486,7 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
           data.map(order => renderOrderCard(order))
         ) : (
           <div className="text-center text-gray-500 py-8">
-            暂无订单数据
+            {t('noOrderData')}
           </div>
         )}
       </div>
@@ -502,7 +502,7 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
               onChange={(page) => fetchOrders(page)}
               showSizeChanger={false}
               showQuickJumper={false}
-              showTotal={(total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`}
+              // showTotal={(total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`}
             />
           </Spin>
         </div>
@@ -510,7 +510,7 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
 
       {/* 修改订单抽屉 */}
       <Drawer
-        title="修改订单"
+        title={t('modifyOrder')}
         placement="bottom"
         height="70%"
         onClose={() => setEditDrawerVisible(false)}
@@ -518,10 +518,10 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
         footer={
           <div className="flex gap-3">
             <Button block onClick={() => setEditDrawerVisible(false)}>
-              取消
+              {t('cancel')}
             </Button>
             <Button type="primary" block onClick={handleEditSubmit}>
-              确认
+              {t('confirm')}
             </Button>
           </div>
         }
@@ -529,10 +529,10 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
         <Form form={form} layout="vertical">
           <Form.Item
             name="size"
-            label="尺码"
-            rules={[{ required: true, message: '请选择尺码' }]}
+            label={t('size')}
+            rules={[{ required: true, message: t('pleaseSelectSize') }]}
           >
-            <Select size="large" placeholder="请选择尺码">
+            <Select size="large" placeholder={t('pleaseSelectSize')}>
               {sizeList.map(size => (
                 <Select.Option key={size} value={size}>
                   {size}
@@ -543,10 +543,10 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
 
           <Form.Item
             name="color"
-            label="颜色"
-            rules={[{ required: true, message: '请选择颜色' }]}
+            label={t('color')}
+            rules={[{ required: true, message: t('pleaseSelectColor') }]}
           >
-            <Select size="large" placeholder="请选择颜色">
+            <Select size="large" placeholder={t('pleaseSelectColor')}>
               {colorList.map(color => (
                 <Select.Option key={color} value={color}>
                   {color}
@@ -557,24 +557,24 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
 
           <Form.Item
             name="amount"
-            label="数量"
-            rules={[{ required: true, message: '请输入数量' }]}
+            label={t('quantity')}
+            rules={[{ required: true, message: t('pleaseEnterQuantity') }]}
           >
             <InputNumber size="large" style={{ width: '100%' }} min={1} />
           </Form.Item>
 
           <Form.Item
             name="remark"
-            label="备注"
+            label={t('remark')}
           >
-            <Input.TextArea size="large" placeholder="请输入备注" rows={3} />
+            <Input.TextArea size="large" placeholder={t('pleaseEnterRemark')} rows={3} />
           </Form.Item>
         </Form>
       </Drawer>
 
       {/* 发货抽屉 */}
       <Drawer
-        title="发货"
+        title={t('shipped')}
         placement="bottom"
         height="50%"
         onClose={() => setSentDrawerVisible(false)}
@@ -582,10 +582,10 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
         footer={
           <div className="flex gap-3">
             <Button block onClick={() => setSentDrawerVisible(false)}>
-              取消
+              {t('cancel')}
             </Button>
             <Button type="primary" block onClick={handleSentSubmit}>
-              确认发货
+              {t('confirmShipped')}
             </Button>
           </div>
         }
@@ -593,8 +593,8 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
         <Form form={sentForm} layout="vertical">
           <Form.Item
             name="pendingDate"
-            label="发货日期"
-            rules={[{ required: true, message: '请选择发货日期' }]}
+            label={t('shippedDate')}
+            rules={[{ required: true, message: t('pleaseSelectShippedDate') }]}
           >
             <DatePicker size="large" style={{ width: '100%' }} />
           </Form.Item>
@@ -603,7 +603,7 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
 
       {/* 删除订单确认抽屉 */}
       <Drawer
-        title="确认删除"
+        title={t('confirmDelete')}
         placement="bottom"
         height="40%"
         onClose={() => setDeleteDrawerVisible(false)}
@@ -611,29 +611,29 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
         footer={
           <div className="flex gap-3">
             <Button block onClick={() => setDeleteDrawerVisible(false)}>
-              取消
+              {t('cancel')}
             </Button>
             <Button type="primary" danger block onClick={handleConfirmDelete}>
-              确认删除
+              {t('confirmDelete')}
             </Button>
           </div>
         }
       >
         <div className="text-center py-8">
           <DeleteOutlined style={{ fontSize: '48px', color: '#ff4d4f', marginBottom: '16px' }} />
-          <h3 className="text-lg font-semibold mb-2">确认删除订单</h3>
+          <h3 className="text-lg font-semibold mb-2">{t('confirmDeleteOrder')}</h3>
           <p className="text-gray-600 mb-4">
-            确定要删除订单 <strong>"{deleteOrderData?.design}"</strong> 吗？
+            {t('confirmDeleteOrderMessage')} <strong>"{deleteOrderData?.design}"</strong> {t('questionMark')}
           </p>
           <p className="text-sm text-gray-500">
-            删除后无法恢复，请谨慎操作
+            {t('deleteCannotBeUndone')}
           </p>
         </div>
       </Drawer>
 
       {/* 状态变更确认抽屉 */}
       <Drawer
-        title="确认状态变更"
+        title={t('confirmStatusChange')}
         placement="bottom"
         height="40%"
         onClose={() => setStatusDrawerVisible(false)}
@@ -641,23 +641,23 @@ export default function OrderList({ warehouseName, onRefresh }: OrderListProps) 
         footer={
           <div className="flex gap-3">
             <Button block onClick={() => setStatusDrawerVisible(false)}>
-              取消
+              {t('cancel')}
             </Button>
             <Button type="primary" block onClick={handleConfirmStatusChange}>
-              确认变更
+              {t('confirmChange')}
             </Button>
           </div>
         }
       >
         <div className="text-center py-8">
           <ExclamationCircleOutlined style={{ fontSize: '48px', color: '#faad14', marginBottom: '16px' }} />
-          <h3 className="text-lg font-semibold mb-2">确认状态变更</h3>
+          <h3 className="text-lg font-semibold mb-2">{t('confirmStatusChange')}</h3>
           <p className="text-gray-600 mb-4">
-            确定要将订单 <strong>"{statusOrderData?.design}"</strong> 状态改为 
-            <strong> {statusOptions.find(opt => opt.value === statusValue)?.label}</strong> 吗？
+            {t('confirmChangeOrderStatus')} <strong>"{statusOrderData?.design}"</strong> {t('statusChangeTo')} 
+            <strong> {statusOptions.find(opt => opt.value === statusValue)?.label}</strong> {t('questionMark')}
           </p>
           <p className="text-sm text-gray-500">
-            状态变更后将影响订单流程
+            {t('statusChangeWillAffectOrderFlow')}
           </p>
         </div>
       </Drawer>

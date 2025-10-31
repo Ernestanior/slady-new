@@ -63,11 +63,11 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
       if (response.code === 200) {
         setDetailData(response.data);
       } else {
-        message.error('获取商品详情失败');
+        message.error(t('fetchDesignDetailFailed'));
       }
     } catch (error) {
       console.error('获取商品详情失败:', error);
-      message.error('获取商品详情失败');
+      message.error(t('fetchDesignDetailFailed'));
     } finally {
       setDetailLoading(false);
     }
@@ -98,7 +98,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
       }
     } catch (error) {
       console.error('获取库存数据失败:', error);
-      message.error('获取库存数据失败');
+      message.error(t('fetchItemsFailed'));
     } finally {
       setItemsLoading(false);
     }
@@ -121,7 +121,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
 
   // 查看图片
   const handleViewImages = (images: string, coverPath: string) => {
-    message.info('查看图片功能开发中...');
+    message.info(t('viewImagesFeatureDeveloping'));
   };
 
   // 编辑商品
@@ -132,7 +132,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
         type: detailData.type.split(','),
         purchasePrice: detailData.purchasePrice,
         salePrice: detailData.salePrice,
-        remark: ''
+        remark: detailData.remark
       });
       setEditDrawerVisible(true);
     }
@@ -150,7 +150,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
     try {
       const response = await api.design.delete([detailData?.id || 0]);
       if (response.code === 200) {
-        message.success('删除成功');
+        message.success(t('deleteSuccess'));
         setDeleteDrawerVisible(false);
         // 通知父组件刷新列表
         if (onRefreshList) {
@@ -158,11 +158,11 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
         }
         onBackToList();
       } else {
-        message.error(response.msg || '删除失败');
+        message.error(response.msg || t('deleteFailed'));
       }
     } catch (error) {
       console.error('删除失败:', error);
-      message.error('删除失败，请重试');
+      message.error(t('deleteFailedRetry'));
     }
   };
 
@@ -178,18 +178,18 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
       
       const response = await api.design.modify(updateData);
       if (response.code === 200) {
-        message.success('修改成功');
+        message.success(t('modifySuccess'));
         setEditDrawerVisible(false);
         // 重新获取详情数据
         if (detailData?.id) {
           fetchDesignDetail(detailData.id);
         }
       } else {
-        message.error(response.msg || '修改失败');
+        message.error(response.msg || t('modifyFailed'));
       }
     } catch (error) {
       console.error('修改失败:', error);
-      message.error('修改失败，请重试');
+      message.error(t('modifyFailedRetry'));
     }
   };
 
@@ -205,13 +205,13 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
       const values = await stockForm.validateFields();
       if (currentItem) {
         await item.modifyStock(currentItem.id, values.stock);
-        message.success('库存修改成功');
+        message.success(t('stockModifySuccess'));
         setStockDrawerVisible(false);
         handleRefreshItems();
       }
     } catch (error) {
       console.error('修改库存失败:', error);
-      message.error('修改库存失败，请重试');
+      message.error(t('stockModifyFailed'));
     }
   };
 
@@ -221,7 +221,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
     setOrderType(type);
     orderForm.resetFields();
     if (type === 'store') {
-      orderForm.setFieldsValue({ remark: '店补' });
+      orderForm.setFieldsValue({ remark: t('storeAdjustment') });
     }
     setOrderDrawerVisible(true);
   };
@@ -240,13 +240,13 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
         };
         
         await order.create(orderData);
-        message.success(orderType === 'store' ? '店补成功' : '客订成功');
+        message.success(orderType === 'store' ? t('storeAdjustmentSuccess') : t('customerOrderSuccess'));
         setOrderDrawerVisible(false);
         handleRefreshItems();
       }
     } catch (error) {
       console.error('创建订单失败:', error);
-      message.error('创建订单失败，请重试');
+      message.error(t('createOrderFailed'));
     }
   };
 
@@ -268,12 +268,12 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
       };
       
       await item.create(createData);
-      message.success('新增商品成功');
+      message.success(t('addItemSuccess'));
       setCreateDrawerVisible(false);
       handleRefreshItems();
     } catch (error) {
       console.error('新增商品失败:', error);
-      message.error('新增商品失败，请重试');
+      message.error(t('addItemFailedRetry'));
     }
   };
 
@@ -290,13 +290,13 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
     console.log('确认删除库存');
     try {
       await item.delete(deleteItemData.id);
-      message.success('删除成功');
+      message.success(t('deleteSuccess'));
       setDeleteItemDrawerVisible(false);
       setDeleteItemData(null);
       handleRefreshItems();
     } catch (error) {
       console.error('删除失败:', error);
-      message.error('删除失败，请重试');
+      message.error(t('deleteFailedRetry'));
     }
   };
 
@@ -312,9 +312,9 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
     return (
       <div className="p-4">
         <Button icon={<ArrowLeftOutlined />} onClick={onBackToList} className="mb-4">
-          返回列表
+          {t('backToList')}
         </Button>
-        <div className="text-center text-gray-500">商品不存在</div>
+        <div className="text-center text-gray-500">{t('designNotExist')}</div>
       </div>
     );
   }
@@ -326,11 +326,11 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <div className="text-sm font-medium">{item.color}</div>
-            <div className="text-xs text-gray-500">尺码: {item.size}</div>
+            <div className="text-xs text-gray-500">{t('size')}: {item.size}</div>
           </div>
           <div className="text-right">
             <div className={`text-sm font-bold ${item.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-              库存: {item.stock}
+              {t('stock')}: {item.stock}
             </div>
           </div>
         </div>
@@ -345,7 +345,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
               className="flex-1"
               style={{ minHeight: '32px' }}
             >
-              修改库存
+              {t('modifyStock')}
             </Button>
           )}
           <Button
@@ -354,7 +354,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
             className="flex-1"
             style={{ minHeight: '32px' }}
           >
-            店补
+            {t('storeAdjustment')}
           </Button>
           <Button
             size="small"
@@ -362,7 +362,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
             className="flex-1"
             style={{ minHeight: '32px' }}
           >
-            客订
+            {t('customerOrder')}
           </Button>
           {canUseFeature('deleteItem') && (
             <Button
@@ -372,7 +372,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
               className="flex-1"
               style={{ minHeight: '32px' }}
             >
-              删除
+              {t('delete')}
             </Button>
           )}
         </div>
@@ -389,7 +389,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
         className="mb-4"
         block
       >
-        返回列表
+        {t('backToList')}
       </Button>
 
       {/* 操作按钮 */}
@@ -401,7 +401,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
             onClick={handleEdit}
             className="flex-1"
           >
-            编辑
+            {t('edit')}
           </Button>
         )}
         {canUseFeature('deleteDesign') && (
@@ -412,7 +412,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
             className="flex-1"
             style={{ minHeight: '40px' }}
           >
-            删除
+            {t('delete')}
           </Button>
         )}
       </div>
@@ -448,7 +448,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
             {/* 基本信息 */}
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-gray-600">类型:</span>
+                <span className="text-gray-600">{t('type')}:</span>
                 <div className="flex flex-wrap gap-1">
                   {detailData.type.split(',').map((type, index) => (
                     <Tag color="blue" key={index}>
@@ -466,31 +466,31 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-600">采购价格:</span>
+                <span className="text-gray-600">{t('purchasePrice')}:</span>
                 <span className="text-gray-800 font-medium">
                   ${detailData.purchasePrice}
                 </span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-600">总库存:</span>
+                <span className="text-gray-600">{t('totalStock')}:</span>
                 <span className={`font-bold ${detailData.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {detailData.stock}
                 </span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-600">热度:</span>
+                <span className="text-gray-600">{t('hotness')}:</span>
                 <span className="text-gray-800">{detailData.hot || 0}</span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-600">面料:</span>
+                <span className="text-gray-600">{t('fabric')}:</span>
                 <span className="text-gray-800">{detailData.fabric}</span>
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-600">颜色:</span>
+                <span className="text-gray-600">{t('color')}:</span>
                 <div className="flex flex-wrap gap-1">
                   {detailData.color.map((color, index) => (
                     <Tag key={index}>{color}</Tag>
@@ -499,7 +499,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-600">尺码:</span>
+                <span className="text-gray-600">{t('size')}:</span>
                 <div className="flex flex-wrap gap-1">
                   {detailData.size.map((size, index) => (
                     <Tag key={index}>{size}</Tag>
@@ -508,7 +508,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
               </div>
 
               <div className="flex justify-between">
-                <span className="text-gray-600">创建时间:</span>
+                <span className="text-gray-600">{t('createTime')}:</span>
                 <span className="text-gray-800">{detailData.createDate}</span>
               </div>
             </div>
@@ -519,14 +519,14 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
       {/* 库存管理 */}
       <Card>
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold">库存管理</h3>
+          <h3 className="text-lg font-semibold">{t('stockManagement')}</h3>
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={handleCreateItem}
             size="small"
           >
-            新增
+            {t('add')}
           </Button>
         </div>
         
@@ -536,7 +536,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
             items={[
               {
                 key: 'slady',
-                label: 'Slady一店',
+                label: t('sladyStore1'),
                 children: (
                   <div className="space-y-2">
                     {sladyItems.length > 0 ? (
@@ -546,14 +546,14 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
                         </div>
                       ))
                     ) : (
-                      <div className="text-center text-gray-500 py-4">暂无库存数据</div>
+                      <div className="text-center text-gray-500 py-4">{t('noStockData')}</div>
                     )}
                   </div>
                 ),
               },
               {
                 key: 'sl2',
-                label: 'SL二店',
+                label: t('slStore2'),
                 children: (
                   <div className="space-y-2">
                     {sl2Items.length > 0 ? (
@@ -563,14 +563,14 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
                         </div>
                       ))
                     ) : (
-                      <div className="text-center text-gray-500 py-4">暂无库存数据</div>
+                      <div className="text-center text-gray-500 py-4">{t('noStockData')}</div>
                     )}
                   </div>
                 ),
               },
               {
                 key: 'live',
-                label: 'Live直播间',
+                label: t('liveStream'),
                 children: (
                   <div className="space-y-2">
                     {liveItems.length > 0 ? (
@@ -580,7 +580,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
                         </div>
                       ))
                     ) : (
-                      <div className="text-center text-gray-500 py-4">暂无库存数据</div>
+                      <div className="text-center text-gray-500 py-4">{t('noStockData')}</div>
                     )}
                   </div>
                 ),
@@ -592,7 +592,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
 
       {/* 编辑商品抽屉 */}
       <Drawer
-        title="编辑商品"
+        title={t('editItem')}
         placement="bottom"
         height="90%"
         onClose={() => setEditDrawerVisible(false)}
@@ -600,10 +600,10 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
         footer={
           <div className="flex gap-3">
             <Button block onClick={() => setEditDrawerVisible(false)}>
-              取消
+              {t('cancel')}
             </Button>
             <Button type="primary" block onClick={handleEditSubmit}>
-              确认
+              {t('confirm')}
             </Button>
           </div>
         }
@@ -611,34 +611,33 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
         <Form form={editForm} layout="vertical">
           <Form.Item
             name="design"
-            label="商品代码"
-            rules={[{ required: true, message: '请输入商品代码' }]}
+            label={t('designCode')}
+            rules={[{ required: true, message: t('pleaseEnterDesignCode') }]}
           >
-            <Input size="large" placeholder="请输入商品代码" />
+            <Input size="large" placeholder={t('pleaseEnterDesignCode')} />
           </Form.Item>
 
           <Form.Item
             name="type"
-            label="商品类型"
+            label={t('designType')}
             rules={[
-              { required: true, message: '请选择商品类型' },
-              { type: 'array', min: 1, message: '请至少选择一个类型' }
+              { required: true, message: t('pleaseSelectDesignType') },
+              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneType') }
             ]}
           >
-            <Select
-              mode="multiple"
+            <Select placeholder={t('pleaseSelectDesignType')} mode="multiple"
+              
               size="large"
-              placeholder="请选择商品类型"
               options={typeList}
             />
           </Form.Item>
 
           <Form.Item
             name="purchasePrice"
-            label="采购价格"
+            label={t('purchasePrice')}
             rules={[
-              { required: true, message: '请输入采购价格' },
-              { type: 'number', min: 0, message: '采购价格必须大于等于0' }
+              { required: true, message: t('pleaseEnterPurchasePrice') },
+              { type: 'number', min: 0, message: t('purchasePriceMustBePositive') }
             ]}
           >
             <InputNumber size="large" style={{ width: '100%' }} min={0} precision={2} />
@@ -646,10 +645,10 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
 
           <Form.Item
             name="salePrice"
-            label="销售价格"
+            label={t('salePrice')}
             rules={[
-              { required: true, message: '请输入销售价格' },
-              { type: 'number', min: 0, message: '销售价格必须大于等于0' }
+              { required: true, message: t('pleaseEnterSalePrice') },
+              { type: 'number', min: 0, message: t('salePriceMustBePositive') }
             ]}
           >
             <InputNumber size="large" style={{ width: '100%' }} min={0} precision={2} />
@@ -657,16 +656,16 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
 
           <Form.Item
             name="remark"
-            label="备注"
+            label={t('remark')}
           >
-            <Input.TextArea size="large" placeholder="请输入备注" rows={3} />
+            <Input.TextArea size="large" placeholder={t('pleaseEnterRemark')} rows={3} />
           </Form.Item>
         </Form>
       </Drawer>
 
       {/* 修改库存抽屉 */}
       <Drawer
-        title="修改库存"
+        title={t('modifyStock')}
         placement="bottom"
         height="50%"
         onClose={() => setStockDrawerVisible(false)}
@@ -674,10 +673,10 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
         footer={
           <div className="flex gap-3">
             <Button block onClick={() => setStockDrawerVisible(false)}>
-              取消
+              {t('cancel')}
             </Button>
             <Button type="primary" block onClick={handleStockSubmit}>
-              确认
+              {t('confirm')}
             </Button>
           </div>
         }
@@ -685,10 +684,10 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
         <Form form={stockForm} layout="vertical">
           <Form.Item
             name="stock"
-            label="库存数量"
+            label={t('stockQuantity')}
             rules={[
-              { required: true, message: '请输入库存数量' },
-              { type: 'number', min: 0, message: '库存数量必须大于等于0' }
+              { required: true, message: t('pleaseEnterStockQuantity') },
+              { type: 'number', min: 0, message: t('stockQuantityMustBePositive') }
             ]}
           >
             <InputNumber size="large" style={{ width: '100%' }} min={0} />
@@ -698,7 +697,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
 
       {/* 订单抽屉 */}
       <Drawer
-        title={orderType === 'store' ? '店补' : '客订'}
+        title={orderType === 'store' ? t('storeAdjustment') : t('customerOrder')}
         placement="bottom"
         height="60%"
         onClose={() => setOrderDrawerVisible(false)}
@@ -706,10 +705,10 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
         footer={
           <div className="flex gap-3">
             <Button block onClick={() => setOrderDrawerVisible(false)}>
-              取消
+              {t('cancel')}
             </Button>
             <Button type="primary" block onClick={handleOrderSubmit}>
-              确认
+              {t('confirm')}
             </Button>
           </div>
         }
@@ -717,10 +716,10 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
         <Form form={orderForm} layout="vertical">
           <Form.Item
             name="amount"
-            label="数量"
+            label={t('quantity')}
             rules={[
-              { required: true, message: '请输入数量' },
-              { type: 'number', min: 1, message: '数量必须大于0' }
+              { required: true, message: t('pleaseEnterQuantity') },
+              { type: 'number', min: 1, message: t('quantityMustBePositive') }
             ]}
           >
             <InputNumber size="large" style={{ width: '100%' }} min={1} />
@@ -728,17 +727,17 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
 
           <Form.Item
             name="remark"
-            label="备注"
-            rules={[{ required: true, message: '请输入备注' }]}
+            label={t('remark')}
+            rules={[{ required: true, message: t('pleaseEnterRemark') }]}
           >
-            <Input.TextArea size="large" placeholder="请输入备注" rows={3} />
+            <Input size="large" placeholder={t('pleaseEnterRemark')} />
           </Form.Item>
         </Form>
       </Drawer>
 
       {/* 新增Item抽屉 */}
       <Drawer
-        title="新增商品"
+        title={t('addItem')}
         placement="bottom"
         height="80%"
         onClose={() => setCreateDrawerVisible(false)}
@@ -746,10 +745,10 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
         footer={
           <div className="flex gap-3">
             <Button block onClick={() => setCreateDrawerVisible(false)}>
-              取消
+              {t('cancel')}
             </Button>
             <Button type="primary" block onClick={handleCreateItemSubmit}>
-              确认
+              {t('confirm')}
             </Button>
           </div>
         }
@@ -757,16 +756,16 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
         <Form form={createForm} layout="vertical">
           <Form.Item
             name="warehouseName"
-            label="仓库"
+            label={t('warehouse')}
             rules={[
-              { required: true, message: '请选择仓库' },
-              { type: 'array', min: 1, message: '请至少选择一个仓库' }
+              { required: true, message: t('pleaseSelectWarehouse') },
+              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneWarehouse') }
             ]}
           >
             <Select
               mode="multiple"
               size="large"
-              placeholder="请选择仓库"
+              placeholder={t('pleaseSelectWarehouse')}
               options={[
                 { label: WAREHOUSE.SLADY, value: WAREHOUSE.SLADY },
                 { label: WAREHOUSE.SL, value: WAREHOUSE.SL },
@@ -777,41 +776,41 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
 
           <Form.Item
             name="color"
-            label="颜色"
+            label={t('color')}
             rules={[
-              { required: true, message: '请选择颜色' },
-              { type: 'array', min: 1, message: '请至少选择一个颜色' }
+              { required: true, message: t('pleaseSelectColor') },
+              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneColor') }
             ]}
           >
             <ColorSelect
               mode="multiple"
               size="large"
-              placeholder="请选择颜色"
+              placeholder={t('pleaseSelectColor')}
             />
           </Form.Item>
 
           <Form.Item
             name="size"
-            label="尺码"
+            label={t('size')}
             rules={[
-              { required: true, message: '请选择尺码' },
-              { type: 'array', min: 1, message: '请至少选择一个尺码' }
+              { required: true, message: t('pleaseSelectSize') },
+              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneSize') }
             ]}
           >
             <Select
               mode="multiple"
               size="large"
-              placeholder="请选择尺码"
+              placeholder={t('pleaseSelectSize')}
               options={sizeList.map(size => ({ value: size, label: size }))}
             />
           </Form.Item>
 
           <Form.Item
             name="stock"
-            label="库存数量"
+            label={t('stockQuantity')}
             rules={[
-              { required: true, message: '请输入库存数量' },
-              { type: 'number', min: 0, message: '库存数量必须大于等于0' }
+              { required: true, message: t('pleaseEnterStockQuantity') },
+              { type: 'number', min: 0, message: t('stockQuantityMustBePositive') }
             ]}
           >
             <InputNumber size="large" style={{ width: '100%' }} min={0} />
@@ -821,7 +820,7 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
 
       {/* 删除商品确认抽屉 */}
       <Drawer
-        title="确认删除"
+        title={t('confirmDelete')}
         placement="bottom"
         height="40%"
         onClose={() => setDeleteDrawerVisible(false)}
@@ -829,29 +828,29 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
         footer={
           <div className="flex gap-3">
             <Button block onClick={() => setDeleteDrawerVisible(false)}>
-              取消
+              {t('cancel')}
             </Button>
             <Button type="primary" danger block onClick={handleConfirmDelete}>
-              确认删除
+              {t('confirmDelete')}
             </Button>
           </div>
         }
       >
         <div className="text-center py-8">
           <DeleteOutlined style={{ fontSize: '48px', color: '#ff4d4f', marginBottom: '16px' }} />
-          <h3 className="text-lg font-semibold mb-2">确认删除商品</h3>
+          <h3 className="text-lg font-semibold mb-2">{t('confirmDeleteItem')}</h3>
           <p className="text-gray-600 mb-4">
-            确定要删除商品 <strong>"{detailData?.design}"</strong> 吗？
+            {t('confirmDeleteItemMessage')} <strong>"{detailData?.design}"</strong> {t('questionMark')}
           </p>
           <p className="text-sm text-gray-500">
-            删除后无法恢复，请谨慎操作
+            {t('deleteCannotBeUndone')}
           </p>
         </div>
       </Drawer>
 
       {/* 删除库存确认抽屉 */}
       <Drawer
-        title="确认删除"
+        title={t('confirmDelete')}
         placement="bottom"
         height="40%"
         onClose={() => setDeleteItemDrawerVisible(false)}
@@ -859,22 +858,22 @@ export default function DesignDetail({ designId, onBackToList, onRefreshList }: 
         footer={
           <div className="flex gap-3">
             <Button block onClick={() => setDeleteItemDrawerVisible(false)}>
-              取消
+              {t('cancel')}
             </Button>
             <Button type="primary" danger block onClick={handleConfirmDeleteItem}>
-              确认删除
+              {t('confirmDelete')}
             </Button>
           </div>
         }
       >
         <div className="text-center py-8">
           <DeleteOutlined style={{ fontSize: '48px', color: '#ff4d4f', marginBottom: '16px' }} />
-          <h3 className="text-lg font-semibold mb-2">确认删除库存</h3>
+          <h3 className="text-lg font-semibold mb-2">{t('confirmDeleteStock')}</h3>
           <p className="text-gray-600 mb-4">
-            确定要删除 <strong>{deleteItemData?.color} {deleteItemData?.size}</strong> 的库存吗？
+            {t('confirmDeleteStockMessage')} <strong>{deleteItemData?.color} {deleteItemData?.size}</strong> {t('stockQuestionMark')}
           </p>
           <p className="text-sm text-gray-500">
-            删除后无法恢复，请谨慎操作
+            {t('deleteCannotBeUndone')}
           </p>
         </div>
       </Drawer>

@@ -347,9 +347,9 @@ export default function MemberPurchaseHistory({ memberData, onBackToList }: Memb
             onChange={handleTableChange}
             showSizeChanger={false}
             showQuickJumper={false}
-            showTotal={(total, range) => 
-              `第 ${range[0]}-${range[1]} 条/共 ${total} 条`
-            }
+            // showTotal={(total, range) => 
+            //   `第 ${range[0]}-${range[1]} 条/共 ${total} 条`
+            // }
             className="text-center"
           />
         </div>

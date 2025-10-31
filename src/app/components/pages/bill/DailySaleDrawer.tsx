@@ -64,7 +64,7 @@ export default function DailySaleDrawer({ visible, onClose }: DailySaleDrawerPro
   const onQuery = useCallback(async () => {
     try {
       setLoading(true);
-      let query: DailySaleRequest;
+      let query: any;
       
       if (dateTime) {
         query = {

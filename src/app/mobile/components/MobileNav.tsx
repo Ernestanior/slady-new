@@ -1,6 +1,7 @@
 'use client';
 
 import { Drawer } from 'antd';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { authManager } from '@/lib/auth';
 import { usePermissions } from '@/lib/usePermissions';
@@ -29,6 +30,8 @@ interface MobileNavProps {
 export default function MobileNav({ open, onClose, activePage, onPageChange }: MobileNavProps) {
   const { t, i18n } = useTranslation();
   const { canAccessPage } = usePermissions();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const menuItems = [
     { name: 'designManagement', icon: Shirt, color: 'text-red-600' },
@@ -43,6 +46,12 @@ export default function MobileNav({ open, onClose, activePage, onPageChange }: M
 
   const handleMenuClick = (pageName: string) => {
     onPageChange(pageName);
+    
+    // 更新URL参数
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', pageName);
+    router.push(`/mobile?${params.toString()}`, { scroll: false });
+    
     onClose();
   };
 

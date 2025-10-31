@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Form, Input, InputNumber, Select, DatePicker, Table, Drawer, Tabs, Modal, message } from 'antd';
+import { Button, Form, Input, InputNumber, Select, DatePicker, Table, Drawer, Tabs, Modal, message, Tag } from 'antd';
 import { SearchOutlined, ReloadOutlined, FilterOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { CashData, CashListRequest, CreateCashRequest } from '@/lib/types';
@@ -148,26 +148,18 @@ export default function CashInOutDrawer({ visible, onClose }: CashInOutDrawerPro
   };
 
   // 删除现金进出记录
-  const handleDelete = (record: CashData) => {
+  const handleDelete = async (record: CashData) => {
     console.log('删除按钮被点击', record);
     
-    Modal.confirm({
-      title: '确认删除',
-      content: `确认删除: ${record.remark} ？`,
-      okText: '确认',
-      cancelText: '取消',
-      onOk: async () => {
-        try {
-          console.log('开始删除记录', record.id);
-          await cashService.delete(record.id);
-          message.success(t('删除成功'));
-          fetchData(pagination.current);
-        } catch (error) {
-          console.error('删除失败:', error);
-          message.error(t('删除失败'));
-        }
-      },
-    });
+    try {
+      console.log('开始删除记录', record.id);
+      await cashService.delete(record.id);
+      message.success(t('删除成功'));
+      fetchData(pagination.current);
+    } catch (error) {
+      console.error('删除失败:', error);
+      message.error(t('删除失败'));
+    }
   };
 
   // 表格列定义
@@ -178,6 +170,14 @@ export default function CashInOutDrawer({ visible, onClose }: CashInOutDrawerPro
       key: 'id',
       fixed: 'left' as const,
       width: 100,
+    },
+    {
+      title: 'Cash In/Out',
+      dataIndex: 'type',
+      key: 'type',
+      fixed: 'left' as const,
+      width: 100,
+      render: (type: number) =>type==1? <Tag color='green'>Cash In</Tag>:<Tag color='red'>Cash Out</Tag>,
     },
     {
       title: 'AMOUNT',

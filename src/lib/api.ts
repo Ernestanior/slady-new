@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { API_ENDPOINTS } from './endpoints';
 import { UserListResponse, CreateUserRequest, ModifyUserRequest, PaginationParams, UserListRequest, DesignListResponse, DesignListRequest, DesignDetailResponse, ModifyDesignRequest, CreateDesignRequest, CreateItemRequest, SearchPageParams, ItemData, CreateOrderRequest, OrderPageRequest, OrderPageResponse, ModifyOrderRequest, HotColdListResponse, HotColdListRequest, InventoryRecordResponse, InventoryRecordRequest, MemberListResponse, MemberListRequest, ModifyMemberRequest, TopUpMemberRequest, MemberPurchaseResponse, MemberPurchaseRequest, CreateMemberRequest, CreatePurchaseRecordRequest, MemberPurchaseHistoryRequest, MemberPurchaseHistoryResponse, EmployeeOperationLogResponse, EmployeeOperationLogRequest, ReceiptListResponse, ReceiptListRequest, PrintReceiptRequest, PrintLabelRequest, PrintDailyReportRequest, DailySaleRequest, DailySaleResponse, CashListResponse, CashListRequest, CreateCashRequest, CashDrawerListResponse, CashDrawerListRequest, CreateCashDrawerRequest, UserBasicResponse } from './types';
+import GlobalNotification from './notificationUtils';
 
 // API基础配置
 const API_BASE_URL = 'http://119.28.104.20';
@@ -13,6 +14,9 @@ const apiClient: AxiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// 避免重复处理401导致多次弹窗/跳转
+let isHandlingUnauthorized = false;
 
 // 请求拦截器 - 添加token
 apiClient.interceptors.request.use(
@@ -31,14 +35,45 @@ apiClient.interceptors.request.use(
 // 响应拦截器 - 处理token过期
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
+    // 一些接口会以HTTP 200返回，但业务code为401，这里统一处理
+    const bizCode = (response?.data && (response.data.code ?? response.data.status)) as number | undefined;
+    if (bizCode === 401 && !isHandlingUnauthorized) {
+      isHandlingUnauthorized = true;
+      const serverMsg = response.data?.message || response.data?.msg;
+      const message = serverMsg || 'Token is expired or not found, please log in again';
+      try { GlobalNotification.error('登录已过期', message); } catch (_) {}
+      try { localStorage.removeItem('ims-token'); } catch (_) {}
+      if (typeof window !== 'undefined') {
+        const pathname = window.location?.pathname || '';
+        if (pathname !== '/login') {
+          window.location.href = '/login';
+        }
+      }
+      // 返回一个拒绝的Promise，阻止后续业务逻辑继续执行
+      return Promise.reject(new Error('Unauthorized'));
+    }
     return response;
   },
   (error) => {
-    if (error.response?.status === 401 || error.response?.data?.code === 401) {
-      // Token过期，清除本地存储并跳转到登录页
-      localStorage.removeItem('ims-token');
+    if (!isHandlingUnauthorized && (error.response?.status === 401 || error.response?.data?.code === 401)) {
+      isHandlingUnauthorized = true;
+      // Token过期，统一处理：提示并跳转登录
+      const serverMsg = error.response?.data?.message || error.response?.data?.msg;
+      const message = serverMsg || 'Token is expired or not found, please log in again';
+
+      try {
+        GlobalNotification.error('登录已过期', message);
+      } catch (_) {}
+
+      try {
+        localStorage.removeItem('ims-token');
+      } catch (_) {}
+
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        const pathname = window.location?.pathname || '';
+        if (pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);

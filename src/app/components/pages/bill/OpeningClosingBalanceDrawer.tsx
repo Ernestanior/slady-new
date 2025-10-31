@@ -148,26 +148,18 @@ export default function OpeningClosingBalanceDrawer({ visible, onClose }: Openin
   };
 
   // 删除现金抽屉余额记录
-  const handleDelete = (record: CashDrawerData) => {
+  const handleDelete = async (record: CashDrawerData) => {
     console.log('删除按钮被点击', record);
     
-    Modal.confirm({
-      title: '确认删除',
-      content: `确认删除: ${record.type === 1 ? 'Opening Balance' : 'Closing Balance'} ？`,
-      okText: '确认',
-      cancelText: '取消',
-      onOk: async () => {
-        try {
-          console.log('开始删除记录', record.id);
-          await cashDrawerService.delete(record.id);
-          message.success(t('删除成功'));
-          fetchData(pagination.current);
-        } catch (error) {
-          console.error('删除失败:', error);
-          message.error(t('删除失败'));
-        }
-      },
-    });
+    try {
+      console.log('开始删除记录', record.id);
+      await cashDrawerService.delete(record.id);
+      message.success(t('删除成功'));
+      fetchData(pagination.current);
+    } catch (error) {
+      console.error('删除失败:', error);
+      message.error(t('删除失败'));
+    }
   };
 
   // 表格列定义

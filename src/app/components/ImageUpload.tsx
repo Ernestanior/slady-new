@@ -42,6 +42,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ changePic, maxCount, value = 
       onChange={handleChange}
       beforeUpload={beforeUpload}
       maxCount={maxCount}
+      multiple={true}
+      accept="image/*"
     >
       {(!maxCount || value.length < maxCount) && uploadButton}
     </Upload>

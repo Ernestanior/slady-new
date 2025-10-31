@@ -439,8 +439,8 @@ export interface PrintDailyReportRequest {
 
 // 每日销售情况相关类型
 export interface DailySaleRequest {
-  startDateTime: string;
-  endDateTime: string;
+  startDate: string;
+  endDate: string;
   store: number;
 }
 
@@ -586,6 +586,7 @@ export interface DesignDetail {
   color: string[];
   size: string[];
   createDate: string;
+  remark:string;
 }
 
 export interface DesignDetailResponse {

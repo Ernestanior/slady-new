@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { Table, Button, Modal, Drawer, Form, InputNumber, Input, message, App, Select, Space, Divider } from 'antd';
-import { DeleteOutlined, EditOutlined, PlusOutlined, ShoppingOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import ColorSelect from '../../ColorSelect';
+import React, { useState } from 'react';
+import { Table, Button, Drawer, Form, InputNumber, Input, message, App} from 'antd';
+import { DeleteOutlined, EditOutlined, PlusOutlined, ShoppingOutlined,  } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { ItemData, CreateOrderRequest, CreateItemRequest, WAREHOUSE, colorList, sizeList } from '@/lib/types';
+import { ItemData, CreateOrderRequest, WAREHOUSE } from '@/lib/types';
 import { usePermissions } from '@/lib/usePermissions';
 import { item, order } from '@/lib/api';
 
@@ -15,20 +14,23 @@ interface ItemTableProps {
   warehouseName: string;
   designId: number;
   onRefresh: () => void;
+  showAddButton?: boolean;
+  createDrawerVisible?: boolean;
+  setCreateDrawerVisible?: (visible: boolean) => void;
 }
 
-export default function ItemTable({ data, loading, warehouseName, designId, onRefresh }: ItemTableProps) {
+export default function ItemTable({ data, loading, onRefresh,  }: ItemTableProps) {
   const { t } = useTranslation();
   const { modal } = App.useApp();
   const { canUseFeature } = usePermissions();
   const [form] = Form.useForm();
   const [stockForm] = Form.useForm();
   const [orderForm] = Form.useForm();
-  const [createForm] = Form.useForm();
   
   const [stockDrawerVisible, setStockDrawerVisible] = useState(false);
   const [orderDrawerVisible, setOrderDrawerVisible] = useState(false);
-  const [createDrawerVisible, setCreateDrawerVisible] = useState(false);
+  
+  // 使用外部状态或内部状态
   const [orderType, setOrderType] = useState<'store' | 'customer'>('store');
   const [currentItem, setCurrentItem] = useState<ItemData | null>(null);
   
@@ -88,32 +90,6 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
       orderForm.setFieldsValue({ remark: t('storeAdjustment') });
     }
     setOrderDrawerVisible(true);
-  };
-
-  const handleCreate = () => {
-    createForm.resetFields();
-    setCreateDrawerVisible(true);
-  };
-
-  const handleCreateSubmit = async () => {
-    try {
-      const values = await createForm.validateFields();
-      const createData: CreateItemRequest = {
-        designId,
-        warehouseName: values.warehouseName,
-        color: values.color,
-        size: values.size,
-        stock: values.stock,
-      };
-      
-      await item.create(createData);
-      message.success(t('addItemSuccess'));
-      setCreateDrawerVisible(false);
-      onRefresh();
-    } catch (error) {
-      console.error('新增商品失败:', error);
-      message.error(t('addItemFailedRetry'));
-    }
   };
 
   const handleOrderSubmit = async () => {
@@ -252,19 +228,6 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
 
   return (
     <>
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h4 style={{ margin: 0 }}>{warehouseName} {t('stock')}</h4>
-        {canUseFeature('createItem') && (
-          <Button
-            type="primary"
-            icon={<PlusCircleOutlined />}
-            onClick={handleCreate}
-          >
-            {t('addItem')}
-          </Button>
-        )}
-      </div>
-      
       <Table
         columns={columns}
         dataSource={data}
@@ -345,8 +308,7 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
               { whitespace: true, message: t('remark') + t('cannotBeEmpty') }
             ]}
           >
-            <Input.TextArea
-              rows={3}
+            <Input
               placeholder={t('remark')}
             />
           </Form.Item>
@@ -354,85 +316,6 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
           <Form.Item>
             <Button type="primary" htmlType="submit" block>
               {orderType === 'store' ? t('confirmStoreAdjustment') : t('confirmCustomerOrder')}
-            </Button>
-          </Form.Item>
-        </Form>
-      </Drawer>
-
-      <Drawer
-        title={t('addItem')}
-        open={createDrawerVisible}
-        onClose={() => setCreateDrawerVisible(false)}
-        width={500}
-      >
-        <Form
-          form={createForm}
-          layout="vertical"
-          onFinish={handleCreateSubmit}
-        >
-          <Form.Item
-            label={t('warehouse')}
-            name="warehouseName"
-            rules={[
-              { required: true, message: t('pleaseSelect') + t('warehouse') },
-              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOne') + t('warehouse') }
-            ]}
-          >
-            <Select
-              mode="multiple"
-              placeholder={t('warehouse')}
-              options={warehouseOptions}
-            />
-          </Form.Item>
-          
-          <Form.Item
-            label={t('color')}
-            name="color"
-            rules={[
-              { required: true, message: t('pleaseSelect') + t('color') },
-              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOne') + t('color') }
-            ]}
-          >
-            <ColorSelect
-              mode="multiple"
-              placeholder={t('color')}
-            />
-          </Form.Item>
-          
-          <Form.Item
-            label={t('size')}
-            name="size"
-            rules={[
-              { required: true, message: t('pleaseSelect') + t('size') },
-              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOne') + t('size') }
-            ]}
-          >
-            <Select
-              mode="multiple"
-              placeholder={t('size')}
-              options={sizeList.map(size => ({ label: size, value: size }))}
-            />
-          </Form.Item>
-          
-          <Form.Item
-            label={t('stockQuantity')}
-            name="stock"
-            rules={[
-              { required: true, message: t('pleaseEnter') + t('stockQuantity') },
-              { type: 'number', min: 0, message: t('stockQuantity') + t('cannotBeLessThanZero') }
-            ]}
-          >
-            <InputNumber
-              style={{ width: '100%' }}
-              min={0}
-              precision={0}
-              placeholder={t('stockQuantity')}
-            />
-          </Form.Item>
-          
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block>
-              {t('confirmAdd')}
             </Button>
           </Form.Item>
         </Form>

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import AuthGuard from '../components/AuthGuard';
 import ResponsiveRouter from '../components/ResponsiveRouter';
@@ -8,9 +9,13 @@ import { usePermissions } from '@/lib/usePermissions';
 import MobileHeader from './components/MobileHeader';
 import MobileNav from './components/MobileNav';
 import EmployeeManagement from './components/pages/employee';
+import EmployeeHistory from './components/pages/employee/history';
 import MemberManagement from './components/pages/member';
 import DesignManagement from './components/pages/design';
 import OrderManagement from './components/pages/order';
+import HotColdItems from './components/pages/hotCold';
+import InventoryRecords from './components/pages/inventory';
+import BillManagement from './components/pages/bill';
 
 // 临时占位组件
 function PagePlaceholder({ pageName }: { pageName: string }) {
@@ -24,11 +29,21 @@ function PagePlaceholder({ pageName }: { pageName: string }) {
   );
 }
 
-export default function MobilePage() {
+// 内部组件处理useSearchParams
+function MobilePageContent() {
   const { t } = useTranslation();
   const { canAccessPage, loading } = usePermissions();
+  const searchParams = useSearchParams();
   const [navOpen, setNavOpen] = useState(false);
   const [activePage, setActivePage] = useState('designManagement');
+
+  // 从URL参数获取当前页面，如果没有则使用默认值
+  useEffect(() => {
+    const page = searchParams.get('page');
+    if (page) {
+      setActivePage(page);
+    }
+  }, [searchParams]);
 
   // 检查当前页面是否可访问，如果不可访问则切换到第一个可访问的页面
   useEffect(() => {
@@ -71,12 +86,20 @@ export default function MobilePage() {
     switch (activePage) {
       case 'employeeManagement':
         return <EmployeeManagement />;
+      case 'employeeHistory':
+        return <EmployeeHistory />;
       case 'memberManagement':
         return <MemberManagement />;
       case 'designManagement':
         return <DesignManagement />;
       case 'orderManagement':
         return <OrderManagement />;
+      case 'hotColdItems':
+        return <HotColdItems />;
+      case 'inventoryRecords':
+        return <InventoryRecords />;
+      case 'billManagement':
+        return <BillManagement />;
       // 其他页面暂时显示占位符
       default:
         return <PagePlaceholder pageName={t(activePage)} />;
@@ -108,6 +131,22 @@ export default function MobilePage() {
         </div>
       </ResponsiveRouter>
     </AuthGuard>
+  );
+}
+
+// 主组件，包装Suspense
+export default function MobilePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">加载中...</p>
+        </div>
+      </div>
+    }>
+      <MobilePageContent />
+    </Suspense>
   );
 }
 

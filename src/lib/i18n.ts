@@ -331,6 +331,8 @@ const zhTranslations = {
   // Bill Management
   billList: '账单列表',
   printReceipt: '打印账单',
+  printReceiptSuccess: '打印账单成功',
+  printReceiptFailed: '打印账单失败',
   printLabel: '打印标签',
   paymentMethod: '支付方式',
   addPaymentMethod: '添加支付方式',
@@ -378,6 +380,71 @@ const zhTranslations = {
   startTime: '开始时间',
   endTime: '结束时间',
   pleaseEnterBillAmount: '请输入金额',
+  
+  // Order Management
+  exporting: '导出中...',
+  export: '导出',
+  exportSuccess: '导出成功',
+  exportFailed: '导出失败，请稍后重试',
+  pleaseEnterDate: '请输入日期',
+  statusModifyFailed: '状态修改失败，请重试',
+  noOrderData: '暂无订单数据',
+  code: '代码',
+  unknown: '未知',
+  
+  // Design Management
+  searchDesignCode: '搜索商品代码',
+  selectDesignType: '选择商品类型',
+  productsWithStock: '有库存的商品',
+  designType: '商品类型',
+  pleaseSelectDesignType: '请选择商品类型',
+  pleaseSelectAtLeastOneType: '请至少选择一个类型',
+  
+  // Design Detail
+  fetchItemsFailed: '获取库存数据失败',
+  viewImagesFeatureDeveloping: '查看图片功能开发中...',
+  
+  // Design Detail additional
+  pleaseEnterPurchasePrice: '请输入采购价格',
+  purchasePriceMustBePositive: '采购价格必须大于等于0',
+  pleaseEnterSalePrice: '请输入销售价格',
+  salePriceMustBePositive: '销售价格必须大于等于0',
+  pleaseEnterStockQuantity: '请输入库存数量',
+  stockQuantityMustBePositive: '库存数量必须大于等于0',
+  
+  // Design Detail more additional
+  totalStock: '总库存',
+  hotness: '热度',
+  pleaseSelectWarehouse: '请选择仓库',
+  pleaseSelectAtLeastOneWarehouse: '请至少选择一个仓库',
+  pleaseSelectAtLeastOneColor: '请至少选择一个颜色',
+  pleaseSelectAtLeastOneSize: '请至少选择一个尺码',
+  quantityMustBePositive: '数量必须大于0',
+  confirmDeleteItemMessage: '确定要删除商品',
+  questionMark: '吗？',
+  deleteCannotBeUndone: '删除后无法恢复，请谨慎操作',
+  confirmDeleteStock: '确认删除库存',
+  confirmDeleteStockMessage: '确定要删除',
+  stockQuestionMark: '的库存吗？',
+  
+  // Bill Management additional
+  itemDetails: '商品明细',
+  reprintSuccess: '重新打印成功',
+  reprintFailed: '重新打印失败',
+  pleaseCompletePaymentBeforePrint: '请完成支付后再打印账单',
+  paymentExceedsTotalAmount: '支付金额超出总金额',
+  cashierSalesData: '收银员销售数据',
+  
+  // Order Management additional
+  shippedDate: '发货日期',
+  pleaseSelectShippedDate: '请选择发货日期',
+  confirmStatusChange: '确认状态变更',
+  confirmChange: '确认变更',
+  confirmChangeOrderStatus: '确定要将订单',
+  statusChangeTo: '状态改为',
+  statusChangeWillAffectOrderFlow: '状态变更后将影响订单流程',
+  confirmDeleteOrder: '确认删除订单',
+  confirmDeleteOrderMessage: '确定要删除订单',
   
   // Common
   success: '成功',
@@ -733,6 +800,8 @@ const enTranslations = {
   // Bill Management
   billList: 'Bill List',
   printReceipt: 'Print Receipt',
+  printReceiptSuccess: 'Print receipt successful',
+  printReceiptFailed: 'Print receipt failed',
   printLabel: 'Print Label',
   paymentMethod: 'Payment Method',
   addPaymentMethod: 'Add Payment Method',
@@ -779,6 +848,71 @@ const enTranslations = {
   pleaseSelectCashier: 'Please select cashier',
   startTime: 'Start Time',
   endTime: 'End Time',
+  
+  // Order Management
+  exporting: 'Exporting...',
+  export: 'Export',
+  exportSuccess: 'Export successful',
+  exportFailed: 'Export failed, please try again later',
+  pleaseEnterDate: 'Please enter date',
+  statusModifyFailed: 'Status modify failed, please try again',
+  noOrderData: 'No order data',
+  code: 'Code',
+  unknown: 'Unknown',
+  
+  // Design Management
+  searchDesignCode: 'Search design code',
+  selectDesignType: 'Select design type',
+  productsWithStock: 'Products with stock',
+  designType: 'Design Type',
+  pleaseSelectDesignType: 'Please select design type',
+  pleaseSelectAtLeastOneType: 'Please select at least one type',
+  
+  // Design Detail
+  fetchItemsFailed: 'Failed to fetch items data',
+  viewImagesFeatureDeveloping: 'View images feature is developing...',
+  
+  // Design Detail additional
+  pleaseEnterPurchasePrice: 'Please enter purchase price',
+  purchasePriceMustBePositive: 'Purchase price must be greater than or equal to 0',
+  pleaseEnterSalePrice: 'Please enter sale price',
+  salePriceMustBePositive: 'Sale price must be greater than or equal to 0',
+  pleaseEnterStockQuantity: 'Please enter stock quantity',
+  stockQuantityMustBePositive: 'Stock quantity must be greater than or equal to 0',
+  
+  // Design Detail more additional
+  totalStock: 'Total Stock',
+  hotness: 'Hotness',
+  pleaseSelectWarehouse: 'Please select warehouse',
+  pleaseSelectAtLeastOneWarehouse: 'Please select at least one warehouse',
+  pleaseSelectAtLeastOneColor: 'Please select at least one color',
+  pleaseSelectAtLeastOneSize: 'Please select at least one size',
+  quantityMustBePositive: 'Quantity must be greater than 0',
+  confirmDeleteItemMessage: 'Are you sure to delete item',
+  questionMark: '?',
+  deleteCannotBeUndone: 'Cannot be undone after deletion, please operate carefully',
+  confirmDeleteStock: 'Confirm Delete Stock',
+  confirmDeleteStockMessage: 'Are you sure to delete',
+  stockQuestionMark: 'stock?',
+  
+  // Bill Management additional
+  itemDetails: 'Item Details',
+  reprintSuccess: 'Reprint Success',
+  reprintFailed: 'Reprint Failed',
+  pleaseCompletePaymentBeforePrint: 'Please complete payment before printing receipt',
+  paymentExceedsTotalAmount: 'Payment amount exceeds total amount',
+  cashierSalesData: 'Cashier Sales Data',
+  
+  // Order Management additional
+  shippedDate: 'Shipped Date',
+  pleaseSelectShippedDate: 'Please select shipped date',
+  confirmStatusChange: 'Confirm Status Change',
+  confirmChange: 'Confirm Change',
+  confirmChangeOrderStatus: 'Are you sure to change order',
+  statusChangeTo: 'status to',
+  statusChangeWillAffectOrderFlow: 'Status change will affect order flow',
+  confirmDeleteOrder: 'Confirm Delete Order',
+  confirmDeleteOrderMessage: 'Are you sure to delete order',
   
   // Common
   success: 'Success',

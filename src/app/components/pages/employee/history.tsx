@@ -144,7 +144,7 @@ export default function EmployeeHistory() {
           <Form.Item name="userName" label={t('operator')}>
             <Input placeholder={t('pleaseEnterOperatorName')} style={{ width: 200,marginBottom:20 }} />
           </Form.Item>
-          <Form.Item name="uri" label={t('api')}>
+          <Form.Item name="uri" label={t('uri')}>
             <Input placeholder={t('pleaseEnterApiPath')} style={{ width: 200 }} />
           </Form.Item>
           <Form.Item name="operateDate" label={t('operationTime')}>

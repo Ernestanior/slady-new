@@ -627,7 +627,7 @@ export default function Design() {
               { type: 'number', min: 0, message: t('purchasePrice') + t('mustBeGreaterThanOrEqualToZero') }
             ]}
           >
-            <InputNumber placeholder={t('purchasePrice')} style={{ width: '100%' }} min={0} precision={2} />
+            <InputNumber placeholder={t('purchasePrice')} style={{ width: '100%' }} min={0} />
           </Form.Item>
 
           <Form.Item 
@@ -638,7 +638,7 @@ export default function Design() {
               { type: 'number', min: 0, message: t('salePrice') + t('mustBeGreaterThanOrEqualToZero') }
             ]}
           >
-            <InputNumber placeholder={t('salePrice')} style={{ width: '100%' }} min={0} precision={2} />
+            <InputNumber placeholder={t('salePrice')} style={{ width: '100%' }} min={0} />
           </Form.Item>
 
           <Form.Item label={t('remark')} name="remark">
