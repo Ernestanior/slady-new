@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Table, Button, Drawer, Form, InputNumber, Input, message, App} from 'antd';
-import { DeleteOutlined, EditOutlined, PlusOutlined, ShoppingOutlined,  } from '@ant-design/icons';
+import { Table, Button, Modal, Drawer, Form, InputNumber, Input, message, App, Select, Space, Divider } from 'antd';
+import { DeleteOutlined, EditOutlined, PlusOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { ItemData, CreateOrderRequest, WAREHOUSE } from '@/lib/types';
+import { ItemData, CreateOrderRequest } from '@/lib/types';
 import { usePermissions } from '@/lib/usePermissions';
 import { item, order } from '@/lib/api';
 
@@ -14,12 +14,9 @@ interface ItemTableProps {
   warehouseName: string;
   designId: number;
   onRefresh: () => void;
-  showAddButton?: boolean;
-  createDrawerVisible?: boolean;
-  setCreateDrawerVisible?: (visible: boolean) => void;
 }
 
-export default function ItemTable({ data, loading, onRefresh,  }: ItemTableProps) {
+export default function ItemTable({ data, loading, warehouseName, designId, onRefresh }: ItemTableProps) {
   const { t } = useTranslation();
   const { modal } = App.useApp();
   const { canUseFeature } = usePermissions();
@@ -29,17 +26,8 @@ export default function ItemTable({ data, loading, onRefresh,  }: ItemTableProps
   
   const [stockDrawerVisible, setStockDrawerVisible] = useState(false);
   const [orderDrawerVisible, setOrderDrawerVisible] = useState(false);
-  
-  // 使用外部状态或内部状态
   const [orderType, setOrderType] = useState<'store' | 'customer'>('store');
   const [currentItem, setCurrentItem] = useState<ItemData | null>(null);
-  
-
-  const warehouseOptions = [
-    { label: WAREHOUSE.SLADY, value: WAREHOUSE.SLADY },
-    { label: WAREHOUSE.SL, value: WAREHOUSE.SL },
-    { label: WAREHOUSE.LIVE, value: WAREHOUSE.LIVE },
-  ];
 
   const handleDelete = (itemData: ItemData) => {
     modal.confirm({
@@ -228,6 +216,10 @@ export default function ItemTable({ data, loading, onRefresh,  }: ItemTableProps
 
   return (
     <>
+      <div style={{ marginBottom: 16 }}>
+        <h4 style={{ margin: 0 }}>{warehouseName} {t('stock')}</h4>
+      </div>
+      
       <Table
         columns={columns}
         dataSource={data}

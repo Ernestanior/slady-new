@@ -4,10 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { Button, Descriptions, Tag, Drawer, Form, InputNumber, Select, message, Input, Spin, Tabs } from 'antd';
 import { ArrowLeftOutlined, EditOutlined, DeleteOutlined, ExclamationCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { DesignDetail as DesignDetailType, typeList, ItemData } from '@/lib/types';
+import { DesignDetail as DesignDetailType, typeList, ItemData, CreateItemRequest, WAREHOUSE } from '@/lib/types';
 import { usePermissions } from '@/lib/usePermissions';
 import { item } from '@/lib/api';
 import ItemTable from './ItemTable';
+import ColorSelect from '../../ColorSelect';
+import { sizeList } from '@/lib/types';
 
 interface DesignDetailProps {
   detailData: DesignDetailType | null;
@@ -44,6 +46,13 @@ export default function DesignDetail({
   const [sl2Items, setSl2Items] = useState<ItemData[]>([]);
   const [liveItems, setLiveItems] = useState<ItemData[]>([]);
   const [createDrawerVisible, setCreateDrawerVisible] = useState(false);
+  const [createForm] = Form.useForm();
+  
+  const warehouseOptions = [
+    { label: WAREHOUSE.SLADY, value: WAREHOUSE.SLADY },
+    { label: WAREHOUSE.SL, value: WAREHOUSE.SL },
+    { label: WAREHOUSE.LIVE, value: WAREHOUSE.LIVE },
+  ];
 
   // 获取库存数据
   const fetchItems = async (designId: number) => {
@@ -87,6 +96,35 @@ export default function DesignDetail({
   const handleRefreshItems = () => {
     if (detailData?.id) {
       fetchItems(detailData.id);
+    }
+  };
+
+  // 处理创建Item
+  const handleCreateSubmit = async () => {
+    try {
+      const values = await createForm.validateFields();
+      if (!detailData?.id) {
+        message.error(t('productNotFound'));
+        return;
+      }
+      
+      const createData: CreateItemRequest = {
+        designId: detailData.id,
+        warehouseName: values.warehouseName,
+        color: values.color,
+        size: values.size,
+        stock: values.stock,
+      };
+      
+      await item.create(createData);
+      message.success(t('addItemSuccess'));
+      setCreateDrawerVisible(false);
+      createForm.resetFields();
+      // 刷新所有店铺的库存数据
+      handleRefreshItems();
+    } catch (error) {
+      console.error('新增商品失败:', error);
+      message.error(t('addItemFailedRetry'));
     }
   };
 
@@ -261,7 +299,10 @@ export default function DesignDetail({
             <Button
               type="primary"
               icon={<PlusCircleOutlined />}
-              onClick={() => setCreateDrawerVisible(true)}
+              onClick={() => {
+                createForm.resetFields();
+                setCreateDrawerVisible(true);
+              }}
             >
               {t('addItem')}
             </Button>
@@ -279,9 +320,6 @@ export default function DesignDetail({
                 warehouseName="Slady一店"
                 designId={detailData?.id || 0}
                 onRefresh={handleRefreshItems}
-                showAddButton={false}
-                createDrawerVisible={createDrawerVisible}
-                setCreateDrawerVisible={setCreateDrawerVisible}
               />
             </div>
             
@@ -294,7 +332,6 @@ export default function DesignDetail({
                 warehouseName="SL二店"
                 designId={detailData?.id || 0}
                 onRefresh={handleRefreshItems}
-                showAddButton={false}
               />
             </div>
           </div>
@@ -308,7 +345,6 @@ export default function DesignDetail({
               warehouseName="Live直播间"
               designId={detailData?.id || 0}
               onRefresh={handleRefreshItems}
-              showAddButton={false}
             />
           </div>
         </Spin>
@@ -398,6 +434,90 @@ export default function DesignDetail({
               placeholder={t('remark')} 
               rows={4}
             />
+          </Form.Item>
+        </Form>
+      </Drawer>
+
+      {/* 创建Item抽屉 */}
+      <Drawer
+        title={t('addItem')}
+        open={createDrawerVisible}
+        onClose={() => {
+          setCreateDrawerVisible(false);
+          createForm.resetFields();
+        }}
+        width={500}
+        maskClosable={true}
+      >
+        <Form
+          form={createForm}
+          layout="vertical"
+          onFinish={handleCreateSubmit}
+        >
+          <Form.Item
+            label={t('warehouse')}
+            name="warehouseName"
+            rules={[
+              { required: true, message: t('pleaseSelect') + t('warehouse') },
+              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOne') + t('warehouse') }
+            ]}
+          >
+            <Select
+              mode="multiple"
+              placeholder={t('warehouse')}
+              options={warehouseOptions}
+            />
+          </Form.Item>
+          
+          <Form.Item
+            label={t('color')}
+            name="color"
+            rules={[
+              { required: true, message: t('pleaseSelect') + t('color') },
+              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOne') + t('color') }
+            ]}
+          >
+            <ColorSelect
+              mode="multiple"
+              placeholder={t('color')}
+            />
+          </Form.Item>
+          
+          <Form.Item
+            label={t('size')}
+            name="size"
+            rules={[
+              { required: true, message: t('pleaseSelect') + t('size') },
+              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOne') + t('size') }
+            ]}
+          >
+            <Select
+              mode="multiple"
+              placeholder={t('size')}
+              options={sizeList.map(size => ({ label: size, value: size }))}
+            />
+          </Form.Item>
+          
+          <Form.Item
+            label={t('stockQuantity')}
+            name="stock"
+            rules={[
+              { required: true, message: t('pleaseEnter') + t('stockQuantity') },
+              { type: 'number', min: 0, message: t('stockQuantity') + t('cannotBeLessThanZero') }
+            ]}
+          >
+            <InputNumber
+              style={{ width: '100%' }}
+              min={0}
+              precision={0}
+              placeholder={t('stockQuantity')}
+            />
+          </Form.Item>
+          
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              {t('confirmAdd')}
+            </Button>
           </Form.Item>
         </Form>
       </Drawer>

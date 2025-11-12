@@ -5,11 +5,12 @@ import GlobalNotification from './notificationUtils';
 
 // API基础配置
 const API_BASE_URL = 'http://119.28.104.20';
+// const API_BASE_URL = 'http://10.10.20.34:10000';
 
 // 创建axios实例
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 1000000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -414,6 +415,12 @@ export const receipt = {
   // 打印账单
   print: async (params: PrintReceiptRequest): Promise<ApiResponse> => {
     const response = await apiClient.post<ApiResponse>('/print/receipt', params);
+    return response.data;
+  },
+  
+  // 删除账单
+  delete: async (id: number): Promise<ApiResponse> => {
+    const response = await apiClient.delete<ApiResponse>(`/receipt/delete?id=${id}`);
     return response.data;
   },
 };

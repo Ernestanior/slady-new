@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, Form, Input, DatePicker, Button, message, Pagination, Spin, Tag, Tabs, Space, Divider } from 'antd';
-import { SearchOutlined, ReloadOutlined, PrinterOutlined, FileTextOutlined, DollarOutlined, CalendarOutlined, UserOutlined } from '@ant-design/icons';
+import { Card, Form, Input, DatePicker, Button, message, Pagination, Spin, Tag, Tabs, Space, Divider, Drawer } from 'antd';
+import { SearchOutlined, ReloadOutlined, PrinterOutlined, FileTextOutlined, DollarOutlined, CalendarOutlined, UserOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { ReceiptData, ReceiptListRequest } from '@/lib/types';
 import { receipt } from '@/lib/api';
 import moment from 'moment';
+import { usePermissions } from '@/lib/usePermissions';
 import PrintReceipt from './PrintReceipt';
 import PrintLabelDrawer from './PrintLabelDrawer';
 import PrintDailyReportDrawer from './PrintDailyReportDrawer';
@@ -16,11 +17,17 @@ import OpeningClosingBalanceDrawer from './OpeningClosingBalanceDrawer';
 
 export default function BillManagement() {
   const { t } = useTranslation();
+  const { canUseFeature, getFinanceStoreAccess, isFinance } = usePermissions();
   const [form] = Form.useForm();
   const [data, setData] = useState<ReceiptData[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
-  const [activeTab, setActiveTab] = useState('2'); // 默认显示二店
+  
+  // 获取财务用户的店铺限制
+  const financeStoreAccess = getFinanceStoreAccess();
+  // 根据财务用户限制设置默认 tab
+  const defaultTab = financeStoreAccess ? financeStoreAccess.toString() : '2';
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 20,
@@ -32,6 +39,9 @@ export default function BillManagement() {
   const [dailySaleVisible, setDailySaleVisible] = useState(false);
   const [cashInOutVisible, setCashInOutVisible] = useState(false);
   const [openingClosingBalanceVisible, setOpeningClosingBalanceVisible] = useState(false);
+  const [deleteDrawerVisible, setDeleteDrawerVisible] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteReceiptId, setDeleteReceiptId] = useState<number | null>(null);
 
   // 获取数据
   const fetchData = async (page = 1, searchParams: any = {}) => {
@@ -97,8 +107,20 @@ export default function BillManagement() {
     }
   }, [hasLoaded]);
 
+  // 确保财务用户的 activeTab 符合限制
+  useEffect(() => {
+    if (financeStoreAccess && activeTab !== financeStoreAccess.toString()) {
+      setActiveTab(financeStoreAccess.toString());
+      setHasLoaded(false);
+    }
+  }, [financeStoreAccess]);
+
   // Tab切换
   const handleTabChange = (key: string) => {
+    // 如果财务用户有限制，不允许切换到其他店铺
+    if (financeStoreAccess && key !== financeStoreAccess.toString()) {
+      return;
+    }
     setActiveTab(key);
     setHasLoaded(false);
     setPagination({
@@ -135,6 +157,38 @@ export default function BillManagement() {
     }
   };
 
+  // 打开删除确认抽屉
+  const handleDelete = (id: number) => {
+    setDeleteReceiptId(id);
+    setDeleteDrawerVisible(true);
+  };
+
+  // 确认删除
+  const handleConfirmDelete = async () => {
+    if (!deleteReceiptId) return;
+    
+    setDeleteLoading(true);
+    try {
+      await receipt.delete(deleteReceiptId);
+      message.success(t('deleteSuccess'));
+      setDeleteDrawerVisible(false);
+      setDeleteReceiptId(null);
+      // 刷新列表
+      fetchData(pagination.current);
+    } catch (error) {
+      console.error('删除失败:', error);
+      message.error(t('deleteFailed'));
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  // 关闭删除确认抽屉
+  const handleCloseDeleteDrawer = () => {
+    setDeleteDrawerVisible(false);
+    setDeleteReceiptId(null);
+  };
+
   // 进入打印账单页面
   const handlePrintReceipt = () => {
     setCurrentView('print');
@@ -154,9 +208,19 @@ export default function BillManagement() {
     }
   };
 
+  // 解析支付列表
+  const parsePaymentList = (value: any) => {
+    try {
+      return typeof value === 'string' ? JSON.parse(value) : value;
+    } catch {
+      return [];
+    }
+  };
+
   // 渲染账单卡片
   const renderBillCard = (item: ReceiptData, index: number) => {
     const itemList = parseItemList(item.itemList);
+    const paymentList = parsePaymentList(item.paymentList);
     const totalAmount = itemList.reduce((sum: number, it: any) => sum + (Number(it.finalPrice ?? it.price) * it.qty), 0);
 
     return (
@@ -203,6 +267,25 @@ export default function BillManagement() {
 
           <Divider className="my-3" />
 
+          {/* 支付方式列表 */}
+          {paymentList && paymentList.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-sm text-gray-600">{t('paymentMethod')}:</div>
+              <div className="space-y-1">
+                {paymentList.map((payment: any, idx: number) => (
+                  <div key={`${payment.payment}-${idx}`} className="flex items-center justify-between bg-green-50 rounded-lg p-2">
+                    <span className="font-medium text-gray-900">{payment.payment}</span>
+                    <span className="font-bold text-green-600">
+                      ${Number(payment.amount).toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <Divider className="my-3" />
+
           {/* 账单底部信息 */}
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="flex items-center space-x-2">
@@ -226,23 +309,35 @@ export default function BillManagement() {
             </div>
           </div>
 
-          {/* 操作按钮 */}
-          <div className="flex justify-end">
-            <Button 
-              type="primary" 
-              size="small"
-              onClick={() => handleReprint(item.id)}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {t('reprint')}
-            </Button>
-          </div>
+          {/* 操作按钮 - 财务用户不显示 */}
+          {!isFinance() && (
+            <div className="flex justify-end gap-2">
+              <Button 
+                type="primary" 
+                size="small"
+                onClick={() => handleReprint(item.id)}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {t('reprint')}
+              </Button>
+              <Button 
+                type="primary" 
+                danger
+                size="small"
+                icon={<DeleteOutlined />}
+                onClick={() => handleDelete(item.id)}
+              >
+                {t('delete')}
+              </Button>
+            </div>
+          )}
         </div>
       </Card>
     );
   };
 
-  const tabItems = [
+  // 根据财务用户限制过滤 tab 项
+  const allTabItems = [
     {
       key: '1',
       label: t('store1'),
@@ -252,6 +347,11 @@ export default function BillManagement() {
       label: t('store2'),
     },
   ];
+
+  // 如果财务用户有限制，只显示对应的 tab
+  const tabItems = financeStoreAccess 
+    ? allTabItems.filter(item => item.key === financeStoreAccess.toString())
+    : allTabItems;
 
   if (currentView === 'print') {
     return (
@@ -266,44 +366,56 @@ export default function BillManagement() {
         <div className="space-y-3">
           <div className="text-lg font-bold text-gray-900 mb-3">{t('billManagement')}</div>
           <div className="grid grid-cols-2 gap-2">
-            <Button 
-              type="primary" 
-              icon={<PrinterOutlined />} 
-              className="bg-blue-600 hover:bg-blue-700"
-              onClick={handlePrintReceipt}
-            >
-              {t('printReceipt')}
-            </Button>
-            <Button 
-              icon={<FileTextOutlined />}
-              onClick={() => setPrintLabelVisible(true)}
-            >
-              {t('printLabel')}
-            </Button>
-            <Button 
-              icon={<CalendarOutlined />}
-              onClick={() => setPrintDailyReportVisible(true)}
-            >
-              {t('printDailyReport')}
-            </Button>
-            <Button 
-              icon={<DollarOutlined />}
-              onClick={() => setDailySaleVisible(true)}
-            >
-              {t('dailySales')}
-            </Button>
-            <Button 
-              icon={<DollarOutlined />}
-              onClick={() => setCashInOutVisible(true)}
-            >
-              {t('cashInOut')}
-            </Button>
-            <Button 
-              icon={<CalendarOutlined />}
-              onClick={() => setOpeningClosingBalanceVisible(true)}
-            >
-              {t('openingClosingBalance')}
-            </Button>
+            {canUseFeature('printReceipt') && (
+              <Button 
+                type="primary" 
+                icon={<PrinterOutlined />} 
+                className="bg-blue-600 hover:bg-blue-700"
+                onClick={handlePrintReceipt}
+              >
+                {t('printReceipt')}
+              </Button>
+            )}
+            {canUseFeature('printLabel') && (
+              <Button 
+                icon={<FileTextOutlined />}
+                onClick={() => setPrintLabelVisible(true)}
+              >
+                {t('printLabel')}
+              </Button>
+            )}
+            {canUseFeature('printDailyReport') && (
+              <Button 
+                icon={<CalendarOutlined />}
+                onClick={() => setPrintDailyReportVisible(true)}
+              >
+                {t('printDailyReport')}
+              </Button>
+            )}
+            {canUseFeature('dailySales') && (
+              <Button 
+                icon={<DollarOutlined />}
+                onClick={() => setDailySaleVisible(true)}
+              >
+                {t('dailySales')}
+              </Button>
+            )}
+            {canUseFeature('cashInOut') && (
+              <Button 
+                icon={<DollarOutlined />}
+                onClick={() => setCashInOutVisible(true)}
+              >
+                {t('cashInOut')}
+              </Button>
+            )}
+            {canUseFeature('openingClosingBalance') && (
+              <Button 
+                icon={<CalendarOutlined />}
+                onClick={() => setOpeningClosingBalanceVisible(true)}
+              >
+                {t('openingClosingBalance')}
+              </Button>
+            )}
           </div>
         </div>
       </Card>
@@ -401,6 +513,51 @@ export default function BillManagement() {
         visible={openingClosingBalanceVisible} 
         onClose={() => setOpeningClosingBalanceVisible(false)} 
       />
+
+      {/* 删除确认抽屉 */}
+      <Drawer
+        title={t('confirmDelete')}
+        placement="bottom"
+        onClose={handleCloseDeleteDrawer}
+        open={deleteDrawerVisible}
+        height={300}
+        footer={
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button 
+              onClick={handleCloseDeleteDrawer} 
+              style={{ flex: 1 }}
+              block
+            >
+              {t('cancel')}
+            </Button>
+            <Button 
+              type="primary" 
+              danger 
+              loading={deleteLoading}
+              onClick={handleConfirmDelete}
+              style={{ flex: 1 }}
+              block
+            >
+              {t('confirmDelete')}
+            </Button>
+          </div>
+        }
+      >
+        <div style={{ padding: '20px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+            <ExclamationCircleOutlined style={{ fontSize: 24, color: '#ff4d4f', marginRight: 12 }} />
+            <span style={{ fontSize: 16, fontWeight: 500 }}>{t('confirmDeleteReceipt')}</span>
+          </div>
+          <div style={{ color: '#666', lineHeight: 1.8 }}>
+            <p>{t('deleteReceiptWarning')}</p>
+            {deleteReceiptId && (
+              <p style={{ marginTop: 8 }}>
+                <strong>{t('receiptId')}：</strong>{deleteReceiptId}
+              </p>
+            )}
+          </div>
+        </div>
+      </Drawer>
     </div>
   );
 }

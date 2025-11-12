@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { PrintLabelRequest } from '@/lib/types';
 import { printService, designService } from '@/lib/api';
 import { colorList, sizeList } from '@/lib/types';
+import { shops } from './PrintReceipt';
 
 interface PrintLabelDrawerProps {
   visible: boolean;
@@ -16,6 +17,7 @@ export default function PrintLabelDrawer({ visible, onClose }: PrintLabelDrawerP
   const { t } = useTranslation();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [shop, setShops] = useState(1);
 
   // 获取价格
   const getPrice = useCallback(async () => {
@@ -50,12 +52,14 @@ export default function PrintLabelDrawer({ visible, onClose }: PrintLabelDrawerP
           code,
           color,
           size,
-          salePrice: parseFloat(salePrice)
+          salePrice: parseFloat(salePrice),
+          store: shop
         };
         
         await printService.printLabel(params);
         notification.success({ message: '打印标签成功' });
         form.resetFields();
+        setShops(1);
         onClose();
       } else {
         notification.error({ message: '请填完整' });
@@ -71,6 +75,7 @@ export default function PrintLabelDrawer({ visible, onClose }: PrintLabelDrawerP
   // 重置表单
   const onReset = () => {
     form.resetFields();
+    setShops(1);
   };
 
   return (
@@ -96,6 +101,19 @@ export default function PrintLabelDrawer({ visible, onClose }: PrintLabelDrawerP
           size: sizeList[0]
         }}
       >
+        <section style={{ marginBottom: 10, marginTop: 10 }}>
+          {shops.map((item, index) => (
+            index > 0 ? <Button
+              key={index}
+              type={shop === index ? 'primary' : 'default'}
+              style={{ borderRadius: 20, marginRight: 5, marginBottom: 5 }}
+              onClick={() => setShops(index)}
+            >
+              {item}
+            </Button> : <></>
+          ))}
+        </section>
+
         <Form.Item
           name="code"
           label={t('designCode')}

@@ -372,6 +372,10 @@ export interface ReceiptData {
   itemList: ReceiptItem[] | string;
   receiptDate: string;
   cashier: string;
+  paymentList?: Array<{ payment: string; amount: number }>;
+  totalPrice?: number;
+  store?: number;
+  gst?: number;
 }
 
 export interface ReceiptListResponse {
@@ -427,6 +431,7 @@ export interface PrintLabelRequest {
   color: string;
   size: string;
   salePrice: number;
+  store: number;
 }
 
 // 打印每日结单相关类型

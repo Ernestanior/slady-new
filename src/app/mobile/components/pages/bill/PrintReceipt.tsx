@@ -295,10 +295,41 @@ export default function PrintReceipt({ onBackToList }: PrintReceiptProps) {
                         label={t('designCode')}
                         rules={[{ required: true, message: t('pleaseEnterDesignCode') }]}
                       >
-                        <Input
-                          placeholder={t('pleaseEnterDesignCode')}
-                          onChange={(e) => handleCodeChange(e.target.value, name)}
-                        />
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder={t('pleaseEnterDesignCode')}
+                            onChange={(e) => handleCodeChange(e.target.value, name)}
+                            style={{ flex: 1 }}
+                          />
+                          <Button 
+                            onClick={async () => {
+                              const code = form.getFieldValue(['item', name, 'code']);
+                              if (!code) {
+                                notification.warning({ message: t('pleaseEnterDesignCodeFirst') });
+                                return;
+                              }
+                              try {
+                                const res = await designService.getDesignDetail({ design: code });
+                                if (res.code === 200 && res.data && res.data.length > 0) {
+                                  const salePrice = res.data[0].salePrice;
+                                  const currentItems = form.getFieldValue(['item']) || [];
+                                  const updatedItems = currentItems.map((item: any, index: number) => 
+                                    index === name ? { ...item, price: parseFloat(salePrice) } : item
+                                  );
+                                  form.setFieldsValue({ item: updatedItems });
+                                  notification.success({ message: t('priceAutoFilled') });
+                                } else {
+                                  notification.error({ message: t('productNotFoundWhenDetectingPrice') });
+                                }
+                              } catch (error) {
+                                console.error('获取价格失败:', error);
+                                notification.error({ message: t('getPriceFailed') });
+                              }
+                            }}
+                          >
+                            {t('detectPrice')}
+                          </Button>
+                        </div>
                       </Form.Item>
 
                       <div className="grid grid-cols-2 gap-3">

@@ -111,6 +111,27 @@ export function usePermissions() {
     return accessiblePages.includes(pageName);
   };
 
+  // 获取财务用户可访问的店铺（根据用户名末位数字）
+  // 返回 null 表示可以访问所有店铺，返回数字表示只能访问指定店铺
+  const getFinanceStoreAccess = (): number | null => {
+    if (!userInfo || userInfo.type !== E_USER_TYPE.FINANCE) {
+      return null; // 非财务用户或未登录，可以访问所有店铺
+    }
+    
+    const name = userInfo.name || '';
+    const lastChar = name.charAt(name.length - 1);
+    const lastDigit = parseInt(lastChar, 10);
+    
+    // 如果末位是数字 1 或 2，返回对应的店铺编号
+    if (lastDigit === 1) {
+      return 1; // 一店
+    } else if (lastDigit === 2) {
+      return 2; // 二店
+    }
+    
+    return null; // 如果末位不是 1 或 2，默认可以访问所有店铺
+  };
+
   // 检查功能是否可用
   const canUseFeature = (feature: string) => {
     if (!userInfo) return false;
@@ -142,6 +163,9 @@ export function usePermissions() {
       case 'printReceipt':
       case 'printLabel':
       case 'printDailyReport':
+      case 'dailySales':
+      case 'cashInOut':
+      case 'openingClosingBalance':
         return hasPermission([E_USER_TYPE.ADMIN, E_USER_TYPE.SUPERADMIN, E_USER_TYPE.SALER]);
       
       case 'cashManagement':
@@ -176,6 +200,7 @@ export function usePermissions() {
     isSuperAdmin,
     getAccessiblePages,
     canAccessPage,
-    canUseFeature
+    canUseFeature,
+    getFinanceStoreAccess
   };
 }

@@ -445,6 +445,13 @@ const zhTranslations = {
   statusChangeWillAffectOrderFlow: '状态变更后将影响订单流程',
   confirmDeleteOrder: '确认删除订单',
   confirmDeleteOrderMessage: '确定要删除订单',
+  confirmDeleteReceipt: '确定要删除这条账单记录吗？',
+  deleteReceiptWarning: '删除操作不可恢复，请谨慎操作。',
+  receiptId: '账单ID',
+  pleaseEnterDesignCodeFirst: '请先输入商品代码',
+  priceAutoFilled: '价格已自动填入',
+  productNotFoundWhenDetectingPrice: '未找到该商品',
+  getPriceFailed: '获取价格失败',
   
   // Common
   success: '成功',
@@ -913,6 +920,13 @@ const enTranslations = {
   statusChangeWillAffectOrderFlow: 'Status change will affect order flow',
   confirmDeleteOrder: 'Confirm Delete Order',
   confirmDeleteOrderMessage: 'Are you sure to delete order',
+  confirmDeleteReceipt: 'Are you sure you want to delete this receipt record?',
+  deleteReceiptWarning: 'This action cannot be undone. Please proceed with caution.',
+  receiptId: 'Receipt ID',
+  pleaseEnterDesignCodeFirst: 'Please enter design code first',
+  priceAutoFilled: 'Price has been automatically filled',
+  productNotFoundWhenDetectingPrice: 'Product not found',
+  getPriceFailed: 'Failed to get price',
   
   // Common
   success: 'Success',

@@ -23,7 +23,7 @@ const calcFinalPrice = (price: number = 0, discountPercent: number = 0, discount
   return parseFloat(final.toFixed(2));
 };
 
-export const shops = ['', 'SL Studio Pte. Ltd.', 'Slady Fashion Pte. Ltd.'];
+export const shops = ['',  'Slady Fashion Pte. Ltd.','SL Studio Pte. Ltd.',];
 export const saler = ['Serene', 'Sandy', 'Jewaa', 'Yen', 'QiQi', 'Staff'];
 export const paymentList = ['Bank Transfer/Pay Now', 'Cash', 'Nets', 'VISA', 'Master', 'Union', 'Slady Voucher', 'AMEX', 'Mall Voucher'];
 
@@ -251,6 +251,33 @@ export default function PrintReceipt({ onBackToList }: PrintReceiptProps) {
                   const discountPercent = Number(cur.discountPercent ?? 0);
                   const discount = Number(cur.discount ?? 0);
                   const finalPrice = calcFinalPrice(price, discountPercent, discount, qty);
+                  
+                  // 检测价格函数
+                  const handleGetPrice = async () => {
+                    const code = form.getFieldValue(['item', name, 'code']);
+                    if (!code) {
+                      notification.warning({ message: t('pleaseEnterDesignCodeFirst') });
+                      return;
+                    }
+                    try {
+                      const res = await designService.getDesignDetail({ design: code });
+                      if (res.code === 200 && res.data && res.data.length > 0) {
+                        const salePrice = res.data[0].salePrice;
+                        const currentItems = form.getFieldValue(['item']) || [];
+                        const updatedItems = currentItems.map((item: any, index: number) => 
+                          index === name ? { ...item, price: parseFloat(salePrice) } : item
+                        );
+                        form.setFieldsValue({ item: updatedItems });
+                        notification.success({ message: t('priceAutoFilled') });
+                      } else {
+                        notification.error({ message: t('productNotFoundWhenDetectingPrice') });
+                      }
+                    } catch (error) {
+                      console.error('获取价格失败:', error);
+                      notification.error({ message: t('getPriceFailed') });
+                    }
+                  };
+                  
                   return (
                     <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
                       <Form.Item
@@ -260,6 +287,9 @@ export default function PrintReceipt({ onBackToList }: PrintReceiptProps) {
                       >
                         <Input placeholder="Code" />
                       </Form.Item>
+                      <Button onClick={handleGetPrice} style={{ marginBottom: 0 }}>
+                        {t('detectPrice')}
+                      </Button>
                       <Form.Item {...restField} name={[name, 'qty']} initialValue={1}>
                         <InputNumber placeholder="Qty" min={0} style={{ width: 60 }} />
                       </Form.Item>
