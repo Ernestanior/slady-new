@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Card, message, Pagination, Form, Input, DatePicker, Tag, Tabs, Drawer } from 'antd';
-import { SearchOutlined, ReloadOutlined, FilterOutlined, PrinterOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { SearchOutlined, ReloadOutlined, FilterOutlined, PrinterOutlined, DeleteOutlined, ExclamationCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { ReceiptData, ReceiptListRequest } from '@/lib/types';
-import { receipt } from '@/lib/api';
+import { receipt, cashDrawerService } from '@/lib/api';
 import moment from 'moment';
 import { usePermissions } from '@/lib/usePermissions';
 import PrintReceipt from './PrintReceipt';
@@ -14,6 +14,7 @@ import PrintDailyReportDrawer from './PrintDailyReportDrawer';
 import DailySaleDrawer from './DailySaleDrawer';
 import CashInOutDrawer from './CashInOutDrawer';
 import OpeningClosingBalanceDrawer from './OpeningClosingBalanceDrawer';
+import { shops } from './PrintReceipt';
 
 export default function BillManagement() {
   const { t } = useTranslation();
@@ -42,6 +43,12 @@ export default function BillManagement() {
   const [deleteDrawerVisible, setDeleteDrawerVisible] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteReceiptId, setDeleteReceiptId] = useState<number | null>(null);
+  const [voidDrawerVisible, setVoidDrawerVisible] = useState(false);
+  const [voidLoading, setVoidLoading] = useState(false);
+  const [voidReceiptId, setVoidReceiptId] = useState<number | null>(null);
+  const [openCashDrawerVisible, setOpenCashDrawerVisible] = useState(false);
+  const [openCashDrawerLoading, setOpenCashDrawerLoading] = useState(false);
+  const [selectedStore, setSelectedStore] = useState(1);
 
   // 获取数据
   const fetchData = async (page = 1, searchParams: any = {}) => {
@@ -189,6 +196,59 @@ export default function BillManagement() {
     setDeleteReceiptId(null);
   };
 
+  // 打开 void 确认抽屉
+  const handleVoid = (id: number) => {
+    setVoidReceiptId(id);
+    setVoidDrawerVisible(true);
+  };
+
+  // 确认 void
+  const handleConfirmVoid = async () => {
+    if (!voidReceiptId) return;
+    
+    setVoidLoading(true);
+    try {
+      await receipt.modifyVoided(voidReceiptId, 1);
+      message.success(t('voidSuccess') || 'Void成功');
+      setVoidDrawerVisible(false);
+      setVoidReceiptId(null);
+      // 刷新列表
+      fetchData(pagination.current);
+    } catch (error) {
+      console.error('Void失败:', error);
+      message.error(t('voidFailed') || 'Void失败');
+    } finally {
+      setVoidLoading(false);
+    }
+  };
+
+  // 关闭 void 确认抽屉
+  const handleCloseVoidDrawer = () => {
+    setVoidDrawerVisible(false);
+    setVoidReceiptId(null);
+  };
+
+  // 打开钱箱确认
+  const handleOpenCashDrawer = async () => {
+    setOpenCashDrawerLoading(true);
+    try {
+      await cashDrawerService.open(selectedStore);
+      message.success(t('openCashDrawerSuccess') || '打开钱箱成功');
+      setOpenCashDrawerVisible(false);
+    } catch (error) {
+      console.error('打开钱箱失败:', error);
+      message.error(t('openCashDrawerFailed') || '打开钱箱失败');
+    } finally {
+      setOpenCashDrawerLoading(false);
+    }
+  };
+
+  // 关闭打开钱箱抽屉
+  const handleCloseOpenCashDrawer = () => {
+    setOpenCashDrawerVisible(false);
+    setSelectedStore(1);
+  };
+
   // 进入打印账单页面
   const handlePrintReceipt = () => {
     setCurrentView('print');
@@ -289,6 +349,20 @@ export default function BillManagement() {
         );
       }
     },
+    {
+      title: 'VOID',
+      dataIndex: 'voided',
+      key: 'voided',
+      width: 100,
+      render: (value: number | undefined) => {
+        const voidValue = value ?? 0;
+        return voidValue === 0 ? (
+          <Tag color="green">normal</Tag>
+        ) : (
+          <Tag color="red">void</Tag>
+        );
+      },
+    },
   ];
 
   // 如果不是财务用户，添加 REPRINT 和操作列
@@ -316,10 +390,10 @@ export default function BillManagement() {
             <Button 
               type="primary" 
               danger 
-              icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record.id)}
+              icon={<CloseCircleOutlined />}
+              onClick={() => handleVoid(record.id)}
             >
-              {t('delete')}
+              void
             </Button>
           ),
         },
@@ -343,7 +417,7 @@ export default function BillManagement() {
           rowKey="id"
           loading={loading}
           pagination={false}
-          scroll={{ x: 1350 }}
+          scroll={{ x: 1450 }}
         />
       ),
     },
@@ -357,7 +431,7 @@ export default function BillManagement() {
           rowKey="id"
           loading={loading}
           pagination={false}
-          scroll={{ x: 1350 }}
+          scroll={{ x: 1450 }}
         />
       ),
     },
@@ -404,6 +478,9 @@ export default function BillManagement() {
               Opening/Closing Balance
             </Button>
           )}
+          <Button onClick={() => setOpenCashDrawerVisible(true)}>
+              {t('openCashDrawer') || '打开钱箱'}
+            </Button>
         </div>
       </div>
       
@@ -518,6 +595,88 @@ export default function BillManagement() {
                 <strong>{t('receiptId')}：</strong>{deleteReceiptId}
               </p>
             )}
+          </div>
+        </div>
+      </Drawer>
+
+      {/* Void 确认抽屉 */}
+      <Drawer
+        title="Confirm Void"
+        placement="right"
+        onClose={handleCloseVoidDrawer}
+        open={voidDrawerVisible}
+        width={400}
+        footer={
+          <div style={{ textAlign: 'right' }}>
+            <Button onClick={handleCloseVoidDrawer} style={{ marginRight: 8 }}>
+              {t('cancel')}
+            </Button>
+            <Button 
+              type="primary" 
+              danger 
+              loading={voidLoading}
+              onClick={handleConfirmVoid}
+            >
+              Confirm Void
+            </Button>
+          </div>
+        }
+      >
+        <div style={{ padding: '20px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+            <ExclamationCircleOutlined style={{ fontSize: 24, color: '#ff4d4f', marginRight: 12 }} />
+            <span style={{ fontSize: 16, fontWeight: 500 }}>Confirm Void Receipt</span>
+          </div>
+          <div style={{ color: '#666', lineHeight: 1.8 }}>
+            <p>Are you sure you want to void this receipt? This action cannot be undone.</p>
+            {voidReceiptId && (
+              <p style={{ marginTop: 8 }}>
+                <strong>Receipt ID：</strong>{voidReceiptId}
+              </p>
+            )}
+          </div>
+        </div>
+      </Drawer>
+
+      {/* 打开钱箱抽屉 */}
+      <Drawer
+        title={t('openCashDrawer') || '打开钱箱'}
+        placement="right"
+        onClose={handleCloseOpenCashDrawer}
+        open={openCashDrawerVisible}
+        width={400}
+        footer={
+          <div style={{ textAlign: 'right' }}>
+            <Button onClick={handleCloseOpenCashDrawer} style={{ marginRight: 8 }}>
+              {t('cancel')}
+            </Button>
+            <Button 
+              type="primary" 
+              loading={openCashDrawerLoading}
+              onClick={handleOpenCashDrawer}
+            >
+              {t('confirm') || '确认'}
+            </Button>
+          </div>
+        }
+      >
+        <div style={{ padding: '20px 0' }}>
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 8, fontWeight: 500 }}>{t('selectStore') || '选择店铺'}:</div>
+            <section style={{ marginBottom: 10, marginTop: 10 }}>
+              {shops.map((item, index) => (
+                index > 0 ? (
+                  <Button 
+                    key={index}
+                    type={selectedStore === index ? 'primary' : 'default'} 
+                    style={{ borderRadius: 20, marginRight: 5, marginBottom: 5 }} 
+                    onClick={() => setSelectedStore(index)}
+                  >
+                    {item}
+                  </Button>
+                ) : null
+              ))}
+            </section>
           </div>
         </div>
       </Drawer>

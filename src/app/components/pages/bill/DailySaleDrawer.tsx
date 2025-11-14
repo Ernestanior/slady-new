@@ -1,19 +1,18 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Button, DatePicker, Table, Drawer, Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { DailySaleRequest, DailySaleData } from '@/lib/types';
+import { DailySaleData } from '@/lib/types';
 import { printService } from '@/lib/api';
+import { usePermissions } from '@/lib/usePermissions';
 import moment from 'moment';
+import { saler } from './PrintReceipt';
 
 interface DailySaleDrawerProps {
   visible: boolean;
   onClose: () => void;
 }
-
-// 所有 cashier 列
-const cashiers = ["Serene", "Staff", "Xiao Li", "Yen"];
 
 // 转换数据 -> pivot 格式
 function transformData(data: DailySaleData[]) {
@@ -22,22 +21,22 @@ function transformData(data: DailySaleData[]) {
   data.forEach((item: DailySaleData) => {
     if (!grouped[item.date]) {
       grouped[item.date] = { date: item.date };
-      cashiers.forEach(c => (grouped[item.date][c] = null));
+      saler.forEach(c => (grouped[item.date][c] = null));
     }
     grouped[item.date][item.cashier] = item.totalPrice;
   });
 
   // 计算每行总计
   Object.values(grouped).forEach((row: any) => {
-    row.total = cashiers.reduce((sum, c) => sum + (row[c] || 0), 0);
+    row.total = saler.reduce((sum, c) => sum + (row[c] || 0), 0);
   });
 
   // 添加总计行
   const totalRow: any = { date: "total" };
-  cashiers.forEach((c: any) => {
+  saler.forEach((c: any) => {
     totalRow[c] = Object.values(grouped).reduce((sum, row: any) => sum + (row[c] || 0), 0);
   });
-  totalRow.total = cashiers.reduce((sum, c) => sum + totalRow[c], 0);
+  totalRow.total = saler.reduce((sum, c) => sum + totalRow[c], 0);
 
   return [...Object.values(grouped), totalRow];
 }
@@ -45,7 +44,7 @@ function transformData(data: DailySaleData[]) {
 // 定义表格列
 const columns = [
   { title: "Date", dataIndex: "date", key: "date" },
-  ...cashiers.map(c => ({
+  ...saler.map(c => ({
     title: c,
     dataIndex: c,
     key: c,
@@ -55,10 +54,14 @@ const columns = [
 
 export default function DailySaleDrawer({ visible, onClose }: DailySaleDrawerProps) {
   const { t } = useTranslation();
+  const { getFinanceStoreAccess } = usePermissions();
   const [data, setData] = useState<any[]>([]);
   const [dateTime, setDateTime] = useState<any>();
   const [activeTab, setActiveTab] = useState('2'); // 默认二店
   const [loading, setLoading] = useState(false);
+
+  // 获取财务用户可访问的店铺
+  const financeStoreAccess = getFinanceStoreAccess();
 
   // 查询数据
   const onQuery = useCallback(async () => {
@@ -103,66 +106,84 @@ export default function DailySaleDrawer({ visible, onClose }: DailySaleDrawerPro
     setActiveTab(key);
   };
 
-  const tabItems = [
-    {
-      key: '1',
-      label: '一店',
-      children: (
-        <div>
-          <div style={{ marginBottom: 16 }}>
-            <DatePicker.RangePicker 
-              placeholder={[t('startTime'), t('endTime')]} 
-              onChange={(e) => setDateTime(e)}
-              style={{ marginRight: 16 }}
+  // 根据财务用户权限过滤可显示的店铺
+  const tabItems = useMemo(() => {
+    const allTabs = [
+      {
+        key: '1',
+        label: '一店',
+        children: (
+          <div>
+            <div style={{ marginBottom: 16 }}>
+              <DatePicker.RangePicker 
+                placeholder={[t('startTime'), t('endTime')]} 
+                onChange={(e) => setDateTime(e)}
+                style={{ marginRight: 16 }}
+              />
+              <Button type="primary" onClick={onQuery} loading={loading}>
+              {t('search')}
+              </Button>
+            </div>
+            
+            <div style={{ height: 20 }}></div>
+            
+            <Table
+              dataSource={data}
+              columns={columns}
+              pagination={false}
+              bordered
+              rowKey="date"
+              loading={loading}
             />
-            <Button type="primary" onClick={onQuery} loading={loading}>
-            {t('search')}
-            </Button>
           </div>
-          
-          <div style={{ height: 20 }}></div>
-          
-          <Table
-            dataSource={data}
-            columns={columns}
-            pagination={false}
-            bordered
-            rowKey="date"
-            loading={loading}
-          />
-        </div>
-      ),
-    },
-    {
-      key: '2',
-      label: '二店',
-      children: (
-        <div>
-          <div style={{ marginBottom: 16 }}>
-            <DatePicker.RangePicker 
-              placeholder={[t('startTime'), t('endTime')]} 
-              onChange={(e) => setDateTime(e)}
-              style={{ marginRight: 16 }}
+        ),
+      },
+      {
+        key: '2',
+        label: '二店',
+        children: (
+          <div>
+            <div style={{ marginBottom: 16 }}>
+              <DatePicker.RangePicker 
+                placeholder={[t('startTime'), t('endTime')]} 
+                onChange={(e) => setDateTime(e)}
+                style={{ marginRight: 16 }}
+              />
+              <Button type="primary" onClick={onQuery} loading={loading}>
+              {t('search')}
+              </Button>
+            </div>
+            
+            <div style={{ height: 20 }}></div>
+            
+            <Table
+              dataSource={data}
+              columns={columns}
+              pagination={false}
+              bordered
+              rowKey="date"
+              loading={loading}
             />
-            <Button type="primary" onClick={onQuery} loading={loading}>
-            {t('search')}
-            </Button>
           </div>
-          
-          <div style={{ height: 20 }}></div>
-          
-          <Table
-            dataSource={data}
-            columns={columns}
-            pagination={false}
-            bordered
-            rowKey="date"
-            loading={loading}
-          />
-        </div>
-      ),
-    },
-  ];
+        ),
+      },
+    ];
+
+    // 如果是财务用户且只能访问特定店铺，则只显示该店铺
+    if (financeStoreAccess !== null) {
+      return allTabs.filter(tab => tab.key === financeStoreAccess.toString());
+    }
+
+    // 否则显示所有店铺
+    return allTabs;
+  }, [financeStoreAccess, t, data, loading, onQuery, dateTime]);
+
+  // 当财务用户只能访问一个店铺时，自动设置activeTab
+  useEffect(() => {
+    if (financeStoreAccess !== null) {
+      setActiveTab(financeStoreAccess.toString());
+    }
+  }, [financeStoreAccess]);
 
   return (
     <Drawer

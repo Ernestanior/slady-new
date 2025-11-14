@@ -423,6 +423,10 @@ export const receipt = {
     const response = await apiClient.delete<ApiResponse>(`/receipt/delete?id=${id}`);
     return response.data;
   },
+  modifyVoided: async (id: number, voided: number): Promise<ApiResponse> => {
+    const response = await apiClient.put<ApiResponse>(`/receipt/modify-voided?id=${id}&voided=${voided}`);
+    return response.data;
+  },
 };
 
 // 设计服务API（用于打印账单时获取商品价格）
@@ -499,6 +503,12 @@ export const cashDrawerService = {
   // 删除现金抽屉余额记录
   delete: async (id: number): Promise<ApiResponse> => {
     const response = await apiClient.delete<ApiResponse>(`/cashDrawer/delete?id=${id}`);
+    return response.data;
+  },
+  
+  // 打开钱箱
+  open: async (store: number): Promise<ApiResponse> => {
+    const response = await apiClient.put<ApiResponse>('/cashDrawer/open', { store });
     return response.data;
   },
 };

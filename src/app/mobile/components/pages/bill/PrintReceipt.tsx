@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { PrintReceiptItem, PrintReceiptPayment, PrintReceiptRequest, DesignListRequest } from '@/lib/types';
 import { receipt, designService } from '@/lib/api';
 import moment from 'moment';
+import { saler, shops } from '@/app/components/pages/bill/PrintReceipt';
 
 interface PrintReceiptProps {
   onBackToList: () => void;
@@ -23,9 +24,6 @@ const calcFinalPrice = (price: number = 0, discountPercent: number = 0, discount
   return parseFloat(final.toFixed(2));
 };
 
-export const shops = ['', 'SL Studio Pte. Ltd.', 'Slady Fashion Pte. Ltd.'];
-export const saler = ['Serene', 'Sandy', 'Jewaa', 'Yen', 'QiQi', 'Staff'];
-export const paymentList = ['Bank Transfer/Pay Now', 'Cash', 'Nets', 'VISA', 'Master', 'Union', 'Slady Voucher', 'AMEX', 'Mall Voucher'];
 
 let index = 0;
 

@@ -376,6 +376,8 @@ export interface ReceiptData {
   totalPrice?: number;
   store?: number;
   gst?: number;
+  void?: number;
+  voided?: number;
 }
 
 export interface ReceiptListResponse {

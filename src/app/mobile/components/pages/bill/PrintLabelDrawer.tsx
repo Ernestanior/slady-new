@@ -37,7 +37,7 @@ export default function PrintLabelDrawer({ visible, onClose }: PrintLabelDrawerP
   const onPrint = async () => {
     try {
       const data = form.getFieldsValue();
-      const { code, color, size, salePrice } = data;
+      const { code, color, size, salePrice,store } = data;
       
       if (code && color && size && salePrice) {
         setLoading(true);
@@ -45,6 +45,7 @@ export default function PrintLabelDrawer({ visible, onClose }: PrintLabelDrawerP
           code,
           color,
           size,
+          store,
           salePrice: parseFloat(salePrice)
         };
         

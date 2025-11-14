@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, Form, Input, DatePicker, Button, message, Pagination, Spin, Tag, Tabs, Space, Divider, Drawer } from 'antd';
-import { SearchOutlined, ReloadOutlined, PrinterOutlined, FileTextOutlined, DollarOutlined, CalendarOutlined, UserOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { SearchOutlined, ReloadOutlined, PrinterOutlined, FileTextOutlined, DollarOutlined, CalendarOutlined, UserOutlined, DeleteOutlined, ExclamationCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { ReceiptData, ReceiptListRequest } from '@/lib/types';
 import { receipt } from '@/lib/api';
@@ -42,6 +42,9 @@ export default function BillManagement() {
   const [deleteDrawerVisible, setDeleteDrawerVisible] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteReceiptId, setDeleteReceiptId] = useState<number | null>(null);
+  const [voidDrawerVisible, setVoidDrawerVisible] = useState(false);
+  const [voidLoading, setVoidLoading] = useState(false);
+  const [voidReceiptId, setVoidReceiptId] = useState<number | null>(null);
 
   // 获取数据
   const fetchData = async (page = 1, searchParams: any = {}) => {
@@ -189,6 +192,38 @@ export default function BillManagement() {
     setDeleteReceiptId(null);
   };
 
+  // 打开 void 确认抽屉
+  const handleVoid = (id: number) => {
+    setVoidReceiptId(id);
+    setVoidDrawerVisible(true);
+  };
+
+  // 确认 void
+  const handleConfirmVoid = async () => {
+    if (!voidReceiptId) return;
+    
+    setVoidLoading(true);
+    try {
+      await receipt.modifyVoided(voidReceiptId, 1);
+      message.success(t('voidSuccess') || 'Void成功');
+      setVoidDrawerVisible(false);
+      setVoidReceiptId(null);
+      // 刷新列表
+      fetchData(pagination.current);
+    } catch (error) {
+      console.error('Void失败:', error);
+      message.error(t('voidFailed') || 'Void失败');
+    } finally {
+      setVoidLoading(false);
+    }
+  };
+
+  // 关闭 void 确认抽屉
+  const handleCloseVoidDrawer = () => {
+    setVoidDrawerVisible(false);
+    setVoidReceiptId(null);
+  };
+
   // 进入打印账单页面
   const handlePrintReceipt = () => {
     setCurrentView('print');
@@ -232,11 +267,14 @@ export default function BillManagement() {
         <div className="space-y-3">
           {/* 账单头部信息 */}
           <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <FileTextOutlined className="text-gray-500" />
-            <span className="font-bold text-gray-900">#{item.id}</span>
-          </div>
-
+            <div className="flex items-center space-x-2">
+              <FileTextOutlined className="text-gray-500" />
+              <span className="font-bold text-gray-900">#{item.id}</span>
+            </div>
+            {/* Void 状态 */}
+            <Tag color={(item.voided ?? 0) === 0 ? 'green' : 'red'}>
+              {(item.voided ?? 0) === 0 ? 'normal' : 'void'}
+            </Tag>
           </div>
 
           {/* REFNO */}
@@ -324,10 +362,10 @@ export default function BillManagement() {
                 type="primary" 
                 danger
                 size="small"
-                icon={<DeleteOutlined />}
-                onClick={() => handleDelete(item.id)}
+                icon={<CloseCircleOutlined />}
+                onClick={() => handleVoid(item.id)}
               >
-                {t('delete')}
+                void
               </Button>
             </div>
           )}
@@ -340,11 +378,11 @@ export default function BillManagement() {
   const allTabItems = [
     {
       key: '1',
-      label: t('store1'),
+      label: t('Slady一店'),
     },
     {
       key: '2',
-      label: t('store2'),
+      label: t('SL二店'),
     },
   ];
 
@@ -553,6 +591,51 @@ export default function BillManagement() {
             {deleteReceiptId && (
               <p style={{ marginTop: 8 }}>
                 <strong>{t('receiptId')}：</strong>{deleteReceiptId}
+              </p>
+            )}
+          </div>
+        </div>
+      </Drawer>
+
+      {/* Void 确认抽屉 */}
+      <Drawer
+        title="Confirm Void"
+        placement="bottom"
+        onClose={handleCloseVoidDrawer}
+        open={voidDrawerVisible}
+        height={300}
+        footer={
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button 
+              onClick={handleCloseVoidDrawer} 
+              style={{ flex: 1 }}
+              block
+            >
+              {t('cancel')}
+            </Button>
+            <Button 
+              type="primary" 
+              danger 
+              loading={voidLoading}
+              onClick={handleConfirmVoid}
+              style={{ flex: 1 }}
+              block
+            >
+              Confirm Void
+            </Button>
+          </div>
+        }
+      >
+        <div style={{ padding: '20px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+            <ExclamationCircleOutlined style={{ fontSize: 24, color: '#ff4d4f', marginRight: 12 }} />
+            <span style={{ fontSize: 16, fontWeight: 500 }}>Confirm Void Receipt</span>
+          </div>
+          <div style={{ color: '#666', lineHeight: 1.8 }}>
+            <p>Are you sure you want to void this receipt? This action cannot be undone.</p>
+            {voidReceiptId && (
+              <p style={{ marginTop: 8 }}>
+                <strong>Receipt ID：</strong>{voidReceiptId}
               </p>
             )}
           </div>

@@ -163,7 +163,6 @@ export function usePermissions() {
       case 'printReceipt':
       case 'printLabel':
       case 'printDailyReport':
-      case 'dailySales':
       case 'cashInOut':
       case 'openingClosingBalance':
         return hasPermission([E_USER_TYPE.ADMIN, E_USER_TYPE.SUPERADMIN, E_USER_TYPE.SALER]);
