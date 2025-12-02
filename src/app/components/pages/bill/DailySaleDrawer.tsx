@@ -26,38 +26,38 @@ function transformData(data: DailySaleData[]) {
     grouped[item.date][item.cashier] = item.totalPrice;
   });
 
-  // 计算每行总计
+  // 计算每行总计（保留两位小数）
   Object.values(grouped).forEach((row: any) => {
     const sum = saler.reduce((sum, c) => sum + (row[c] || 0), 0);
-    row.total = parseFloat(sum.toFixed(1));
+    row.total = parseFloat(sum.toFixed(2));
   });
 
-  // 添加总计行
+  // 添加总计行（保留两位小数）
   const totalRow: any = { date: "total" };
   saler.forEach((c: any) => {
     const sum = Object.values(grouped).reduce((sum: number, row: any) => sum + (row[c] || 0), 0);
-    totalRow[c] = parseFloat(sum.toFixed(1));
+    totalRow[c] = parseFloat(sum.toFixed(2));
   });
   const totalSum = saler.reduce((sum: number, c) => sum + (totalRow[c] || 0), 0);
-  totalRow.total = parseFloat(totalSum.toFixed(1));
+  totalRow.total = parseFloat(totalSum.toFixed(2));
 
   return [...Object.values(grouped), totalRow];
 }
 
-// 定义表格列
+// 定义表格列（所有数字保留两位小数）
 const columns = [
   { title: "Date", dataIndex: "date", key: "date" },
   ...saler.map(c => ({
     title: c,
     dataIndex: c,
     key: c,
-    render: (value: number | null) => value !== null ? value.toFixed(1) : '-',
+    render: (value: number | null) => value !== null ? value.toFixed(2) : '-',
   })),
   { 
     title: "total", 
     dataIndex: "total", 
     key: "total",
-    render: (value: number | null) => value !== null ? value.toFixed(1) : '-',
+    render: (value: number | null) => value !== null ? value.toFixed(2) : '-',
   }
 ];
 

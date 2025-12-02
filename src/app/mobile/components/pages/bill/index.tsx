@@ -12,6 +12,7 @@ import PrintReceipt from './PrintReceipt';
 import PrintLabelDrawer from './PrintLabelDrawer';
 import PrintDailyReportDrawer from './PrintDailyReportDrawer';
 import DailySaleDrawer from './DailySaleDrawer';
+import PaymentMethodSaleDrawer from './PaymentMethodSaleDrawer';
 import CashInOutDrawer from './CashInOutDrawer';
 import OpeningClosingBalanceDrawer from './OpeningClosingBalanceDrawer';
 
@@ -37,6 +38,7 @@ export default function BillManagement() {
   const [printLabelVisible, setPrintLabelVisible] = useState(false);
   const [printDailyReportVisible, setPrintDailyReportVisible] = useState(false);
   const [dailySaleVisible, setDailySaleVisible] = useState(false);
+  const [paymentMethodSaleVisible, setPaymentMethodSaleVisible] = useState(false);
   const [cashInOutVisible, setCashInOutVisible] = useState(false);
   const [openingClosingBalanceVisible, setOpeningClosingBalanceVisible] = useState(false);
   const [deleteDrawerVisible, setDeleteDrawerVisible] = useState(false);
@@ -67,8 +69,8 @@ export default function BillManagement() {
 
       // 处理日期范围
       if (formValues.createDate && formValues.createDate.length === 2) {
-        params.startDate = formValues.createDate[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
-        params.endDate = formValues.createDate[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
+        params.startDateTime = formValues.createDate[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
+        params.endDateTime = formValues.createDate[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
         delete (params as any).createDate;
       }
 
@@ -446,6 +448,14 @@ export default function BillManagement() {
                 {t('dailySales')}
               </Button>
             )}
+            {canUseFeature('dailySales') && (
+              <Button 
+                icon={<DollarOutlined />}
+                onClick={() => setPaymentMethodSaleVisible(true)}
+              >
+                {t('paymentMethodSales') || '支付方式销售统计'}
+              </Button>
+            )}
             {canUseFeature('cashInOut') && (
               <Button 
                 icon={<DollarOutlined />}
@@ -550,6 +560,10 @@ export default function BillManagement() {
       <DailySaleDrawer 
         visible={dailySaleVisible} 
         onClose={() => setDailySaleVisible(false)} 
+      />
+      <PaymentMethodSaleDrawer 
+        visible={paymentMethodSaleVisible} 
+        onClose={() => setPaymentMethodSaleVisible(false)} 
       />
       <CashInOutDrawer 
         visible={cashInOutVisible} 
