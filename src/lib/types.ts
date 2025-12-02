@@ -371,6 +371,7 @@ export interface ReceiptData {
   refNo: string;
   itemList: ReceiptItem[] | string;
   receiptDate: string;
+  createDate: string;
   cashier: string;
   paymentList?: Array<{ payment: string; amount: number }>;
   totalPrice?: number;
@@ -397,8 +398,8 @@ export interface ReceiptListRequest {
   searchPage: SearchPageParams;
   store: number;
   refNo?: string;
-  startDate?: string;
-  endDate?: string;
+  startDateTime?: string;
+  endDateTime?: string;
 }
 
 // 打印账单相关类型
@@ -434,6 +435,7 @@ export interface PrintLabelRequest {
   size: string;
   salePrice: number;
   store: number;
+  count: number;
 }
 
 // 打印每日结单相关类型
@@ -563,13 +565,13 @@ export const typeList: any[] = [
 ];
 
 // 颜色选项
-export const colorList = ['Khaki', 'Grey', 'Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Black', 'Stripes', 'Grid', 'Purple', 'White', 'Pink', 'Beige', 'Brown', 'Champagne', 'Navy', 'Sky', 'Mustard', 'Mint', 'Peach', 'Cream', 'Charcoal', 'Silver', 'Gold'];
+export const colorList = ['Black','White','Pink','Blue', 'Grey', 'Khaki','Red', 'Silver','Orange', 'Yellow', 'Green',   'Stripes', 'Grid', 'Purple',   'Beige', 'Brown', 'Champagne', 'Navy', 'Sky', 'Mustard', 'Mint', 'Peach', 'Cream', 'Charcoal',  'Gold'];
 
 // 面料选项
 export const fabricList = ['Knits', 'Denim', 'Silk', 'Polyester', 'Lace', 'Chiffon', 'Cotton', 'Linen', 'Tweed fabric', 'Stretch fabrics', 'leather', 'PVC'];
 
 // 尺码选项
-export const sizeList = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', 'One Size', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44'];
+export const sizeList = ['Free Size', 'XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44'];
 
 // 仓库枚举
 export enum WAREHOUSE {

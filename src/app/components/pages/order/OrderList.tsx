@@ -12,11 +12,12 @@ import { useNotification } from '@/lib/notificationManager';
 interface OrderListProps {
   warehouseName: string;
   onRefresh: () => void;
+  onViewDesignDetail?: (designId: number) => void;
 }
 
 const dev_url = 'http://119.28.104.20';
 
-const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh }, ref) => {
+const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, onViewDesignDetail }, ref) => {
   const { t } = useTranslation();
   const { modal } = App.useApp();
   const [form] = Form.useForm();
@@ -408,11 +409,19 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh },
       dataIndex: 'previewPhoto',
       width: 120,
       fixed: 'left' as const,
-      render: (item: string) => (
+      render: (item: string, record: OrderData) => (
         <img 
-          style={{ height: 100, width: 80, objectFit: 'cover' }} 
+          style={{ height: 100, width: 80, objectFit: 'cover', cursor: 'pointer' }} 
           alt="" 
           src={dev_url + item}
+          onClick={() => {
+            if (onViewDesignDetail) {
+              // 使用订单中的 id 字段作为设计ID
+              // 如果订单数据中有 designId 字段，可以使用 record.designId
+              const designId = (record as any).designId;
+              onViewDesignDetail(designId);
+            }
+          }}
           onError={(e) => {
             (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
           }}

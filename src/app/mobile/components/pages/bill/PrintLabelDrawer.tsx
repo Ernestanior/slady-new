@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Button, Form, Input, notification, Select, Drawer, Card } from 'antd';
+import { Button, Form, Input, notification, Select, Drawer, Card, InputNumber } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { PrintLabelRequest } from '@/lib/types';
 import { printService, designService } from '@/lib/api';
@@ -37,16 +37,17 @@ export default function PrintLabelDrawer({ visible, onClose }: PrintLabelDrawerP
   const onPrint = async () => {
     try {
       const data = form.getFieldsValue();
-      const { code, color, size, salePrice,store } = data;
+      const { code, color, size, salePrice, store, count } = data;
       
-      if (code && color && size && salePrice) {
+      if (code && color && size && salePrice && count) {
         setLoading(true);
         const params: PrintLabelRequest = {
           code,
           color,
           size,
           store,
-          salePrice: parseFloat(salePrice)
+          salePrice: parseFloat(salePrice),
+          count: Number(count)
         };
         
         await printService.printLabel(params);
@@ -97,7 +98,8 @@ export default function PrintLabelDrawer({ visible, onClose }: PrintLabelDrawerP
             layout="vertical"
             initialValues={{
               color: colorList[0],
-              size: sizeList[0]
+              size: sizeList[0],
+              count: 1
             }}
           >
             <Form.Item
@@ -144,6 +146,22 @@ export default function PrintLabelDrawer({ visible, onClose }: PrintLabelDrawerP
               rules={[{ required: true, message: '请输入价格' }]}
             >
               <Input placeholder={t('pleaseEnterPrice')} type="number" />
+            </Form.Item>
+
+            <Form.Item
+              name="count"
+              label={t('count')}
+              rules={[
+                { required: true, type: 'number', min: 1, message: t('pleaseEnterCount') || '请输入数量' },
+                {
+                  validator: (_, value) =>
+                    value === undefined || value === null || Number.isInteger(value)
+                      ? Promise.resolve()
+                      : Promise.reject(new Error(t('countMustBeInteger') || '数量必须为整数')),
+                },
+              ]}
+            >
+              <InputNumber min={1} step={1} style={{ width: '100%' }} />
             </Form.Item>
           </Form>
         </Card>

@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Button, Form, Input, notification, Select, Drawer } from 'antd';
+import { Button, Form, Input, notification, Select, Drawer, InputNumber } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { PrintLabelRequest } from '@/lib/types';
 import { printService, designService } from '@/lib/api';
 import { colorList, sizeList } from '@/lib/types';
 import { shops } from './PrintReceipt';
+import ColorSelect from '../../ColorSelect';
 
 interface PrintLabelDrawerProps {
   visible: boolean;
@@ -44,16 +45,17 @@ export default function PrintLabelDrawer({ visible, onClose }: PrintLabelDrawerP
   const onPrint = async () => {
     try {
       const data = form.getFieldsValue();
-      const { code, color, size, salePrice } = data;
+      const { code, color, size, salePrice, count } = data;
       
-      if (code && color && size && salePrice) {
+      if (code && color && size && salePrice && count) {
         setLoading(true);
         const params: PrintLabelRequest = {
           code,
           color,
           size,
           salePrice: parseFloat(salePrice),
-          store: shop
+          store: shop,
+          count: Number(count)
         };
         
         await printService.printLabel(params);
@@ -98,7 +100,8 @@ export default function PrintLabelDrawer({ visible, onClose }: PrintLabelDrawerP
         layout="vertical"
         initialValues={{
           color: colorList[0],
-          size: sizeList[0]
+          size: sizeList[0],
+          count: 1
         }}
       >
         <section style={{ marginBottom: 10, marginTop: 10 }}>
@@ -127,11 +130,9 @@ export default function PrintLabelDrawer({ visible, onClose }: PrintLabelDrawerP
           label={t('color')}
           rules={[{ required: true, message: '请选择颜色' }]}
         >
-          <Select placeholder={t('pleaseSelectColor')}>
-            {colorList.map(color => (
-              <Select.Option key={color} value={color}>{color}</Select.Option>
-            ))}
-          </Select>
+          <ColorSelect 
+              placeholder={t('color')} 
+            />
         </Form.Item>
 
         <Form.Item
@@ -158,6 +159,22 @@ export default function PrintLabelDrawer({ visible, onClose }: PrintLabelDrawerP
           rules={[{ required: true, message: '请输入价格' }]}
         >
           <Input placeholder={t('pleaseEnterPrice')} type="number" />
+        </Form.Item>
+
+        <Form.Item
+          name="count"
+          label={t('count')}
+          rules={[
+            { required: true, type: 'number', min: 1, message: t('pleaseEnterCount') || '请输入数量' },
+            {
+              validator: (_, value) =>
+                value === undefined || value === null || Number.isInteger(value)
+                  ? Promise.resolve()
+                  : Promise.reject(new Error(t('countMustBeInteger') || '数量必须为整数')),
+            },
+          ]}
+        >
+          <InputNumber min={1} step={1} style={{ width: '100%' }} />
         </Form.Item>
       </Form>
     </Drawer>

@@ -1,15 +1,24 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Tabs } from 'antd';
+import { Tabs, message, Form } from 'antd';
 import OrderList from './OrderList';
 import { WAREHOUSE } from '@/lib/types';
+import DesignDetail from '../design/DesignDetail';
+import { api } from '@/lib/api';
+import { DesignDetail as DesignDetailType } from '@/lib/types';
 
 export default function Order() {
   const [activeKey, setActiveKey] = useState('slady');
   const sladyRef = useRef<any>(null);
   const sl2Ref = useRef<any>(null);
   const liveRef = useRef<any>(null);
+  
+  // 视图状态：'list' 或 'detail'
+  const [currentView, setCurrentView] = useState<'list' | 'detail'>('list');
+  const [selectedDesignId, setSelectedDesignId] = useState<number | null>(null);
+  const [detailData, setDetailData] = useState<DesignDetailType | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   // 刷新当前选中的订单列表
   const handleRefresh = () => {
@@ -24,6 +33,49 @@ export default function Order() {
     setActiveKey(key);
   };
 
+  // 获取商品详情
+  const fetchDesignDetail = async (id: number) => {
+    try {
+      setDetailLoading(true);
+      const response = await api.design.getDetail(id);
+      if (response.code === 200) {
+        setDetailData(response.data);
+      }
+    } catch (error) {
+      console.error('获取商品详情失败:', error);
+      message.error('获取商品详情失败');
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  // 跳转到详情页面
+  const handleViewDesignDetail = (designId: number) => {
+    setSelectedDesignId(designId);
+    setCurrentView('detail');
+    fetchDesignDetail(designId);
+  };
+
+  // 返回列表页面
+  const handleBackToList = () => {
+    setCurrentView('list');
+    setSelectedDesignId(null);
+    setDetailData(null);
+  };
+
+  // 编辑相关状态和函数（从 design/index.tsx 复制，但这里可能不需要编辑功能）
+  const [editDrawerVisible, setEditDrawerVisible] = useState(false);
+  const [editForm] = Form.useForm();
+  const handleEdit = () => {
+    // 订单页面可能不需要编辑功能
+  };
+  const handleDelete = () => {
+    // 订单页面可能不需要删除功能
+  };
+  const handleViewImages = () => {
+    // 订单页面可能不需要查看图片功能
+  };
+
   const tabItems = [
     {
       key: 'slady',
@@ -33,6 +85,7 @@ export default function Order() {
           ref={sladyRef}
           warehouseName={WAREHOUSE.SLADY}
           onRefresh={() => handleRefresh()}
+          onViewDesignDetail={handleViewDesignDetail}
         />
       ),
     },
@@ -44,6 +97,7 @@ export default function Order() {
           ref={sl2Ref}
           warehouseName={WAREHOUSE.SL}
           onRefresh={() => handleRefresh()}
+          onViewDesignDetail={handleViewDesignDetail}
         />
       ),
     },
@@ -55,10 +109,29 @@ export default function Order() {
           ref={liveRef}
           warehouseName={WAREHOUSE.LIVE}
           onRefresh={() => handleRefresh()}
+          onViewDesignDetail={handleViewDesignDetail}
         />
       ),
     },
   ];
+
+  // 根据当前视图渲染对应内容
+  if (currentView === 'detail') {
+    return (
+      <DesignDetail
+        detailData={detailData}
+        detailLoading={detailLoading}
+        onBackToList={handleBackToList}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onViewImages={handleViewImages}
+        editDrawerVisible={editDrawerVisible}
+        onEditDrawerClose={() => setEditDrawerVisible(false)}
+        onEditSubmit={() => {}}
+        editForm={editForm}
+      />
+    );
+  }
 
   return (
     <div style={{ padding: '24px' }}>

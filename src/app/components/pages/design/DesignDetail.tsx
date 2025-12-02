@@ -409,10 +409,9 @@ export default function DesignDetail({
               { required: true, message: '请输入采购价格' },
             ]}
           >
-            <InputNumber
+            <Input
               placeholder={t('purchasePrice')}
               style={{ width: '100%' }}
-              min={0}
             />
           </Form.Item>
 

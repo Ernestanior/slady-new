@@ -624,10 +624,9 @@ export default function Design() {
             name="purchasePrice" 
             rules={[
               { required: true, message: t('pleaseEnter') + t('purchasePrice') },
-              { type: 'number', min: 0, message: t('purchasePrice') + t('mustBeGreaterThanOrEqualToZero') }
             ]}
           >
-            <InputNumber placeholder={t('purchasePrice')} style={{ width: '100%' }} min={0} />
+            <Input placeholder={t('purchasePrice')} style={{ width: '100%' }}  />
           </Form.Item>
 
           <Form.Item 

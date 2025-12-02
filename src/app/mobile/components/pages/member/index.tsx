@@ -148,7 +148,7 @@ export default function MemberManagement() {
       const params: TopUpMemberRequest = {
         id: selectedMember.id,
         saler: values.saler,
-        balance: Math.floor(values.amount),
+        balance: values.amount,
         remark: values.remark,
       };
 

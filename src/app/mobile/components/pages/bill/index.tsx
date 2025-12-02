@@ -237,7 +237,11 @@ export default function BillManagement() {
   // 解析商品列表
   const parseItemList = (value: any) => {
     try {
-      return typeof value === 'string' ? JSON.parse(value) : value;
+      if (value === undefined || value === null) {
+        return [];
+      }
+      const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+      return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
     }
@@ -246,7 +250,11 @@ export default function BillManagement() {
   // 解析支付列表
   const parsePaymentList = (value: any) => {
     try {
-      return typeof value === 'string' ? JSON.parse(value) : value;
+      if (value === undefined || value === null) {
+        return [];
+      }
+      const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+      return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
     }
@@ -256,7 +264,7 @@ export default function BillManagement() {
   const renderBillCard = (item: ReceiptData, index: number) => {
     const itemList = parseItemList(item.itemList);
     const paymentList = parsePaymentList(item.paymentList);
-    const totalAmount = itemList.reduce((sum: number, it: any) => sum + (Number(it.finalPrice ?? it.price) * it.qty), 0);
+    const totalAmount = (itemList || []).reduce((sum: number, it: any) => sum + (Number(it.finalPrice ?? it.price) * (it.qty || 0)), 0);
 
     return (
       <Card
@@ -279,7 +287,7 @@ export default function BillManagement() {
 
           {/* REFNO */}
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">REFNO:</span>
+            <span className="text-sm text-gray-600">{t('itemCode')}:</span>
             <span className="font-medium text-gray-900">{item.refNo}</span>
           </div>
 
@@ -466,7 +474,7 @@ export default function BillManagement() {
           onFinish={handleSearch}
         >
           <div className="grid grid-cols-1">
-            <Form.Item name="refNo" label={t('refNo')}>
+            <Form.Item name="refNo" label={t('itemCode')}>
               <Input placeholder={t('pleaseEnterRefNo')} />
             </Form.Item>
             <Form.Item name="createDate" label={t('createTime')}>

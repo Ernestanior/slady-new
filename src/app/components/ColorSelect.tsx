@@ -6,8 +6,8 @@ import { PlusOutlined } from '@ant-design/icons';
 import { useColorManager } from '@/lib/colorManager';
 
 interface ColorSelectProps {
-  value?: string[];
-  onChange?: (value: string[]) => void;
+  value?: string | string[];
+  onChange?: (value: string | string[]) => void;
   placeholder?: string;
   size?: 'small' | 'middle' | 'large';
   mode?: 'multiple' | 'tags';
@@ -21,7 +21,7 @@ export default function ColorSelect({
   onChange,
   placeholder = '请选择颜色',
   size = 'middle',
-  mode = 'multiple',
+  mode,
   disabled = false,
   style,
   className,

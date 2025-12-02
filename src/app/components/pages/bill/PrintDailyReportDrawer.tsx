@@ -5,7 +5,6 @@ import { Button, Form, Select, DatePicker, notification, Drawer } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { PrintDailyReportRequest } from '@/lib/types';
 import { printService } from '@/lib/api';
-import moment from 'moment';
 import { saler } from './PrintReceipt';
 
 interface PrintDailyReportDrawerProps {
@@ -27,13 +26,20 @@ export default function PrintDailyReportDrawer({ visible, onClose }: PrintDailyR
   const onPrint = async () => {
     try {
       const data = form.getFieldsValue();
+      const selectedDate = data?.date?.format?.('YYYY-MM-DD');
+      if (!selectedDate) {
+        notification.error({ message: '请选择日期' });
+        return;
+      }
       setLoading(true);
       
       const params: PrintDailyReportRequest = {
         ...data,
         shop: "Slady Studio Pte. Ltd.",
-        date: moment(data.date).format('YYYY-MM-DD')
+        date: selectedDate
       };
+      console.log(params);
+      
       
       await printService.printDailyReport(params);
       notification.success({ message: '打印每日结单成功' });

@@ -28,15 +28,18 @@ function transformData(data: DailySaleData[]) {
 
   // 计算每行总计
   Object.values(grouped).forEach((row: any) => {
-    row.total = saler.reduce((sum, c) => sum + (row[c] || 0), 0);
+    const sum = saler.reduce((sum, c) => sum + (row[c] || 0), 0);
+    row.total = parseFloat(sum.toFixed(1));
   });
 
   // 添加总计行
   const totalRow: any = { date: "total" };
   saler.forEach((c: any) => {
-    totalRow[c] = Object.values(grouped).reduce((sum, row: any) => sum + (row[c] || 0), 0);
+    const sum = Object.values(grouped).reduce((sum: number, row: any) => sum + (row[c] || 0), 0);
+    totalRow[c] = parseFloat(sum.toFixed(1));
   });
-  totalRow.total = saler.reduce((sum, c) => sum + totalRow[c], 0);
+  const totalSum = saler.reduce((sum: number, c) => sum + (totalRow[c] || 0), 0);
+  totalRow.total = parseFloat(totalSum.toFixed(1));
 
   return [...Object.values(grouped), totalRow];
 }
@@ -48,8 +51,14 @@ const columns = [
     title: c,
     dataIndex: c,
     key: c,
+    render: (value: number | null) => value !== null ? value.toFixed(1) : '-',
   })),
-  { title: "total", dataIndex: "total", key: "total" }
+  { 
+    title: "total", 
+    dataIndex: "total", 
+    key: "total",
+    render: (value: number | null) => value !== null ? value.toFixed(1) : '-',
+  }
 ];
 
 export default function DailySaleDrawer({ visible, onClose }: DailySaleDrawerProps) {
