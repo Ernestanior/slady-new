@@ -58,7 +58,12 @@ export default function HotColdTable({
           alt={t('productImage')}
           src={dev_url + photo}
           onError={(e) => {
-            (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
+            const img = e.target as HTMLImageElement;
+            // 防止无限循环：如果已经是 placeholder 就不再设置
+            if (!img.src.includes('placeholder-image.jpg') && !img.src.includes('data:image')) {
+              // 使用 data URI 作为占位符（透明 1x1 像素图片）
+              img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1" height="1"%3E%3C/svg%3E';
+            }
           }}
         />
       ),
