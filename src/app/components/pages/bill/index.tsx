@@ -500,8 +500,8 @@ export default function BillManagement() {
           layout="inline"
           onFinish={handleSearch}
         >
-          <Form.Item name="refNo" label="搜索产品">
-            <Input placeholder={t('pleaseEnterRefNo')} style={{ width: 200 }} />
+          <Form.Item name="item" label="搜索产品">
+            <Input placeholder={t('itemCode')} style={{ width: 200 }} />
           </Form.Item>
           <Form.Item name="createDate" label={t('createTime')}>
             <DatePicker.RangePicker 

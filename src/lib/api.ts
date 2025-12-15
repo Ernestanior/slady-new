@@ -33,7 +33,7 @@ apiClient.interceptors.request.use(
   }
 );
 
-// 响应拦截器 - 处理token过期
+// 响应拦截器 - 处理token过期和业务错误码
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
     // 一些接口会以HTTP 200返回，但业务code为401，这里统一处理
@@ -52,6 +52,15 @@ apiClient.interceptors.response.use(
       }
       // 返回一个拒绝的Promise，阻止后续业务逻辑继续执行
       return Promise.reject(new Error('Unauthorized'));
+    }
+    // 处理非200的业务错误码，显示错误提示
+    if (bizCode !== undefined && bizCode !== 200) {
+      const errorMsg = response.data?.msg || response.data?.message || '请求失败';
+      try {
+        GlobalNotification.error('错误', errorMsg);
+      } catch (_) {
+        // 如果 GlobalNotification 未初始化，忽略错误
+      }
     }
     return response;
   },
