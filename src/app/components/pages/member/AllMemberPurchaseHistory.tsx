@@ -17,20 +17,25 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
   const [refundData, setRefundData] = useState<MemberPurchaseRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('purchase');
-  const [pagination, setPagination] = useState({
+  const [purchasePagination, setPurchasePagination] = useState({
+    current: 1,
+    pageSize: 20,
+    total: 0,
+  });
+  const [refundPagination, setRefundPagination] = useState({
     current: 1,
     pageSize: 20,
     total: 0,
   });
 
   // 获取购买记录数据
-  const fetchPurchaseData = async () => {
+  const fetchPurchaseData = async (page: number = 1) => {
     setLoading(true);
     try {
       const params: MemberPurchaseHistoryRequest = {
         searchPage: {
           desc: 1,
-          page: 1,
+          page,
           pageSize: 20,
           sort: 'create_date'
         },
@@ -40,14 +45,14 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
       const response = await member.getPurchaseHistoryList(params);
       if (response.code === 200) {
         setPurchaseData(response.data.content);
-        setPagination({
+        setPurchasePagination({
           current: response.data.number + 1,
           pageSize: response.data.size,
           total: response.data.totalElements,
         });
       } else {
         setPurchaseData([]);
-        setPagination({
+        setPurchasePagination({
           current: 1,
           pageSize: 20,
           total: 0,
@@ -63,13 +68,13 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
   };
 
   // 获取退还记录数据
-  const fetchRefundData = async () => {
+  const fetchRefundData = async (page: number = 1) => {
     setLoading(true);
     try {
       const params: MemberPurchaseHistoryRequest = {
         searchPage: {
           desc: 1,
-          page: 1,
+          page,
           pageSize: 20,
           sort: 'create_date'
         },
@@ -79,13 +84,28 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
       const response = await member.getPurchaseHistoryList(params);
       if (response.code === 200) {
         setRefundData(response.data.content);
+        setRefundPagination({
+          current: response.data.number + 1,
+          pageSize: response.data.size,
+          total: response.data.totalElements,
+        });
       } else {
         setRefundData([]);
+        setRefundPagination({
+          current: 1,
+          pageSize: 20,
+          total: 0,
+        });
       }
     } catch (error) {
       console.error('获取退还记录失败:', error);
       message.error('获取退还记录失败');
       setRefundData([]);
+      setRefundPagination({
+        current: 1,
+        pageSize: 20,
+        total: 0,
+      });
     } finally {
       setLoading(false);
     }
@@ -93,8 +113,20 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
 
   // 初始化数据
   useEffect(() => {
-    Promise.all([fetchPurchaseData(), fetchRefundData()]);
+    Promise.all([fetchPurchaseData(1), fetchRefundData(1)]);
   }, []);
+
+  const handleTabChange = (key: string) => {
+    setActiveTab(key);
+    if (key === 'purchase') {
+      fetchPurchaseData(1);
+    } else {
+      fetchRefundData(1);
+    }
+  };
+
+  const currentPagination =
+    activeTab === 'purchase' ? purchasePagination : refundPagination;
 
   // 表格列定义
   const columns = [
@@ -230,7 +262,7 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
       <Card>
         <Tabs
           activeKey={activeTab}
-          onChange={setActiveTab}
+          onChange={handleTabChange}
           items={tabItems}
           size="large"
         />
@@ -238,11 +270,17 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
         {/* 分页 */}
         <div style={{ marginTop: 16, textAlign: 'right' }}>
           <Pagination
-            current={pagination.current}
-            pageSize={pagination.pageSize}
-            total={pagination.total}
+            current={currentPagination.current}
+            pageSize={currentPagination.pageSize}
+            total={currentPagination.total}
             onChange={(page) => {
-              setPagination(prev => ({ ...prev, current: page }));
+              if (activeTab === 'purchase') {
+                setPurchasePagination(prev => ({ ...prev, current: page }));
+                fetchPurchaseData(page);
+              } else {
+                setRefundPagination(prev => ({ ...prev, current: page }));
+                fetchRefundData(page);
+              }
             }}
             showSizeChanger={false}
             showQuickJumper

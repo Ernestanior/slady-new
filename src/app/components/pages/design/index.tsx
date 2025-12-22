@@ -118,7 +118,7 @@ export default function Design() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery.typeList, searchQuery.design]);
+  }, [searchQuery.typeList, searchQuery.design, searchQuery.hasStock]);
 
   // 初始加载数据
   useEffect(() => {
