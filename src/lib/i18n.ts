@@ -54,6 +54,7 @@ const zhTranslations = {
   editDesign: '编辑商品',
   modifyStock: '修改库存',
   addItem: '新增商品',
+   itemCode: '商品编号',
   warehouse: '仓库',
   color: '颜色',
   // 颜色翻译
@@ -353,8 +354,10 @@ const zhTranslations = {
   store2: '二店',
   printDailyReport: '打印每日结单',
   dailySale: '每日销售情况',
-  cashInOut: 'Cash In/Out',
-  openingClosingBalance: 'Opening/Closing Balance',
+  dailySales: '每日销售统计',
+  paymentMethodSales: '支付方式销售统计',
+  cashInOut: '收支记录',
+  openingClosingBalance: '开/闭店结余',
   reprint: '重新打印',
   print: '打印',
   detectPrice: '检测价格',
@@ -383,6 +386,10 @@ const zhTranslations = {
   startTime: '开始时间',
   endTime: '结束时间',
   pleaseEnterBillAmount: '请输入金额',
+  openCashDrawer: '打开钱箱',
+  openCashDrawerSuccess: '打开钱箱成功',
+  openCashDrawerFailed: '打开钱箱失败',
+  selectStore: '选择店铺',
   
   // Order Management
   exporting: '导出中...',
@@ -833,6 +840,8 @@ const enTranslations = {
   store2: 'Store 2',
   printDailyReport: 'Print Daily Report',
   dailySale: 'Daily Sale',
+  dailySales: 'Daily Sales Summary',
+  paymentMethodSales: 'Payment Method Sales',
   cashInOut: 'Cash In/Out',
   openingClosingBalance: 'Opening/Closing Balance',
   reprint: 'Reprint',
@@ -862,6 +871,10 @@ const enTranslations = {
   pleaseSelectCashier: 'Please select cashier',
   startTime: 'Start Time',
   endTime: 'End Time',
+  openCashDrawer: 'Open Cash Drawer',
+  openCashDrawerSuccess: 'Cash drawer opened successfully',
+  openCashDrawerFailed: 'Failed to open cash drawer',
+  selectStore: 'Select Store',
   
   // Order Management
   exporting: 'Exporting...',

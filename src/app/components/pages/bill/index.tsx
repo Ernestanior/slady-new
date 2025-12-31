@@ -264,19 +264,19 @@ export default function BillManagement() {
   // 表格列定义
   const baseColumns = [
     {
-      title: 'ID',
+      title: t('receiptId'),
       dataIndex: 'id',
       key: 'id',
       width: 100,
     },
     {
-      title: 'Item Code',
+      title: t('itemCode'),
       dataIndex: 'refNo',
       key: 'refNo',
       width: 150,
     },
     {
-      title: 'ITEM',
+      title: t('item'),
       dataIndex: 'itemList',
       key: 'itemList',
       width: 300,
@@ -310,19 +310,19 @@ export default function BillManagement() {
       }
     },
     {
-      title: 'DATE',
+      title: t('date'),
       dataIndex: 'receiptDate',
       key: 'receiptDate',
       width: 150,
     },
     {
-      title: 'CASHIER',
+      title: t('cashier'),
       dataIndex: 'cashier',
       key: 'cashier',
       width: 120,
     },
     {
-      title: 'PAYMENT',
+      title: t('payment'),
       dataIndex: 'paymentList',
       key: 'paymentList',
       width: 250,
@@ -352,7 +352,7 @@ export default function BillManagement() {
       }
     },
     {
-      title: 'VOID',
+      title: t('void'),
       dataIndex: 'voided',
       key: 'voided',
       width: 100,
@@ -373,7 +373,7 @@ export default function BillManagement() {
     : [
         ...baseColumns,
         {
-          title: 'REPRINT',
+          title: t('reprint'),
           dataIndex: 'id',
           key: 'reprint',
           width: 100,
@@ -467,7 +467,7 @@ export default function BillManagement() {
           )}
           {canUseFeature('dailySales') && (
             <Button onClick={() => setDailySaleVisible(true)}>
-              {t('dailySales')}
+              {t('dailySales') || '每日销售统计'}
             </Button>
           )}
           {canUseFeature('dailySales') && (
@@ -477,12 +477,12 @@ export default function BillManagement() {
           )}
           {canUseFeature('cashInOut') && (
             <Button onClick={() => setCashInOutVisible(true)}>
-              Cash In/Out
+              {t('cashInOut') || '收支记录'}
             </Button>
           )}
           {canUseFeature('openingClosingBalance') && (
             <Button onClick={() => setOpeningClosingBalanceVisible(true)}>
-              Opening/Closing Balance
+              {t('openingClosingBalance') || '开/闭店结余'}
             </Button>
           )}
           {!isFinance() && (
