@@ -19,7 +19,7 @@ interface ItemTableProps {
 export default function ItemTable({ data, loading, warehouseName, designId, onRefresh }: ItemTableProps) {
   const { t } = useTranslation();
   const { modal } = App.useApp();
-  const { canUseFeature } = usePermissions();
+  const { canUseFeature, isSaler } = usePermissions();
   const [form] = Form.useForm();
   const [stockForm] = Form.useForm();
   const [orderForm] = Form.useForm();
@@ -157,22 +157,24 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
               {t('modifyStock')}
             </Button>
           )}
-          <Button
-            type="link"
-            icon={<PlusOutlined />}
-            onClick={() => handleOrder(record, 'store')}
-            size="small"
-            style={{
-              backgroundColor: '#fff',
-              border: '1px solid #d9d9d9',
-              borderRadius: '4px',
-              padding: '4px 8px',
-              height: 'auto',
-              minWidth: '80px'
-            }}
-          >
-            {t('storeAdjustment')}
-          </Button>
+          {!isSaler() && (
+            <Button
+              type="link"
+              icon={<PlusOutlined />}
+              onClick={() => handleOrder(record, 'store')}
+              size="small"
+              style={{
+                backgroundColor: '#fff',
+                border: '1px solid #d9d9d9',
+                borderRadius: '4px',
+                padding: '4px 8px',
+                height: 'auto',
+                minWidth: '80px'
+              }}
+            >
+              {t('storeAdjustment')}
+            </Button>
+          )}
           <Button
             type="link"
             icon={<ShoppingOutlined />}

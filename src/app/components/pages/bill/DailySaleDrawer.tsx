@@ -51,13 +51,13 @@ const columns = [
     title: c,
     dataIndex: c,
     key: c,
-    render: (value: number | null) => value !== null ? value.toFixed(2) : '-',
+    render: (value: number | null) => value !== null ? value.toFixed(2) : '0.00',
   })),
   { 
     title: "total", 
     dataIndex: "total", 
     key: "total",
-    render: (value: number | null) => value !== null ? value.toFixed(2) : '-',
+    render: (value: number | null) => value !== null ? value.toFixed(2) : '0.00',
   }
 ];
 

@@ -398,6 +398,7 @@ export interface ReceiptListRequest {
   searchPage: SearchPageParams;
   store: number;
   refNo?: string;
+  item?: string;
   startDateTime?: string;
   endDateTime?: string;
 }
@@ -565,7 +566,7 @@ export const typeList: any[] = [
 ];
 
 // 颜色选项
-export const colorList = ['Black','White','Pink','Blue', 'Grey', 'Khaki','Red', 'Silver','Orange', 'Yellow', 'Green',   'Stripes', 'Grid', 'Purple',   'Beige', 'Brown', 'Champagne', 'Navy', 'Sky', 'Mustard', 'Mint', 'Peach', 'Cream', 'Charcoal',  'Gold'];
+export const colorList = ['Black','White','Beige','Pink','Blue', 'Grey', 'Khaki','Red', 'Silver','Orange', 'Yellow', 'Green',   'Stripes', 'Grid', 'Purple',    'Brown', 'Champagne', 'Navy', 'Sky', 'Mustard', 'Mint', 'Peach', 'Cream', 'Charcoal',  'Gold'];
 
 // 面料选项
 export const fabricList = ['Knits', 'Denim', 'Silk', 'Polyester', 'Lace', 'Chiffon', 'Cotton', 'Linen', 'Tweed fabric', 'Stretch fabrics', 'leather', 'PVC'];

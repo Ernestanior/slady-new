@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const fs = require('fs');
 const archiver = require('archiver');
 const { execSync } = require('child_process');
