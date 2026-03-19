@@ -14,7 +14,7 @@ import MemberTopUpHistory from './MemberTopUpHistory';
 
 export default function MemberManagement() {
   const { t } = useTranslation();
-  const { canUseFeature } = usePermissions();
+  const { canUseFeature, isAdmin } = usePermissions();
   const [form] = Form.useForm();
   const [modifyForm] = Form.useForm();
   const [topUpForm] = Form.useForm();
@@ -33,6 +33,8 @@ export default function MemberManagement() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [selectedMember, setSelectedMember] = useState<MemberData | null>(null);
   const [currentView, setCurrentView] = useState<'list' | 'purchase' | 'allPurchase' | 'topUp'>('list');
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [totalBalance, setTotalBalance] = useState(0);
 
   // 获取数据
   const fetchData = async (page = 1, searchParams: any = {}) => {
@@ -41,18 +43,27 @@ export default function MemberManagement() {
     
     try {
       const formValues = form.getFieldsValue();
+      
+      // Format dates to YYYY-MM-DD
+      if (formValues.startDate) {
+        formValues.startDate = formValues.startDate.format('YYYY-MM-DD');
+      }
+      if (formValues.endDate) {
+        formValues.endDate = formValues.endDate.format('YYYY-MM-DD');
+      }
+      
       const params: MemberListRequest = {
         searchPage: {
           desc: 1,
           page,
-          pageSize: 20,
+          pageSize: 999,
           sort: 'voucherNumber'
         },
         ...formValues,
         ...searchParams
       };
 
-      const response = await member.getList(params);
+      const response = await member.getPage(params);
       if (response.code === 200) {
         setData(response.data.content);
         setPagination({
@@ -89,6 +100,13 @@ export default function MemberManagement() {
       fetchData();
     }
   }, [hasLoaded]);
+
+  // 处理行选择变化
+  const handleRowSelectionChange = (selectedKeys: React.Key[], selectedRows: MemberData[]) => {
+    setSelectedRowKeys(selectedKeys);
+    const total = selectedRows.reduce((sum, row) => sum + (row.balance || 0), 0);
+    setTotalBalance(total);
+  };
 
   // 搜索
   const handleSearch = () => {
@@ -402,6 +420,12 @@ export default function MemberManagement() {
           <Form.Item name="phone" label={t('phone')}>
             <Input placeholder={t('pleaseEnterPhone')} style={{ width: 200 }} />
           </Form.Item>
+          <Form.Item name="startDate" label={t('startDate')}>
+            <DatePicker style={{ width: 200 }} />
+          </Form.Item>
+          <Form.Item name="endDate" label={t('endDate')}>
+            <DatePicker style={{ width: 200 }} />
+          </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
               {t('search')}
@@ -412,6 +436,13 @@ export default function MemberManagement() {
               {t('reset')}
             </Button>
           </Form.Item>
+          {isAdmin() && (
+            <Form.Item>
+              <span style={{ fontSize: 16, fontWeight: 'bold', color: '#52c41a' }}>
+                {t('选中会员总余额')}: ${totalBalance}
+              </span>
+            </Form.Item>
+          )}
         </Form>
       </Card>
 
@@ -424,6 +455,11 @@ export default function MemberManagement() {
           loading={loading}
           pagination={false}
           scroll={{ x: 800 }}
+          rowSelection={{
+            type: 'checkbox',
+            selectedRowKeys,
+            onChange: handleRowSelectionChange,
+          }}
         />
         
         {/* 分页 */}

@@ -206,6 +206,11 @@ export interface MemberData {
 export interface MemberListResponse {
   msg: string;
   code: number;
+  data: any[];
+}
+export interface MemberPageResponse {
+  msg: string;
+  code: number;
   data: {
     number: number;
     size: number;
@@ -215,6 +220,7 @@ export interface MemberListResponse {
     content: MemberData[];
   };
 }
+
 
 export interface MemberListRequest {
   searchPage: SearchPageParams;

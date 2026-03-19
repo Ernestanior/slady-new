@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { API_ENDPOINTS } from './endpoints';
-import { UserListResponse, CreateUserRequest, ModifyUserRequest, PaginationParams, UserListRequest, DesignListResponse, DesignListRequest, DesignDetailResponse, ModifyDesignRequest, CreateDesignRequest, CreateItemRequest, SearchPageParams, ItemData, CreateOrderRequest, OrderPageRequest, OrderPageResponse, ModifyOrderRequest, HotColdListResponse, HotColdListRequest, InventoryRecordResponse, InventoryRecordRequest, MemberListResponse, MemberListRequest, ModifyMemberRequest, TopUpMemberRequest, MemberPurchaseResponse, MemberPurchaseRequest, CreateMemberRequest, CreatePurchaseRecordRequest, MemberPurchaseHistoryRequest, MemberPurchaseHistoryResponse, EmployeeOperationLogResponse, EmployeeOperationLogRequest, ReceiptListResponse, ReceiptListRequest, PrintReceiptRequest, PrintLabelRequest, PrintDailyReportRequest, DailySaleRequest, DailySaleResponse, CashListResponse, CashListRequest, CreateCashRequest, CashDrawerListResponse, CashDrawerListRequest, CreateCashDrawerRequest, UserBasicResponse } from './types';
+import { UserListResponse, CreateUserRequest, ModifyUserRequest, PaginationParams, UserListRequest, DesignListResponse, DesignListRequest, DesignDetailResponse, ModifyDesignRequest, CreateDesignRequest, CreateItemRequest, SearchPageParams, ItemData, CreateOrderRequest, OrderPageRequest, OrderPageResponse, ModifyOrderRequest, HotColdListResponse, HotColdListRequest, InventoryRecordResponse, InventoryRecordRequest, MemberListResponse, MemberListRequest, ModifyMemberRequest, TopUpMemberRequest, MemberPurchaseResponse, MemberPurchaseRequest, CreateMemberRequest, CreatePurchaseRecordRequest, MemberPurchaseHistoryRequest, MemberPurchaseHistoryResponse, EmployeeOperationLogResponse, EmployeeOperationLogRequest, ReceiptListResponse, ReceiptListRequest, PrintReceiptRequest, PrintLabelRequest, PrintDailyReportRequest, DailySaleRequest, DailySaleResponse, CashListResponse, CashListRequest, CreateCashRequest, CashDrawerListResponse, CashDrawerListRequest, CreateCashDrawerRequest, UserBasicResponse, MemberPageResponse } from './types';
 import GlobalNotification from './notificationUtils';
 
 // API基础配置
@@ -341,10 +341,14 @@ export const inventoryRecord = {
 export const member = {
   // 获取会员列表
   getList: async (params: MemberListRequest): Promise<MemberListResponse> => {
-    const response = await apiClient.post<MemberListResponse>('/member/page', params);
+    const response = await apiClient.post<MemberListResponse>('/member/list', params);
     return response.data;
   },
-  
+    // 获取会员列表
+  getPage: async (params: MemberListRequest): Promise<MemberPageResponse> => {
+    const response = await apiClient.post<MemberPageResponse>('/member/page', params);
+    return response.data;
+  },
   // 修改会员信息
   modify: async (params: ModifyMemberRequest): Promise<ApiResponse> => {
     const response = await apiClient.put<ApiResponse>('/member/modify', params);
