@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import 'antd/dist/reset.css';
@@ -27,6 +27,13 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Slady 后台管理系统",
   description: "Slady 后台管理系统",
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({

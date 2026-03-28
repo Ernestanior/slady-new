@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Button, message, Form, Input, Select, InputNumber, notification } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Button, message, Form, Input, Select, InputNumber, notification, Card, Tag, Modal, Drawer } from 'antd';
+import { EditOutlined, DeleteOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { User, UserFormData } from '@/lib/types';
@@ -25,6 +25,7 @@ export default function EmployeeManagement() {
   const [searchForm] = Form.useForm();
   const [editForm] = Form.useForm();
   const hasInitialized = useRef(false);
+  const [searchText, setSearchText] = useState('');
 
   // 获取用户列表
   const fetchUsers = async (searchParams?: any, pagination?: any) => {
@@ -246,20 +247,11 @@ export default function EmployeeManagement() {
         <Form.Item label={t('name')} name="name">
           <Input placeholder={t('pleaseEnterName')} />
         </Form.Item>
-        {/* <Form.Item label="权限" name="type">
-          <Select placeholder="请选择权限" allowClear>
-            {USER_PERMISSIONS.map(permission => (
-              <Option key={permission.value} value={permission.value}>
-                {permission.label}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item> */}
       </>
     ),
   };
 
-  // 编辑Drawer配置
+  // 编辑Drawer配置（桌面端）
   const editDrawer: DrawerConfig = {
     title: editingUser ? t('editEmployee') : t('addEmployee'),
     visible: drawerVisible,
@@ -315,9 +307,56 @@ export default function EmployeeManagement() {
     },
   };
 
+  // 筛选数据（移动端）
+  const filteredUsers = users.filter(user => 
+    user.name.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  // 渲染员工卡片（移动端）
+  const renderEmployeeCard = (user: User) => (
+    <Card 
+      key={user.id}
+      size="small"
+      className="shadow-sm mb-3"
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <div className="flex items-center space-x-2 mb-1">
+            <span className="text-base font-semibold text-gray-800">{user.name}</span>
+            <Tag color="orange">
+              {USER_PERMISSIONS.find(p => p.value === user.type)?.label || user.type}
+            </Tag>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          {canUseFeature('editEmployee') && (
+            <Button
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => handleEdit(user)}
+            >
+              {t('edit')}
+            </Button>
+          )}
+          {canUseFeature('deleteEmployee') && (
+            <Button
+              size="small"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleDelete(user)}
+            >
+              {t('delete')}
+            </Button>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+
   return (
-    <div className="p-6">      
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
+    <div className="p-4 md:p-6">
+      {/* 桌面端视图 */}
+      <div className="hidden md:block bg-white border border-gray-200 rounded-lg p-6">
         <UniversalTable
           columns={columns}
           dataSource={users}
@@ -339,6 +378,115 @@ export default function EmployeeManagement() {
           actions={actions}
           maxVisibleActions={2}
         />
+      </div>
+
+      {/* 移动端视图 */}
+      <div className="md:hidden pb-20">
+        {/* 搜索和新增 */}
+        <div className="mb-4 space-y-3">
+          <Input
+            placeholder={t('searchNameOrPhone')}
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            size="large"
+            allowClear
+          />
+          {canUseFeature('createEmployee') && (
+            <Button
+              type="primary"
+              block
+              size="large"
+              icon={<PlusOutlined />}
+              onClick={handleAdd}
+            >
+              {t('addEmployee')}
+            </Button>
+          )}
+        </div>
+
+        {/* 员工列表 */}
+        <div className="space-y-3">
+          {loading ? (
+            <div className="text-center py-8 text-gray-500">{t('loading')}</div>
+          ) : filteredUsers.length > 0 ? (
+            filteredUsers.map(renderEmployeeCard)
+          ) : (
+            <div className="text-center py-8 text-gray-400">{t('noEmployees')}</div>
+          )}
+        </div>
+
+        {/* 移动端编辑抽屉 */}
+        <Drawer
+          title={editingUser ? t('editEmployee') : t('addEmployee')}
+          placement="bottom"
+          onClose={() => setDrawerVisible(false)}
+          open={drawerVisible}
+          height="80%"
+        >
+          <Form
+            form={editForm}
+            layout="vertical"
+            onFinish={handleSubmit}
+          >
+            <Form.Item
+              name="name"
+              label={t('account')}
+              rules={[{ required: true, message: t('pleaseEnterAccount') }]}
+            >
+              <Input size="large" placeholder={t('pleaseEnterAccount')} />
+            </Form.Item>
+
+            <Form.Item
+              name="type"
+              label={t('permission')}
+              rules={[{ required: true, message: t('pleaseSelectPermission') }]}
+            >
+              <Select size="large" placeholder={t('pleaseSelectPermission')}>
+                {USER_PERMISSIONS.map(permission => (
+                  <Select.Option key={permission.value} value={permission.value}>
+                    {permission.label}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            {!editingUser && (
+              <Form.Item
+                name="password"
+                label={t('password')}
+                rules={[{ required: true, message: t('pleaseEnterPassword') }]}
+              >
+                <Input.Password size="large" placeholder={t('pleaseEnterPassword')} />
+              </Form.Item>
+            )}
+
+            <div className="flex gap-3 mt-6">
+              <Button block size="large" onClick={() => setDrawerVisible(false)}>
+                {t('cancel')}
+              </Button>
+              <Button type="primary" block size="large" htmlType="submit">
+                {t('confirm')}
+              </Button>
+            </div>
+          </Form>
+        </Drawer>
+
+        {/* 移动端删除确认弹窗 */}
+        <Modal
+          title={t('delete')}
+          open={deleteModalVisible}
+          onOk={handleConfirmDelete}
+          onCancel={() => {
+            setDeleteModalVisible(false);
+            setDeletingUser(null);
+          }}
+          okText={t('confirm')}
+          cancelText={t('cancel')}
+          okButtonProps={{ danger: true }}
+        >
+          <p>{t('confirmDelete')} {deletingUser?.name}{t('question')}</p>
+        </Modal>
       </div>
     </div>
   );

@@ -42,7 +42,7 @@ export default function MemberPurchaseHistory({ memberData, onBackToList }: Memb
           desc: 1,
           page,
           pageSize: 20,
-          sort: ''
+          sort: 'purchase_date'
         }
       };
 

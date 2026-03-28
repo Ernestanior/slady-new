@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
-import { Table, Button, Modal, Drawer, Form, Input, InputNumber, Select, message, App, Dropdown, Space, DatePicker, Card } from 'antd';
+import { Table, Button, Modal, Drawer, Form, Input, InputNumber, Select, message, App, Dropdown, Space, DatePicker, Card, Pagination, Image, Spin } from 'antd';
 import { MoreOutlined, EditOutlined, DeleteOutlined, SendOutlined, CheckOutlined, ExclamationCircleOutlined, ReloadOutlined, CloseOutlined, PrinterOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { OrderData, ModifyOrderRequest, colorList, sizeList, WAREHOUSE } from '@/lib/types';
@@ -82,7 +82,7 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
 
   // 获取订单数据
   const fetchOrders = async (page = 1, searchParams: any = {}) => {
-    console.log('fetchOrders called with page:', page, 'searchParams:', searchParams); // 调试信息
+    console.log('fetchOrders called with page:', page, 'searchParams:', searchParams);
     setLoading(true);
     try {
       const formValues = searchForm.getFieldsValue();
@@ -107,7 +107,6 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
       
       // 处理日期范围
       if (formValues.dateRange && formValues.dateRange.length === 2) {
-        // 直接使用 Moment 对象，不需要重新包装
         params.startDate = formValues.dateRange[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
         params.endDate = formValues.dateRange[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
         delete params.dateRange;
@@ -133,14 +132,14 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
   // 暴露给父组件的方法
   useImperativeHandle(ref, () => ({
     refresh: () => {
-      console.log('refresh called via ref'); // 调试信息
+      console.log('refresh called via ref');
       fetchOrders(1);
     }
   }));
 
   // 初始化数据
   useEffect(() => {
-    console.log('useEffect triggered for warehouseName:', warehouseName); // 调试信息
+    console.log('useEffect triggered for warehouseName:', warehouseName);
     fetchOrders();
   }, [warehouseName]);
 
@@ -157,7 +156,7 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
 
   // 打印/导出
   const handlePrint = async () => {
-    if (printLoading) return; // 防止重复点击
+    if (printLoading) return;
     
     setPrintLoading(true);
     try {
@@ -182,7 +181,6 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
       
       // 处理日期范围
       if (formValues.dateRange && formValues.dateRange.length === 2) {
-        // 直接使用 Moment 对象，不需要重新包装
         params.startDate = formValues.dateRange[0].startOf('day').format('YYYY-MM-DD HH:mm:ss');
         params.endDate = formValues.dateRange[1].endOf('day').format('YYYY-MM-DD HH:mm:ss');
         delete params.dateRange;
@@ -190,16 +188,16 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
         console.log(res);
         if (res.code === 200) {
           window.open(dev_url + res.data);
-          notification.success('导出成功');
+          notification.success(t('exportSuccess') || '导出成功');
         } else {
           notification.error(res.msg);
         }
       } else {
-        notification.error('请输入时间段');
+        notification.error(t('pleaseEnterDate') || '请输入时间段');
       }
     } catch (error) {
       console.error('导出失败:', error);
-      message.error('导出失败，请稍后重试');
+      message.error(t('exportFailed') || '导出失败，请稍后重试');
     } finally {
       setPrintLoading(false);
     }
@@ -207,13 +205,13 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
 
   // 状态渲染
   const renderStatus = (status: string) => {
-  const statusMap: Record<string, { text: string; color: string }> = {
-    '0': { text: t('pending'), color: '#faad14' },
-    '1': { text: t('shipped'), color: '#1890ff' },
-    '2': { text: t('completed'), color: '#52c41a' },
-    '3': { text: t('outOfStock'), color: '#ff4d4f' },
-    '4': { text: t('damaged'), color: '#722ed1' },
-  };
+    const statusMap: Record<string, { text: string; color: string }> = {
+      '0': { text: t('pending'), color: '#faad14' },
+      '1': { text: t('shipped'), color: '#1890ff' },
+      '2': { text: t('completed'), color: '#52c41a' },
+      '3': { text: t('outOfStock'), color: '#ff4d4f' },
+      '4': { text: t('damaged'), color: '#722ed1' },
+    };
     
     const statusInfo = statusMap[status] || { text: '未知', color: '#d9d9d9' };
     return <span style={{ color: statusInfo.color, fontWeight: 'bold' }}>{statusInfo.text}</span>;
@@ -245,14 +243,14 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
         };
         
         await order.modify(modifyData);
-        message.success('修改订单成功');
+        message.success(t('modifySuccess') || '修改订单成功');
         setEditDrawerVisible(false);
-        console.log('Calling onRefresh after modify order'); // 调试信息
+        console.log('Calling onRefresh after modify order');
         onRefresh();
       }
     } catch (error) {
       console.error('修改订单失败:', error);
-      message.error('修改订单失败，请稍后重试');
+      message.error(t('modifyFailed') || '修改订单失败，请稍后重试');
     }
   };
 
@@ -267,11 +265,11 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
       onOk: async () => {
         try {
           await order.delete([orderData.id]);
-          message.success('删除订单成功');
+          message.success(t('deleteSuccess') || '删除订单成功');
           onRefresh();
         } catch (error) {
           console.error('删除订单失败:', error);
-          message.error('删除订单失败，请稍后重试');
+          message.error(t('deleteFailed') || '删除订单失败，请稍后重试');
         }
       },
     });
@@ -294,13 +292,13 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
           pendingDate: values.pendingDate,
           status: '1',
         });
-        message.success('订单已发货');
+        message.success(t('shippedSuccess') || '订单已发货');
         setSentDrawerVisible(false);
         onRefresh();
       }
     } catch (error) {
       console.error('发货失败:', error);
-      message.error('发货失败，请稍后重试');
+      message.error(t('shippedFailed') || '发货失败，请稍后重试');
     }
   };
 
@@ -403,6 +401,7 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
     ],
   });
 
+  // 桌面端表格列定义
   const columns = [
     {
       title: t('photo'),
@@ -416,17 +415,13 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
           src={dev_url + item}
           onClick={() => {
             if (onViewDesignDetail) {
-              // 使用订单中的 id 字段作为设计ID
-              // 如果订单数据中有 designId 字段，可以使用 record.designId
               const designId = (record as any).designId;
               onViewDesignDetail(designId);
             }
           }}
           onError={(e) => {
             const img = e.target as HTMLImageElement;
-            // 防止无限循环：如果已经是 placeholder 就不再设置
             if (!img.src.includes('placeholder-image.jpg') && !img.src.includes('data:image')) {
-              // 使用 data URI 作为占位符（透明 1x1 像素图片）
               img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1" height="1"%3E%3C/svg%3E';
             }
           }}
@@ -452,9 +447,7 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
       key: 'color',
       width: 100,
       render: (color: string) => {
-        // 如果颜色是数组，取第一个元素
         const colorValue = Array.isArray(color) ? color[0] : color;
-        // 翻译颜色名称
         return getColorTranslation(colorValue);
       },
     },
@@ -507,92 +500,241 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
     },
   ];
 
+  // 移动端卡片渲染
+  const renderOrderCard = (order: OrderData) => (
+    <Card key={order.id} size="small" className="mb-3">
+      <div className="space-y-3">
+        {/* 订单基本信息 */}
+        <div className="flex gap-3">
+          {/* 商品图片 */}
+          <div className="flex-shrink-0">
+            <Image
+              src={dev_url + order.previewPhoto}
+              alt={order.design}
+              width={60}
+              height={60}
+              className="rounded object-cover"
+              fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+            />
+          </div>
+
+          {/* 订单信息 */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between mb-1">
+              <h3 className="text-sm font-semibold text-gray-800 truncate">
+                {order.design}
+              </h3>
+              <div className="text-right">
+                {renderStatus(order.status)}
+              </div>
+            </div>
+
+            <div className="text-xs text-gray-600 space-y-1">
+              <div className="flex items-center justify-between">
+                <span>{t('orderPrice')}: ${order.salePrice}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>{t('orderColor')}: {getColorTranslation(order.color)}</span>
+                <span>{t('orderSize')}: {order.size}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>{t('orderAmount')}: {order.amount}</span>
+                <span>{t('time')}: {moment(order.date).format('MM-DD HH:mm')}</span>
+              </div>
+              {order.remark && (
+                <div className="text-gray-500">
+                  {t('orderRemark')}: {order.remark}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* 操作按钮 */}
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            size="small"
+            type="primary"
+            onClick={() => handleEdit(order)}
+            className="flex-1"
+            style={{ minHeight: '32px' }}
+          >
+            {t('modifyOrder')}
+          </Button>
+          <Button
+            size="small"
+            onClick={() => handleSent(order)}
+            className="flex-1"
+            style={{ minHeight: '32px' }}
+          >
+            {t('shipped')}
+          </Button>
+          <Button
+            size="small"
+            onClick={() => handleStatusChange(order, '2', t('completed'))}
+            className="flex-1"
+            style={{ minHeight: '32px' }}
+          >
+            {t('completed')}
+          </Button>
+          <Button
+            size="small"
+            danger
+            onClick={() => handleDelete(order)}
+            className="flex-1"
+            style={{ minHeight: '32px' }}
+          >
+            {t('deleteOrder')}
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+
   return (
     <>
       {/* 搜索表单 */}
-      <Card style={{ marginBottom: 16 }}>
+      <Card className="mb-4">
         <Form
           form={searchForm}
-          layout="inline"
+          layout="vertical"
           onFinish={handleSearch}
-          style={{ marginBottom: 16,  }}
+          className="md:flex md:flex-wrap md:gap-4"
         >
-          <Form.Item name="design" label={t('orderCode')}>
-            <Input placeholder={t('pleaseEnterDesignCode')} style={{ width: 200,marginBottom:20 }} />
+          <Form.Item name="design" label={t('orderCode')} className="md:w-48 mb-4">
+            <Input placeholder={t('pleaseEnterDesignCode')} />
           </Form.Item>
           
-          <Form.Item name="remark" label={t('orderRemark')}>
-            <Input placeholder={t('pleaseEnterRemark')} style={{ width: 200 }} />
+          <Form.Item name="remark" label={t('orderRemark')} className="md:w-48 mb-4">
+            <Input placeholder={t('pleaseEnterRemark')} />
           </Form.Item>
           
-          <Form.Item name="status" label={t('status')}>
+          <Form.Item name="status" label={t('status')} className="md:w-48 mb-4">
             <Select
               mode="multiple"
               placeholder={t('pleaseSelectStatus')}
-              style={{ width: 200 }}
               options={statusOptions}
             />
           </Form.Item>
           
-          <Form.Item name="dateRange" label={t('dateRange')}>
-            <DatePicker.RangePicker style={{ width: 300 }} />
+          <Form.Item name="dateRange" label={t('dateRange')} className="md:w-72 mb-4">
+            <DatePicker.RangePicker style={{ width: '100%' }} />
           </Form.Item>
           
-          <Form.Item>
+          <Form.Item className="mb-4">
             <Space>
               <Button type="primary" htmlType="submit">
-              {t('search')}
+                {t('search')}
               </Button>
               <Button onClick={handleReset}>
-              {t('reset')}
+                {t('reset')}
               </Button>
             </Space>
           </Form.Item>
         </Form>
       </Card>
 
-      <Table
-        columns={columns}
-        dataSource={data}
-        loading={loading}
-        rowKey="id"
-        pagination={{
-          current: pagination.current,
-          pageSize: pagination.pageSize,
-          total: pagination.total,
-          showSizeChanger: false,
-          onChange: (page) => {
-            fetchOrders(page);
-          },
-        }}
-        scroll={{ x: 1200, y: 2000 }}
-      />
+      {/* 桌面端表格 */}
+      <div className="hidden md:block">
+        <Table
+          columns={columns}
+          dataSource={data}
+          loading={loading}
+          rowKey="id"
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
+            showSizeChanger: false,
+            onChange: (page) => {
+              fetchOrders(page);
+            },
+          }}
+          scroll={{ x: 1200, y: 2000 }}
+        />
 
-      {/* 打印按钮 */}
-      <div style={{ 
-        marginTop: 16, 
-        textAlign: 'center',
-        padding: '16px 0',
-        borderTop: '1px solid #f0f0f0'
-      }}>
-        <Button 
-          type="primary" 
-          icon={<PrinterOutlined />}
-          onClick={handlePrint}
-          loading={printLoading}
-          disabled={printLoading}
-          size="large"
-        >
-          {printLoading ? '打印中...' : '打印'}
-        </Button>
+        {/* 打印按钮 */}
+        <div style={{ 
+          marginTop: 16, 
+          textAlign: 'center',
+          padding: '16px 0',
+          borderTop: '1px solid #f0f0f0'
+        }}>
+          <Button 
+            type="primary" 
+            icon={<PrinterOutlined />}
+            onClick={handlePrint}
+            loading={printLoading}
+            disabled={printLoading}
+            size="large"
+          >
+            {printLoading ? '打印中...' : '打印'}
+          </Button>
+        </div>
       </div>
 
-      {/* 修改订单抽屉 */}
+      {/* 移动端卡片列表 */}
+      <div className="md:hidden space-y-4">
+        {/* 导出按钮 */}
+        <div className="flex gap-2">
+          <Button
+            icon={<PrinterOutlined />}
+            onClick={handlePrint}
+            loading={printLoading}
+            disabled={printLoading}
+            className="flex-1"
+          >
+            {printLoading ? t('exporting') : t('export')}
+          </Button>
+        </div>
+
+        {/* 订单列表 */}
+        <div className="space-y-2">
+          {data.length > 0 ? (
+            data.map(order => renderOrderCard(order))
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              {t('noOrderData') || '暂无订单数据'}
+            </div>
+          )}
+        </div>
+
+        {/* 分页 */}
+        {data.length > 0 && (
+          <div className="flex justify-center">
+            <Spin spinning={loading}>
+              <Pagination
+                current={pagination.current}
+                pageSize={pagination.pageSize}
+                total={pagination.total}
+                onChange={(page) => fetchOrders(page)}
+                showSizeChanger={false}
+                showQuickJumper={false}
+              />
+            </Spin>
+          </div>
+        )}
+      </div>
+
+      {/* 修改订单抽屉 - 响应式 */}
       <Drawer
         title={t('modifyOrder')}
+        placement="right"
         open={editDrawerVisible}
         onClose={() => setEditDrawerVisible(false)}
         width={500}
+        className="md:w-[500px] w-full"
+        height="70%"
+        footer={
+          <div className="md:hidden flex gap-3">
+            <Button block onClick={() => setEditDrawerVisible(false)}>
+              {t('cancel')}
+            </Button>
+            <Button type="primary" block onClick={handleEditSubmit}>
+              {t('confirm')}
+            </Button>
+          </div>
+        }
       >
         <Form
           form={form}
@@ -644,7 +786,7 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
             />
           </Form.Item>
           
-          <Form.Item>
+          <Form.Item className="hidden md:block">
             <Button type="primary" htmlType="submit" block>
               确认修改
             </Button>
@@ -652,12 +794,25 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
         </Form>
       </Drawer>
 
-      {/* 发货抽屉 */}
+      {/* 发货抽屉 - 响应式 */}
       <Drawer
         title={t('sent')}
+        placement="right"
         open={sentDrawerVisible}
         onClose={() => setSentDrawerVisible(false)}
         width={400}
+        className="md:w-[400px] w-full"
+        height="50%"
+        footer={
+          <div className="md:hidden flex gap-3">
+            <Button block onClick={() => setSentDrawerVisible(false)}>
+              {t('cancel')}
+            </Button>
+            <Button type="primary" block onClick={handleSentSubmit}>
+              {t('confirmShipped') || '确认发货'}
+            </Button>
+          </div>
+        }
       >
         <div style={{ marginBottom: 16 }}>
           <p>订单: <strong>{selectedOrder?.design}</strong></p>
@@ -681,7 +836,7 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
             <Input placeholder={t('pleaseEnterShippingDate')} />
           </Form.Item>
           
-          <Form.Item>
+          <Form.Item className="hidden md:block">
             <Button type="primary" htmlType="submit" block>
               确认发货
             </Button>

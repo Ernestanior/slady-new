@@ -14,6 +14,7 @@ function HomeContent() {
   const [activePage, setActivePage] = useState('designManagement');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // 从URL参数获取当前页面，如果没有则使用默认值
   useEffect(() => {
@@ -30,19 +31,19 @@ function HomeContent() {
   return (
     <AuthGuard>
       <ResponsiveRouter>
-        <div className="min-h-screen bg-gray-50 min-w-[1200px] overflow-x-auto">
-        {/* Header 容器 - 带过渡效果 */}
+        <div className="min-h-screen bg-gray-50 md:min-w-[1200px] md:overflow-x-auto">
+        {/* Header 容器 - 桌面端带过渡效果，移动端固定显示 */}
         <div 
-          className="transition-all duration-300 ease-in-out overflow-hidden"
+          className="transition-all duration-300 ease-in-out overflow-hidden md:block"
           style={{
             height: headerCollapsed ? '0px' : '72px'
           }}
         >
-          <Header />
+          <Header onMenuClick={() => setMobileNavOpen(true)} />
         </div>
         
-        {/* 切换按钮 - 始终显示 */}
-        <div className="relative">
+        {/* 切换按钮 - 仅桌面端显示 */}
+        <div className="relative hidden md:block">
           <button
             onClick={toggleHeader}
             className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white border border-gray-300 rounded-full p-2 shadow-lg hover:bg-gray-50 transition-all z-50 hover:scale-110"
@@ -65,16 +66,20 @@ function HomeContent() {
         </div>
         
         <div className="flex min-w-0 w-full">
-          {/* Sidebar */}
+          {/* Sidebar - 桌面端固定，移动端抽屉 */}
           <Sidebar 
             activePage={activePage} 
             setActivePage={setActivePage}
             isCollapsed={sidebarCollapsed}
             setIsCollapsed={setSidebarCollapsed}
+            mobileOpen={mobileNavOpen}
+            onMobileClose={() => setMobileNavOpen(false)}
           />
           
-          {/* Content */}
-          <Content activePage={activePage} sidebarCollapsed={sidebarCollapsed} setActivePage={setActivePage} />
+          {/* Content - 移动端添加顶部padding */}
+          <div className="flex-1 md:pt-0">
+            <Content activePage={activePage} sidebarCollapsed={sidebarCollapsed} setActivePage={setActivePage} />
+          </div>
         </div>
         </div>
       </ResponsiveRouter>

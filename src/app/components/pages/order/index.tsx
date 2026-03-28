@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Tabs, message, Form } from 'antd';
+import { Tabs, message, Form, Button } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import OrderList from './OrderList';
 import { WAREHOUSE } from '@/lib/types';
 import DesignDetail from '../design/DesignDetail';
@@ -9,6 +11,7 @@ import { api } from '@/lib/api';
 import { DesignDetail as DesignDetailType } from '@/lib/types';
 
 export default function Order() {
+  const { t } = useTranslation();
   const [activeKey, setActiveKey] = useState('slady');
   const sladyRef = useRef<any>(null);
   const sl2Ref = useRef<any>(null);
@@ -134,13 +137,26 @@ export default function Order() {
   }
 
   return (
-    <div style={{ padding: '24px' }}>
-        <Tabs
-          activeKey={activeKey}
-          onChange={handleTabChange}
-          items={tabItems}
+    <div className="p-4 md:p-6 pb-20 md:pb-6">
+      {/* 移动端顶部操作按钮 */}
+      <div className="flex md:hidden items-center justify-between mb-4">
+        <Button 
+          type="primary" 
+          icon={<ReloadOutlined />} 
+          onClick={handleRefresh}
           size="large"
-        />
+        >
+          {t('refreshAll')}
+        </Button>
+      </div>
+
+      <Tabs
+        activeKey={activeKey}
+        onChange={handleTabChange}
+        items={tabItems}
+        size="large"
+        className="mobile-tabs"
+      />
     </div>
   );
 }

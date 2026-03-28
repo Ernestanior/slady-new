@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Table, Form, Input, Button, Card, message, Pagination, Modal, Drawer, InputNumber, DatePicker, notification, Space, Tag, Row, Dropdown, Menu } from 'antd';
-import { SearchOutlined, ReloadOutlined, FilterOutlined, EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined, MoreOutlined } from '@ant-design/icons';
+import { SearchOutlined, ReloadOutlined, FilterOutlined, EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined, MoreOutlined, DollarOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { MemberData, MemberListRequest, ModifyMemberRequest, TopUpMemberRequest, MemberPurchaseRecord, MemberPurchaseRequest, CreateMemberRequest } from '@/lib/types';
 import { usePermissions } from '@/lib/usePermissions';
@@ -22,6 +22,7 @@ export default function MemberManagement() {
   const [data, setData] = useState<MemberData[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [searchText, setSearchText] = useState('');
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 20,
@@ -287,7 +288,77 @@ export default function MemberManagement() {
     }
   };
 
-  // 表格列定义
+  // 筛选数据（移动端）
+  const filteredMembers = data.filter(m => 
+    m.name.toLowerCase().includes(searchText.toLowerCase()) ||
+    m.phone.includes(searchText)
+  );
+
+  // 渲染会员卡片（移动端）
+  const renderMemberCard = (memberData: MemberData) => {
+    const menuItems = [
+      {
+        key: 'modify',
+        icon: <EditOutlined />,
+        label: t('modify'),
+        onClick: () => handleModify(memberData),
+      },
+      {
+        key: 'topUp',
+        icon: <DollarOutlined />,
+        label: t('topUp'),
+        onClick: () => handleTopUp(memberData),
+      },
+      {
+        key: 'detail',
+        icon: <EyeOutlined />,
+        label: t('detailRecord'),
+        onClick: () => handleViewPurchase(memberData),
+      },
+      ...(canUseFeature('deleteMember') ? [
+        {
+          key: 'divider',
+          type: 'divider' as const,
+        },
+        {
+          key: 'delete',
+          icon: <DeleteOutlined />,
+          label: t('delete'),
+          danger: true,
+          onClick: () => handleDelete(memberData),
+        }
+      ] : []),
+    ];
+
+    return (
+      <Card size="small" className="shadow-sm">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-base font-semibold text-gray-800">{memberData.name}</span>
+              <Tag color="green">${memberData.balance}</Tag>
+            </div>
+            <div className="text-sm text-gray-600 space-y-1">
+              <div>📱 {memberData.phone}</div>
+              <div>🎫 {t('voucherNumber')}: {memberData.voucherNumber}</div>
+              <div className="text-xs text-gray-400">
+                {moment(memberData.registrationDate).format('YYYY-MM-DD')}
+              </div>
+            </div>
+          </div>
+          <Dropdown
+            menu={{ items: menuItems }}
+            trigger={['click']}
+            placement="bottomRight"
+          >
+            <Button type="text" icon={<MoreOutlined />} />
+          </Dropdown>
+        </div>
+      </Card>
+    );
+  };
+
+  // 表格列定义（桌面端）
   const columns = [
     {
       title: t('name'),
@@ -387,103 +458,147 @@ export default function MemberManagement() {
   }
 
   return (
-    <div style={{ padding: '24px' }}>
-      <div style={{ 
-        marginBottom: 24, 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center' 
-      }}>
-        <div>
-          <Button icon={<EyeOutlined />} onClick={handleViewAllPurchase} style={{ marginRight: 8 }}>
-            {t('memberPurchaseHistory')}
-          </Button>
-          <Button icon={<PlusOutlined />} onClick={handleViewTopUp} style={{ marginRight: 8 }}>
-            {t('memberTopUpHistory')}
-          </Button>
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
+    <div className="p-4 md:p-6">
+      {/* 桌面端视图 */}
+      <div className="hidden md:block">
+        <div style={{ 
+          marginBottom: 24, 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center' 
+        }}>
+          <div>
+            <Button icon={<EyeOutlined />} onClick={handleViewAllPurchase} style={{ marginRight: 8 }}>
+              {t('memberPurchaseHistory')}
+            </Button>
+            <Button icon={<PlusOutlined />} onClick={handleViewTopUp} style={{ marginRight: 8 }}>
+              {t('memberTopUpHistory')}
+            </Button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
+              {t('addMember')}
+            </Button>
+          </div>
+        </div>
+        
+        {/* 搜索表单 */}
+        <Card style={{ marginBottom: 16 }}>
+          <Form
+            form={form}
+            layout="inline"
+            onFinish={handleSearch}
+          >
+            <Form.Item name="name" label={t('name')}>
+              <Input placeholder={t('pleaseEnterName')} style={{ width: 200 }} />
+            </Form.Item>
+            <Form.Item name="phone" label={t('phone')}>
+              <Input placeholder={t('pleaseEnterPhone')} style={{ width: 200 }} />
+            </Form.Item>
+            <Form.Item name="startDate" label={t('startDate')}>
+              <DatePicker style={{ width: 200 }} />
+            </Form.Item>
+            <Form.Item name="endDate" label={t('endDate')}>
+              <DatePicker style={{ width: 200 }} />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+                {t('search')}
+              </Button>
+            </Form.Item>
+            <Form.Item>
+              <Button onClick={handleReset} icon={<ReloadOutlined />}>
+                {t('reset')}
+              </Button>
+            </Form.Item>
+            {isAdmin() && (
+              <Form.Item>
+                <span style={{ fontSize: 16, fontWeight: 'bold', color: '#52c41a' }}>
+                  {t('选中会员总余额')}: ${totalBalance}
+                </span>
+              </Form.Item>
+            )}
+          </Form>
+        </Card>
+
+        {/* 数据表格 */}
+        <Card>
+          <Table
+            columns={columns}
+            dataSource={data}
+            rowKey="id"
+            loading={loading}
+            pagination={false}
+            scroll={{ x: 800 }}
+            rowSelection={{
+              type: 'checkbox',
+              selectedRowKeys,
+              onChange: handleRowSelectionChange,
+            }}
+          />
+          
+          {/* 分页 */}
+          <div style={{ marginTop: 16, textAlign: 'right' }}>
+            <Pagination
+              current={pagination.current}
+              pageSize={pagination.pageSize}
+              total={pagination.total}
+              onChange={handleTableChange}
+              showSizeChanger={false}
+              showQuickJumper
+              showTotal={(total, range) => 
+                `第 ${range[0]}-${range[1]} 条/共 ${total} 条`
+              }
+            />
+          </div>
+        </Card>
+      </div>
+
+      {/* 移动端视图 */}
+      <div className="md:hidden pb-20">
+        {/* 搜索和新增 */}
+        <div className="mb-4 space-y-3">
+          <Input
+            placeholder={t('searchNameOrPhone')}
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            size="large"
+            allowClear
+          />
+          <Button
+            type="primary"
+            block
+            size="large"
+            icon={<PlusOutlined />}
+            onClick={handleCreate}
+          >
             {t('addMember')}
           </Button>
         </div>
-      </div>
-      
-      {/* 搜索表单 */}
-      <Card style={{ marginBottom: 16 }}>
-        <Form
-          form={form}
-          layout="inline"
-          onFinish={handleSearch}
-        >
-          <Form.Item name="name" label={t('name')}>
-            <Input placeholder={t('pleaseEnterName')} style={{ width: 200 }} />
-          </Form.Item>
-          <Form.Item name="phone" label={t('phone')}>
-            <Input placeholder={t('pleaseEnterPhone')} style={{ width: 200 }} />
-          </Form.Item>
-          <Form.Item name="startDate" label={t('startDate')}>
-            <DatePicker style={{ width: 200 }} />
-          </Form.Item>
-          <Form.Item name="endDate" label={t('endDate')}>
-            <DatePicker style={{ width: 200 }} />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-              {t('search')}
-            </Button>
-          </Form.Item>
-          <Form.Item>
-            <Button onClick={handleReset} icon={<ReloadOutlined />}>
-              {t('reset')}
-            </Button>
-          </Form.Item>
-          {isAdmin() && (
-            <Form.Item>
-              <span style={{ fontSize: 16, fontWeight: 'bold', color: '#52c41a' }}>
-                {t('选中会员总余额')}: ${totalBalance}
-              </span>
-            </Form.Item>
+
+        {/* 会员列表 */}
+        <div className="space-y-3">
+          {loading ? (
+            <div className="text-center py-8 text-gray-400">{t('loading')}</div>
+          ) : filteredMembers.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">{t('noMembers')}</div>
+          ) : (
+            filteredMembers.map((memberData) => (
+              <div key={memberData.id}>
+                {renderMemberCard(memberData)}
+              </div>
+            ))
           )}
-        </Form>
-      </Card>
-
-      {/* 数据表格 */}
-      <Card>
-        <Table
-          columns={columns}
-          dataSource={data}
-          rowKey="id"
-          loading={loading}
-          pagination={false}
-          scroll={{ x: 800 }}
-          rowSelection={{
-            type: 'checkbox',
-            selectedRowKeys,
-            onChange: handleRowSelectionChange,
-          }}
-        />
-        
-        {/* 分页 */}
-        <div style={{ marginTop: 16, textAlign: 'right' }}>
-          <Pagination
-            current={pagination.current}
-            pageSize={pagination.pageSize}
-            total={pagination.total}
-            onChange={handleTableChange}
-            showSizeChanger={false}
-            showQuickJumper
-            showTotal={(total, range) => 
-              `第 ${range[0]}-${range[1]} 条/共 ${total} 条`
-            }
-          />
         </div>
-      </Card>
+      </div>
 
-      {/* 修改会员抽屉 */}
+      {/* 桌面端修改会员抽屉 */}
       <Drawer
         title={t('modifyMemberInfo')}
         open={modifyDrawerVisible}
         onClose={() => setModifyDrawerVisible(false)}
         width={600}
+        placement="right"
+        className="hidden md:block"
       >
         <Form form={modifyForm} layout="vertical">
           <Form.Item name="name" label={t('name')} rules={[{ required: true, message: t('pleaseEnterName') }]}>
@@ -513,12 +628,55 @@ export default function MemberManagement() {
         </Form>
       </Drawer>
 
-      {/* 充值抽屉 */}
+      {/* 移动端修改会员抽屉 */}
+      <Drawer
+        title={t('modifyMemberInfo')}
+        open={modifyDrawerVisible}
+        onClose={() => setModifyDrawerVisible(false)}
+        placement="bottom"
+        height="80%"
+        className="md:hidden"
+      >
+        <Form form={modifyForm} layout="vertical" onFinish={handleModifySubmit}>
+          <Form.Item name="name" label={t('name')} rules={[{ required: true, message: t('pleaseEnterName') }]}>
+            <Input size="large" placeholder={t('pleaseEnterName')} />
+          </Form.Item>
+          <Form.Item name="phone" label={t('phone')} rules={[{ required: true, message: t('pleaseEnterPhone') }]}>
+            <Input size="large" placeholder={t('pleaseEnterPhone')} />
+          </Form.Item>
+          <Form.Item name="registrationDate" label={t('registrationDate')} rules={[{ required: true, message: t('pleaseSelectRegistrationDate') }]}>
+            <DatePicker 
+              size="large"
+              style={{ width: '100%' }} 
+              format="YYYY-MM-DD"
+              placeholder={t('pleaseSelectRegistrationDate')}
+            />
+          </Form.Item>
+          <Form.Item name="voucherNumber" label={t('voucherNumber')} rules={[{ required: true, message: t('pleaseEnterVoucherNumber') }]}>
+            <InputNumber size="large" style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item name="remark" label={t('remark')}>
+            <Input size="large" placeholder={t('remark')} />
+          </Form.Item>
+          <div className="flex gap-3 mt-6">
+            <Button block size="large" onClick={() => setModifyDrawerVisible(false)}>
+              {t('cancel')}
+            </Button>
+            <Button type="primary" block size="large" htmlType="submit">
+              {t('confirm')}
+            </Button>
+          </div>
+        </Form>
+      </Drawer>
+
+      {/* 桌面端充值抽屉 */}
       <Drawer
         title={t('memberTopUp')}
         open={topUpDrawerVisible}
         onClose={() => setTopUpDrawerVisible(false)}
         width={600}
+        placement="right"
+        className="hidden md:block"
       >
         <Form form={topUpForm} layout="vertical">
           <Form.Item name="amount" label={t('memberAmount')} rules={[{ required: true, message: t('pleaseEnterTopUpAmount') }]}>
@@ -538,12 +696,44 @@ export default function MemberManagement() {
         </Form>
       </Drawer>
 
-      {/* 新增会员抽屉 */}
+      {/* 移动端充值抽屉 */}
+      <Drawer
+        title={t('memberTopUp')}
+        open={topUpDrawerVisible}
+        onClose={() => setTopUpDrawerVisible(false)}
+        placement="bottom"
+        height="70%"
+        className="md:hidden"
+      >
+        <Form form={topUpForm} layout="vertical" onFinish={handleTopUpSubmit}>
+          <Form.Item name="amount" label={t('memberAmount')} rules={[{ required: true, message: t('pleaseEnterTopUpAmount') }]}>
+            <InputNumber size="large" style={{ width: '100%' }} min={0} />
+          </Form.Item>
+          <Form.Item name="saler" label={t('saler')} rules={[{ required: true, message: t('pleaseEnterSaler') }]}>
+            <Input size="large" placeholder={t('pleaseEnterSaler')} />
+          </Form.Item>
+          <Form.Item name="remark" label={t('paymentDetail')} rules={[{ required: true, message: t('pleaseEnterPaymentDetail') }]}>
+            <Input size="large" placeholder={t('pleaseEnterPaymentDetail')} />
+          </Form.Item>
+          <div className="flex gap-3 mt-6">
+            <Button block size="large" onClick={() => setTopUpDrawerVisible(false)}>
+              {t('cancel')}
+            </Button>
+            <Button type="primary" block size="large" htmlType="submit">
+              {t('confirm')}
+            </Button>
+          </div>
+        </Form>
+      </Drawer>
+
+      {/* 桌面端新增会员抽屉 */}
       <Drawer
         title={t('addMember')}
         open={createDrawerVisible}
         onClose={() => setCreateDrawerVisible(false)}
         width={600}
+        placement="right"
+        className="hidden md:block"
       >
         <Form form={createForm} layout="vertical">
           <Form.Item name="name" label={t('name')} rules={[{ required: true, message: t('pleaseEnterName') }]}>
@@ -570,6 +760,47 @@ export default function MemberManagement() {
               {t('confirmAdd')}
             </Button>
           </Form.Item>
+        </Form>
+      </Drawer>
+
+      {/* 移动端新增会员抽屉 */}
+      <Drawer
+        title={t('addMember')}
+        open={createDrawerVisible}
+        onClose={() => setCreateDrawerVisible(false)}
+        placement="bottom"
+        height="80%"
+        className="md:hidden"
+      >
+        <Form form={createForm} layout="vertical" onFinish={handleCreateSubmit}>
+          <Form.Item name="name" label={t('name')} rules={[{ required: true, message: t('pleaseEnterName') }]}>
+            <Input size="large" placeholder={t('pleaseEnterName')} />
+          </Form.Item>
+          <Form.Item name="phone" label={t('phone')} rules={[{ required: true, message: t('pleaseEnterPhone') }]}>
+            <Input size="large" placeholder={t('pleaseEnterPhone')} />
+          </Form.Item>
+          <Form.Item name="registrationDate" label={t('registrationDate')} rules={[{ required: true, message: t('pleaseSelectRegistrationDate') }]}>
+            <DatePicker 
+              size="large"
+              style={{ width: '100%' }} 
+              format="YYYY-MM-DD"
+              placeholder={t('pleaseSelectRegistrationDate')}
+            />
+          </Form.Item>
+          <Form.Item name="voucherNumber" label={t('voucherNumber')} rules={[{ required: true, message: t('pleaseEnterVoucherNumber') }]}>
+            <InputNumber size="large" style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item name="remark" label={t('remark')}>
+            <Input size="large" placeholder={t('remark')} />
+          </Form.Item>
+          <div className="flex gap-3 mt-6">
+            <Button block size="large" onClick={() => setCreateDrawerVisible(false)}>
+              {t('cancel')}
+            </Button>
+            <Button type="primary" block size="large" htmlType="submit">
+              {t('confirm')}
+            </Button>
+          </div>
         </Form>
       </Drawer>
 

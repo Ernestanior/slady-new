@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Table, Form, Input, DatePicker, Button, Card, message, Pagination } from 'antd';
-import { SearchOutlined, ReloadOutlined, FilterOutlined } from '@ant-design/icons';
+import { Table, Form, Input, DatePicker, Button, Card, message, Pagination, Spin } from 'antd';
+import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { InventoryRecordItem, InventoryRecordRequest } from '@/lib/types';
 import { inventoryRecord } from '@/lib/api';
@@ -25,7 +25,6 @@ export default function InventoryRecords() {
   // 获取数据
   const fetchData = async (page = 1, searchParams: any = {}) => {
     setLoading(true);
-    // 立即清空数据，防止数据累加
     setData([]);
     
     try {
@@ -49,11 +48,11 @@ export default function InventoryRecords() {
         delete (params as any).operateDate;
       }
 
-      console.log('发送请求参数:', params); // 调试信息
+      console.log('发送请求参数:', params);
 
       const response = await inventoryRecord.getList(params);
       if (response.code === 200) {
-        console.log('接收到的数据:', response.data); // 调试信息
+        console.log('接收到的数据:', response.data);
         
         // 解析 body 字段中的 JSON 数据
         const processedData = response.data.content.map(item => {
@@ -62,7 +61,6 @@ export default function InventoryRecords() {
             return {
               ...bodyData,
               ...item,
-
             };
           } catch (error) {
             console.error('解析 body 数据失败:', error);
@@ -70,9 +68,8 @@ export default function InventoryRecords() {
           }
         });
         
-        console.log('处理后的数据:', processedData); // 调试信息
+        console.log('处理后的数据:', processedData);
         
-        // 确保数据被正确设置，即使是空数组
         setData(processedData);
         setPagination({
           current: response.data.number + 1,
@@ -80,7 +77,6 @@ export default function InventoryRecords() {
           total: response.data.totalElements,
         });
       } else {
-        // 如果响应码不是200，也要清空数据
         setData([]);
         setPagination({
           current: 1,
@@ -91,7 +87,6 @@ export default function InventoryRecords() {
     } catch (error) {
       console.error('获取库存修改记录失败:', error);
       message.error(t('fetchInventoryRecordsFailed'));
-      // 出错时也要清空数据
       setData([]);
       setPagination({
         current: 1,
@@ -103,7 +98,7 @@ export default function InventoryRecords() {
     }
   };
 
-  // 初始化数据 - 防止重复调用
+  // 初始化数据
   useEffect(() => {
     if (!hasLoaded) {
       setHasLoaded(true);
@@ -142,9 +137,7 @@ export default function InventoryRecords() {
           src={dev_url + photo}
           onError={(e) => {
             const img = e.target as HTMLImageElement;
-            // 防止无限循环：如果已经是 placeholder 就不再设置
             if (!img.src.includes('placeholder-image.jpg') && !img.src.includes('data:image')) {
-              // 使用 data URI 作为占位符（透明 1x1 像素图片）
               img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1" height="1"%3E%3C/svg%3E';
             }
           }}
@@ -212,70 +205,193 @@ export default function InventoryRecords() {
       dataIndex: 'createDate',
       key: 'createDate',
       width: 180,
-      
     },
   ];
 
-  return (
-    <div style={{ padding: '24px' }}>
+  // 渲染移动端卡片
+  const renderInventoryCard = (item: any, index: number) => (
+    <Card
+      key={item.id}
+      className="mb-3 hover:shadow-md transition-shadow duration-200"
+      style={{ borderRadius: 12 }}
+    >
+      <div className="flex items-start space-x-3">
+        {/* 商品图片 */}
+        <div className="flex-shrink-0">
+          <img
+            className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+            alt={t('productImage')}
+            src={dev_url + item.previewPhoto}
+            onError={(e) => {
+              const img = e.target as HTMLImageElement;
+              if (!img.src.includes('placeholder-image.jpg') && !img.src.includes('data:image')) {
+                img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1" height="1"%3E%3C/svg%3E';
+              }
+            }}
+          />
+        </div>
+        
+        {/* 商品信息 */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between mb-2">
+            <div className="font-bold text-gray-900 text-lg truncate">
+              {item.design}
+            </div>
+            <div className="text-sm text-gray-500">
+              #{index + 1}
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+            <div className="flex items-center">
+              <span className="text-gray-500 mr-2">{t('color')}:</span>
+              <span className="font-medium">{item.color}</span>
+            </div>
+            <div className="flex items-center">
+              <span className="text-gray-500 mr-2">{t('size')}:</span>
+              <span className="font-medium">{item.size}</span>
+            </div>
+            <div className="flex items-center">
+              <span className="text-gray-500 mr-2">{t('warehouse')}:</span>
+              <span className="font-medium">{item.warehouseName}</span>
+            </div>
+            <div className="flex items-center">
+              <span className="text-gray-500 mr-2">{t('operator')}:</span>
+              <span className="font-medium">{item.userName}</span>
+            </div>
+          </div>
+          
+          {/* 库存变化信息 */}
+          <div className="bg-gray-50 rounded-lg p-3 mb-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">{t('originalStock')}:</span>
+              <span className="font-bold text-gray-900">{item.stock}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">{t('newStock')}:</span>
+              <span className={`font-bold ${
+                item.newStock > 0 ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {item.newStock}
+              </span>
+            </div>
+          </div>
+          
+          {/* 操作时间 */}
+          <div className="text-xs text-gray-500">
+            {moment(item.createDate).format('YYYY-MM-DD HH:mm:ss')}
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
 
-      
+  return (
+    <div className="p-4 md:p-6">
       {/* 搜索表单 */}
-      <Card style={{ marginBottom: 16 }}>
+      <Card className="mb-4" style={{ borderRadius: 12 }}>
         <Form
           form={form}
-          layout="inline"
+          layout="vertical"
+          className="md:!flex md:!flex-wrap md:!items-end md:!gap-4"
           onFinish={handleSearch}
         >
-          <Form.Item name="body" label={t('designCode')}>
-            <Input placeholder={t('pleaseEnterDesignCode')} style={{ width: 200,marginBottom:20  }} />
+          <Form.Item 
+            name="body" 
+            label={t('designCode')}
+            className="!mb-4 md:!mb-0 md:!flex-1 md:!min-w-[200px]"
+          >
+            <Input placeholder={t('pleaseEnterDesignCode')} />
           </Form.Item>
-          <Form.Item name="userName" label={t('operator')}>
-            <Input placeholder={t('pleaseEnterOperator')} style={{ width: 200 }} />
+          <Form.Item 
+            name="userName" 
+            label={t('operator')}
+            className="!mb-4 md:!mb-0 md:!flex-1 md:!min-w-[200px]"
+          >
+            <Input placeholder={t('pleaseEnterOperator')} />
           </Form.Item>
-          <Form.Item name="operateDate" label={t('operationTime')}>
+          <Form.Item 
+            name="operateDate" 
+            label={t('operationTime')}
+            className="!mb-4 md:!mb-0 md:!flex-1 md:!min-w-[300px]"
+          >
             <DatePicker.RangePicker 
               placeholder={[t('startTime'), t('endTime')]}
-              style={{ width: 300 }}
+              className="w-full"
             />
           </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+          <div className="flex gap-2 md:!mb-0">
+            <Button type="primary" htmlType="submit" icon={<SearchOutlined />} className="flex-1 md:flex-none">
               {t('search')}
             </Button>
-          </Form.Item>
-          <Form.Item>
-            <Button onClick={handleReset} icon={<ReloadOutlined />}>
+            <Button onClick={handleReset} icon={<ReloadOutlined />} className="flex-1 md:flex-none">
               {t('reset')}
             </Button>
-          </Form.Item>
+          </div>
         </Form>
       </Card>
 
-      {/* 数据表格 */}
-      <Card>
-        <Table
-          columns={columns}
-          dataSource={data}
-          rowKey="id"
-          loading={loading}
-          pagination={false}
-          scroll={{ x: 1000 }}
-        />
-        
-        {/* 分页 */}
-        <div style={{ marginTop: 16, textAlign: 'right' }}>
-          <Pagination
-            current={pagination.current}
-            pageSize={pagination.pageSize}
-            total={pagination.total}
-            onChange={handleTableChange}
-            showSizeChanger={false}
-            showQuickJumper
-            showTotal={(total, range) => 
-              `第 ${range[0]}-${range[1]} 条/共 ${total} 条`
-            }
+      {/* 数据展示 - 桌面端表格，移动端卡片 */}
+      <Card style={{ borderRadius: 12 }}>
+        {/* 桌面端表格 */}
+        <div className="hidden md:block">
+          <Table
+            columns={columns}
+            dataSource={data}
+            rowKey="id"
+            loading={loading}
+            pagination={false}
+            scroll={{ x: 1000 }}
           />
+          
+          {/* 桌面端分页 */}
+          <div style={{ marginTop: 16, textAlign: 'right' }}>
+            <Pagination
+              current={pagination.current}
+              pageSize={pagination.pageSize}
+              total={pagination.total}
+              onChange={handleTableChange}
+              showSizeChanger={false}
+              showQuickJumper
+              showTotal={(total, range) => 
+                `第 ${range[0]}-${range[1]} 条/共 ${total} 条`
+              }
+            />
+          </div>
+        </div>
+
+        {/* 移动端卡片列表 */}
+        <div className="block md:hidden">
+          {loading ? (
+            <div className="text-center py-8">
+              <Spin size="large" />
+              <div className="mt-4 text-gray-500">{t('loading')}</div>
+            </div>
+          ) : data.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="text-6xl mb-4 text-gray-300">📦</div>
+              <div className="text-gray-500 text-lg">{t('noData')}</div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {data.map((item, index) => renderInventoryCard(item, index))}
+            </div>
+          )}
+          
+          {/* 移动端分页 */}
+          {data.length > 0 && (
+            <div className="mt-6 text-center">
+              <Pagination
+                current={pagination.current}
+                pageSize={pagination.pageSize}
+                total={pagination.total}
+                onChange={handleTableChange}
+                showSizeChanger={false}
+                showQuickJumper
+                className="mobile-pagination"
+              />
+            </div>
+          )}
         </div>
       </Card>
     </div>

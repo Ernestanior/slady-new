@@ -1,17 +1,18 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Button, Drawer, Form, InputNumber, Select, Space, Divider, App, notification, message, Input } from 'antd';
-import { PlusOutlined, MinusCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { Button, Drawer, Form, InputNumber, Select, Space, Divider, App, notification, message, Input, Card, Row, Col, Spin, Image, Tag, Upload } from 'antd';
+import { PlusOutlined, MinusCircleOutlined, ExclamationCircleOutlined, SearchOutlined, RightOutlined, UploadOutlined } from '@ant-design/icons';
 import ColorSelect from '../../ColorSelect';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { DesignItem, DesignListRequest, SearchPageParams, DesignDetail as DesignDetailType, ModifyDesignRequest, typeList, colorList, fabricList, sizeList, WAREHOUSE, CreateDesignRequest } from '@/lib/types';
 import { usePermissions } from '@/lib/usePermissions';
 import ImageUpload from '../../ImageUpload';
-import DesignList from './DesignList';
 import DesignDetail from './DesignDetail';
 import ImageGallery from './ImageGallery';
+import TypeMultiSelect from '../../TypeMultiSelect';
+import TypeQuickSelect from '../../TypeQuickSelect';
 import type { UploadFile, RcFile } from 'antd/es/upload/interface';
 
 export default function Design() {
@@ -190,6 +191,9 @@ export default function Design() {
         scrollListRef.current.scrollTop = savedScrollPosition.current;
       }
     }, 0);
+    
+    // 刷新列表
+    fetchDesignList(1, true);
   };
 
   // 跳转到图片浏览页面
@@ -274,7 +278,6 @@ export default function Design() {
           if (response.code === 200) {
             message.success(t('deleteSuccess'));
             handleBackToList();
-            fetchDesignList(1, true);
           } else {
             message.error(response.msg || t('deleteFailed'));
           }
@@ -305,6 +308,17 @@ export default function Design() {
       typeList: selectedTypes,
       hasStock: newHasStockActive ? 1 : 0
     });
+  };
+
+  // 多选类型变化处理
+  const handleTypeChange = (value: string[]) => {
+    setSelectedTypes(value);
+    setQuickSelectType(null);
+  };
+
+  // 快速选择类型变化处理
+  const handleQuickSelectChange = (value: string) => {
+    setQuickSelectType(value);
   };
 
   // 添加面料
@@ -454,62 +468,355 @@ export default function Design() {
     }
   };
 
+  // 渲染移动端商品卡片
+  const renderMobileCard = (item: DesignItem) => (
+    <Card size="small" className="shadow-sm">
+      <div className="flex gap-3">
+        <div className="flex-shrink-0">
+          {item.previewPhoto ? (
+            <Image
+              src={dev_url + item.previewPhoto}
+              alt={item.design}
+              width={80}
+              height={80}
+              className="rounded object-cover"
+              fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+            />
+          ) : (
+            <div className="w-20 h-20 bg-gray-200 rounded flex items-center justify-center">
+              <span className="text-gray-400 text-xs">{t('noImage')}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-1">
+            <div className="text-xs text-gray-600 space-y-1">
+              <h3 className="text-sm font-semibold text-gray-800 truncate">
+                {item.design}
+              </h3>
+              <div>{t('type')}: {item.type}</div>
+              <div className="text-gray-400">{t('stock')}: {item.stock || 0}</div>
+              {item.salePrice && (
+                <div className="text-orange-600 font-semibold">
+                  ${item.salePrice}
+                </div>
+              )}
+            </div>
+
+            <Button
+              type="primary"
+              onClick={() => toDetail(item)}
+            >
+              {t('viewDetails')}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+
   // 根据当前视图渲染对应内容
+  if (currentView === 'detail' && selectedDesignId) {
+    return (
+      <DesignDetail
+        detailData={detailData}
+        detailLoading={detailLoading}
+        onBackToList={handleBackToList}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onViewImages={handleViewImages}
+        editDrawerVisible={editDrawerVisible}
+        onEditDrawerClose={() => setEditDrawerVisible(false)}
+        onEditSubmit={handleEditSubmit}
+        editForm={form}
+      />
+    );
+  }
+
+  if (currentView === 'images') {
+    return (
+      <ImageGallery
+        currentFolderPath={currentFolderPath}
+        coverPath={coverPath}
+        designId={selectedDesignId || 0}
+        onBackToDetail={handleBackToDetail}
+        onImageModify={handleImageModify}
+      />
+    );
+  }
+
+  // 列表视图
   return (
     <>
-      <div style={{ display: currentView === 'list' ? 'block' : 'none' }}>
-        <DesignList
-          displayData={displayData}
-          loading={loading}
-          pagination={pagination}
-          designSearch={designSearch}
-          setDesignSearch={setDesignSearch}
-          selectedTypes={selectedTypes}
-          setSelectedTypes={setSelectedTypes}
-          quickSelectType={quickSelectType}
-          setQuickSelectType={setQuickSelectType}
-          hasStockActive={hasStockActive}
-          onSearchClick={handleSearchClick}
-          onHasStockFilter={handleHasStockFilter}
-          onOpenCreate={handleOpenCreate}
-          onViewDetail={toDetail}
-          onScroll={handleScroll}
-          hasMore={hasMore}
-        />
-      </div>
-      
-      <div style={{ display: currentView === 'detail' ? 'block' : 'none' }}>
-        <DesignDetail
-          detailData={detailData}
-          detailLoading={detailLoading}
-          onBackToList={handleBackToList}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onViewImages={handleViewImages}
-          editDrawerVisible={editDrawerVisible}
-          onEditDrawerClose={() => setEditDrawerVisible(false)}
-          onEditSubmit={handleEditSubmit}
-          editForm={form}
-        />
-      </div>
-      
-      <div style={{ display: currentView === 'images' ? 'block' : 'none' }}>
-        <ImageGallery
-          currentFolderPath={currentFolderPath}
-          coverPath={coverPath}
-          designId={selectedDesignId || 0}
-          onBackToDetail={handleBackToDetail}
-          onImageModify={handleImageModify}
-        />
+      <div className="p-3 md:p-6">
+        {/* 搜索和筛选区域 */}
+        <Card className="mb-4">
+          {/* 桌面端布局 */}
+          <div className="hidden md:block">
+            <Row gutter={[10, 10]}>
+              <Col xs={24} sm={12} md={8}>
+                <div className="mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t('designCodeSearch')}
+                  </label>
+                  <Input
+                    placeholder={t('designCode')}
+                    value={designSearch}
+                    onChange={(e) => setDesignSearch(e.target.value)}
+                    onPressEnter={handleSearchClick}
+                  />
+                </div>
+              </Col>
+              <Col xs={24} sm={12} md={8}>
+                <div className="mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {t('typeFilter')}
+                  </label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <TypeMultiSelect
+                      value={selectedTypes}
+                      onChange={handleTypeChange}
+                      placeholder={t('type')}
+                      style={{ flex: 1 }}
+                    />
+                    <Button 
+                      type="primary" 
+                      icon={<SearchOutlined />}
+                      onClick={handleSearchClick}
+                    >
+                      {t('search')}
+                    </Button>
+                    <Button 
+                      type={hasStockActive ? "primary" : "default"}
+                      onClick={handleHasStockFilter}
+                    >
+                      {t('inStock')}
+                    </Button>
+                    {canUseFeature('createDesign') && (
+                      <Button 
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        onClick={handleOpenCreate}
+                      >
+                        {t('create')}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </Col>
+            </Row>
+            
+            {/* 快速选择区域 */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t('quickSelectType')}
+              </label>
+              <TypeQuickSelect
+                value={quickSelectType}
+                onChange={handleQuickSelectChange}
+              />
+            </div>
+          </div>
+
+          {/* 移动端布局 */}
+          <div className="md:hidden space-y-3">
+            <div className="flex gap-2">
+              <Input
+                placeholder={t('searchDesignCode')}
+                prefix={<SearchOutlined />}
+                value={designSearch}
+                onChange={(e) => setDesignSearch(e.target.value)}
+                onPressEnter={handleSearchClick}
+                size="large"
+                allowClear
+              />
+              <Button
+                type="primary"
+                size="large"
+                icon={<SearchOutlined />}
+                onClick={handleSearchClick}
+              >
+                {t('search')}
+              </Button>
+            </div>
+
+            <Select
+              mode="multiple"
+              placeholder={t('selectDesignType')}
+              value={selectedTypes}
+              onChange={setSelectedTypes}
+              size="large"
+              allowClear
+              style={{ width: '100%' }}
+              options={typeList}
+            />
+
+            <Button
+              block
+              size="large"
+              type={hasStockActive ? 'primary' : 'default'}
+              onClick={handleHasStockFilter}
+            >
+              {hasStockActive ? '✓ ' : ''}{t('productsWithStock')}
+            </Button>
+
+            {canUseFeature('createDesign') && (
+              <Button
+                type="primary"
+                block
+                size="large"
+                icon={<PlusOutlined />}
+                onClick={handleOpenCreate}
+              >
+                {t('addItem')}
+              </Button>
+            )}
+          </div>
+        </Card>
+
+        {/* 商品列表 - 桌面端网格布局 */}
+        <div className="hidden md:block">
+          <div 
+            style={{ 
+              display: "flex", 
+              flexWrap: "wrap", 
+              height: 800, 
+              overflowY: "scroll",
+              gap: '20px',
+              padding:"10px",
+            }} 
+            onScroll={handleScroll} 
+            ref={scrollListRef}
+          >
+            {displayData.length > 0 ? (
+              displayData.map((item: DesignItem, index: number) => (
+                <div 
+                  key={`${item.id}-${index}`} 
+                  style={{ 
+                    backgroundColor: "#fff", 
+                    flex:"40%",
+                    height: 150, 
+                    display: "flex", 
+                    borderRadius: 10, 
+                    boxShadow: "0 0 15px 0 #ddd", 
+                    overflow: "hidden",
+                    flexShrink: 0
+                  }}
+                >
+                  <img 
+                    alt={item.design} 
+                    style={{ height: 150, width: 150, objectFit: 'cover' }} 
+                    src={dev_url + item.previewPhoto}
+                    onError={(e) => {
+                      const img = e.target as HTMLImageElement;
+                      if (!img.src.includes('placeholder-image.jpg') && !img.src.includes('data:image')) {
+                        img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1" height="1"%3E%3C/svg%3E';
+                      }
+                    }}
+                  />
+                  <div style={{ width: "100%", display: "flex", padding: 15, justifyContent: "space-between" }}>
+                    <div>
+                      <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: 'bold', color: '#6b21a8' }}>
+                        {item.design}
+                      </h3>
+                      <div style={{ marginBottom: 5, fontSize: '14px', color: '#666' }}>
+                        {t('type')}：{item.type}
+                      </div>
+                      <div style={{ marginBottom: 5, fontSize: '14px', color: '#666' }}>
+                        {t('stock')}：{item.stock || 0}
+                      </div>
+                      <div style={{ fontSize: '14px', color: '#666' }}>
+                        {t('price')}：<span style={{ color: "#fa9829", fontWeight: 'bold' }}>
+                          ${item.salePrice || 0}
+                        </span>
+                      </div>
+                    </div>
+                    <div 
+                      style={{ 
+                        cursor: "pointer", 
+                        display: "flex", 
+                        alignItems: "center", 
+                        color: "#b67c39", 
+                        fontSize: 15, 
+                        fontWeight: 600,
+                      }}
+                      onClick={() => toDetail(item)}
+                    >
+                      {t('viewDetail')}
+                      <RightOutlined style={{ marginLeft: 4 }} />
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ 
+                width: '100%', 
+                height: '100%', 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center' 
+              }}>
+                <Spin size="large" />
+              </div>
+            )}
+            
+            {loading && displayData.length > 0 && (
+              <div style={{ 
+                width: '100%', 
+                display: 'flex', 
+                justifyContent: 'center', 
+                padding: '20px' 
+              }}>
+                <Spin />
+              </div>
+            )}
+            
+            {!hasMore && displayData.length > 0 && (
+              <div style={{ 
+                width: '100%', 
+                display: 'flex', 
+                justifyContent: 'center', 
+                padding: '20px',
+                color: '#999',
+                fontSize: '14px'
+              }}>
+                已加载全部数据
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 商品列表 - 移动端卡片布局 */}
+        <div className="md:hidden">
+          {loading && displayData.length === 0 ? (
+            <div className="flex justify-center items-center py-20">
+              <Spin size="large" />
+            </div>
+          ) : displayData.length > 0 ? (
+            <div className="space-y-3">
+              {displayData.map((item, index) => (
+                <div key={`${item.id}-${index}`}>
+                  {renderMobileCard(item)}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20 text-gray-500">
+              {t('noItems')}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* 创建商品抽屉 */}
+      {/* 创建商品抽屉 - 响应式 */}
       <Drawer
         title={t('createDesign')}
         placement="right"
         width={600}
         onClose={() => setCreateDrawerVisible(false)}
         open={createDrawerVisible}
+        className="hidden md:block"
         footer={
           <div style={{ textAlign: 'right' }}>
             <Button onClick={() => setCreateDrawerVisible(false)} style={{ marginRight: 8 }}>
@@ -652,6 +959,168 @@ export default function Design() {
           <div style={{ display: 'flex' }}>
             {t('productImages')}：
             <ImageUpload changePic={setCreateImgList} value={createImgList} />
+          </div>
+        </Form>
+      </Drawer>
+
+      {/* 移动端创建商品抽屉 */}
+      <Drawer
+        title={t('addItem')}
+        placement="bottom"
+        height="90%"
+        onClose={() => setCreateDrawerVisible(false)}
+        open={createDrawerVisible}
+        className="md:hidden"
+        footer={
+          <div className="flex gap-4">
+            <Button block size="large" onClick={() => setCreateDrawerVisible(false)}>
+              {t('cancel')}
+            </Button>
+            <Button type="primary" block size="large" onClick={handleCreateSubmit}>
+              {t('confirm')}
+            </Button>
+          </div>
+        }
+      >
+        <Form form={createForm} layout="vertical">
+          <Form.Item
+            name="design"
+            label={t('designCode')}
+            rules={[{ required: true, message: t('pleaseEnterDesignCode') }]}
+          >
+            <Input size="large" placeholder={t('pleaseEnterDesignCode')} />
+          </Form.Item>
+
+          <Form.Item
+            name="type"
+            label={t('designType')}
+            rules={[
+              { required: true, message: t('pleaseSelectDesignType') },
+              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneType') }
+            ]}
+          >
+            <Select size="large" placeholder={t('pleaseSelectDesignType')} mode="multiple" options={typeList} />
+          </Form.Item>
+
+          <Form.Item
+            name="color"
+            label={t('color')}
+            rules={[
+              { required: true, message: t('pleaseSelectColor') },
+              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneColor') }
+            ]}
+          >
+            <ColorSelect mode="multiple" size="large" placeholder={t('pleaseSelectColor')} />
+          </Form.Item>
+
+          <Form.Item
+            name="size"
+            label={t('size')}
+            rules={[
+              { required: true, message: t('pleaseSelectSize') },
+              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneSize') }
+            ]}
+          >
+            <Select
+              mode="multiple"
+              size="large"
+              placeholder={t('pleaseSelectSize')}
+              options={sizeList.map(size => ({ value: size, label: size }))}
+            />
+          </Form.Item>
+
+          <Form.List name="fabricList">
+            {(fields, { add, remove }) => (
+              <>
+                <Form.Item label={t('fabric')}>
+                  <Button type="dashed" onClick={() => add()} icon={<PlusOutlined />} block>
+                    {t('addFabric')}
+                  </Button>
+                </Form.Item>
+                {fields.map(({ key, name, ...restField }) => (
+                  <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                    <Form.Item
+                      {...restField}
+                      name={[name, 'fabric']}
+                      rules={[{ required: true, message: t('pleaseSelectFabric') }]}
+                    >
+                      <Select
+                        style={{ width: 150 }}
+                        dropdownRender={(menu) => (
+                          <>
+                            {menu}
+                            <Divider style={{ margin: '8px 0' }} />
+                            <Space style={{ padding: '0 8px 4px' }}>
+                              <Input
+                                placeholder={t('fabric')}
+                                value={fabric}
+                                onChange={(e) => setFabric(e.target.value)}
+                              />
+                              <Button type="text" icon={<PlusOutlined />} onClick={addFabric}>
+                                {t('add')}
+                              </Button>
+                            </Space>
+                          </>
+                        )}
+                        options={newFabric.map(f => ({ label: f, value: f }))}
+                      />
+                    </Form.Item>
+                    <Form.Item {...restField} name={[name, 'percent']}>
+                      <InputNumber placeholder="%" min={0} max={100} style={{ width: 80 }} />
+                    </Form.Item>
+                    <MinusCircleOutlined onClick={() => remove(name)} style={{ color: 'red' }} />
+                  </Space>
+                ))}
+              </>
+            )}
+          </Form.List>
+
+          <Form.Item
+            name="purchasePrice"
+            label={t('purchasePrice')}
+            rules={[{ required: true, message: t('pleaseEnterPurchasePrice') }]}
+          >
+            <Input size="large" placeholder={t('purchasePrice')} style={{ width: '100%' }} />
+          </Form.Item>
+
+          <Form.Item
+            name="salePrice"
+            label={t('salePrice')}
+            rules={[
+              { required: true, message: t('pleaseEnterSalePrice') },
+              { type: 'number', min: 0, message: t('salePriceMustBePositive') }
+            ]}
+          >
+            <InputNumber size="large" style={{ width: '100%' }} min={0} precision={2} />
+          </Form.Item>
+
+          <Form.Item name="remark" label={t('remark')}>
+            <Input.TextArea size="large" placeholder={t('pleaseEnterRemark')} rows={3} />
+          </Form.Item>
+
+          <div style={{ marginBottom: 16 }}>
+            <div className="mb-2 text-sm font-medium">{t('coverImage')}：</div>
+            <Upload
+              listType="picture-card"
+              fileList={imgCover}
+              onChange={({ fileList }) => setImgCover(fileList)}
+              beforeUpload={() => false}
+            >
+              {imgCover.length >= 1 ? null : <div><UploadOutlined /><div>{t('uploadCover')}</div></div>}
+            </Upload>
+          </div>
+
+          <div>
+            <div className="mb-2 text-sm font-medium">{t('productImages')}：</div>
+            <Upload
+              listType="picture-card"
+              fileList={createImgList}
+              onChange={({ fileList }) => setCreateImgList(fileList)}
+              beforeUpload={() => false}
+              multiple
+            >
+              {createImgList.length >= 10 ? null : <div><UploadOutlined /><div>{t('uploadImages')}</div></div>}
+            </Upload>
           </div>
         </Form>
       </Drawer>

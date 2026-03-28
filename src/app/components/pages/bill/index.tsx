@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Card, message, Pagination, Form, Input, DatePicker, Tag, Tabs, Drawer } from 'antd';
-import { SearchOutlined, ReloadOutlined, FilterOutlined, PrinterOutlined, DeleteOutlined, ExclamationCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { Table, Button, Card, message, Pagination, Form, Input, DatePicker, Tag, Tabs, Drawer, Spin, Divider } from 'antd';
+import { SearchOutlined, ReloadOutlined, FilterOutlined, PrinterOutlined, DeleteOutlined, ExclamationCircleOutlined, CloseCircleOutlined, FileTextOutlined, DollarOutlined, CalendarOutlined, UserOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { ReceiptData, ReceiptListRequest } from '@/lib/types';
 import { receipt, cashDrawerService } from '@/lib/api';
@@ -261,6 +261,154 @@ export default function BillManagement() {
     setCurrentView('list');
   };
 
+  // 解析商品列表
+  const parseItemList = (value: any) => {
+    try {
+      if (value === undefined || value === null) {
+        return [];
+      }
+      const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  // 解析支付列表
+  const parsePaymentList = (value: any) => {
+    try {
+      if (value === undefined || value === null) {
+        return [];
+      }
+      const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  // 渲染移动端账单卡片
+  const renderBillCard = (item: ReceiptData, index: number) => {
+    const itemList = parseItemList(item.itemList);
+    const paymentList = parsePaymentList(item.paymentList);
+    const totalAmount = (itemList || []).reduce((sum: number, it: any) => sum + (Number(it.finalPrice ?? it.price) * (it.qty || 0)), 0);
+
+    return (
+      <Card
+        key={item.id}
+        className="mb-3 hover:shadow-md transition-shadow duration-200"
+        style={{ borderRadius: 12 }}
+      >
+        <div className="space-y-3">
+          {/* 账单头部信息 */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <FileTextOutlined className="text-gray-500" />
+              <span className="font-bold text-gray-900">#{item.id}</span>
+            </div>
+            {/* Void 状态 */}
+            <Tag color={(item.voided ?? 0) === 0 ? 'green' : 'red'}>
+              {(item.voided ?? 0) === 0 ? 'normal' : 'void'}
+            </Tag>
+          </div>
+
+          {/* REFNO */}
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-gray-600">{t('itemCode')}:</span>
+            <span className="font-medium text-gray-900">{item.refNo}</span>
+          </div>
+
+          {/* 商品列表 */}
+          <div className="space-y-2">
+            <div className="text-sm text-gray-600">{t('item')}:</div>
+            <div className="space-y-1">
+              {itemList.map((it: any, idx: number) => (
+                <div key={`${it.code}-${idx}`} className="flex items-center justify-between bg-gray-50 rounded-lg p-2">
+                  <div className="flex-1">
+                    <span className="font-medium text-blue-600">{it.code}</span>
+                    <span className="text-gray-500 ml-2">× {it.qty}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-bold text-gray-900">
+                      ${Number(it.finalPrice ?? it.price).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Divider className="my-3" />
+
+          {/* 支付方式列表 */}
+          {paymentList && paymentList.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-sm text-gray-600">{t('payment')}:</div>
+              <div className="space-y-1">
+                {paymentList.map((payment: any, idx: number) => (
+                  <div key={`${payment.payment}-${idx}`} className="flex items-center justify-between bg-green-50 rounded-lg p-2">
+                    <span className="font-medium text-gray-900">{payment.payment}</span>
+                    <span className="font-bold text-green-600">
+                      ${Number(payment.amount).toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <Divider className="my-3" />
+
+          {/* 账单底部信息 */}
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="flex items-center space-x-2">
+              <CalendarOutlined className="text-gray-500" />
+              <span className="font-medium">{moment(item.receiptDate).format('YYYY-MM-DD')}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <UserOutlined className="text-gray-500" />
+              <span className="text-gray-600">{t('cashier')}:</span>
+              <span className="font-medium">{item.cashier}</span>
+            </div>
+          </div>
+
+          {/* 总金额 */}
+          <div className="bg-blue-50 rounded-lg p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-lg font-bold text-blue-600">{t('totalAmount') || '总金额'}:</span>
+              <span className="text-xl font-bold text-blue-600">
+                ${totalAmount.toFixed(2)}
+              </span>
+            </div>
+          </div>
+
+          {/* 操作按钮 - 财务用户不显示 */}
+          {!isFinance() && (
+            <div className="flex justify-end gap-2">
+              <Button 
+                type="primary" 
+                size="small"
+                onClick={() => handleReprint(item.id)}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {t('reprint')}
+              </Button>
+              <Button 
+                type="primary" 
+                danger
+                size="small"
+                icon={<CloseCircleOutlined />}
+                onClick={() => handleVoid(item.id)}
+              >
+                void
+              </Button>
+            </div>
+          )}
+        </div>
+      </Card>
+    );
+  };
+
   // 表格列定义
   const baseColumns = [
     {
@@ -445,107 +593,195 @@ export default function BillManagement() {
     : allTabItems;
 
   return (
-    <div style={{ padding: '24px' }}>
-      <div style={{ 
-        marginBottom: 24, 
-        display: 'flex', 
-        flexDirection:"column",
-      }}>
-        <div style={{ display: 'flex', gap: 8 }}>
+    <div className="p-4 md:p-6">
+      {/* 桌面端视图 */}
+      <div className="hidden md:block">
+        <div style={{ 
+          marginBottom: 24, 
+          display: 'flex', 
+          flexDirection:"column",
+        }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {canUseFeature('printReceipt') && (
+              <Button type="primary" icon={<PrinterOutlined />} onClick={handlePrintReceipt}>{t('printReceipt')}</Button>
+            )}
+            {canUseFeature('printLabel') && (
+              <Button onClick={() => setPrintLabelVisible(true)}>
+                {t('printLabel')}
+              </Button>
+            )}
+            {canUseFeature('printDailyReport') && (
+              <Button onClick={() => setPrintDailyReportVisible(true)}>
+                {t('printDailyReport')}
+              </Button>
+            )}
+            {canUseFeature('dailySales') && (
+              <Button onClick={() => setDailySaleVisible(true)}>
+                {t('dailySales') || '每日销售统计'}
+              </Button>
+            )}
+            {canUseFeature('dailySales') && (
+              <Button onClick={() => setPaymentMethodSaleVisible(true)}>
+                {t('paymentMethodSales') || '支付方式销售统计'}
+              </Button>
+            )}
+            {canUseFeature('cashInOut') && (
+              <Button onClick={() => setCashInOutVisible(true)}>
+                {t('cashInOut') || '收支记录'}
+              </Button>
+            )}
+            {canUseFeature('openingClosingBalance') && (
+              <Button onClick={() => setOpeningClosingBalanceVisible(true)}>
+                {t('openingClosingBalance') || '开/闭店结余'}
+              </Button>
+            )}
+            {!isFinance() && (
+              <Button onClick={() => setOpenCashDrawerVisible(true)}>
+                {t('openCashDrawer') || '打开钱箱'}
+              </Button>
+            )}
+          </div>
+        </div>
+        
+        {/* 搜索表单 */}
+        <Card style={{ marginBottom: 16 }}>
+          <Form
+            form={form}
+            layout="inline"
+            onFinish={handleSearch}
+          >
+            <Form.Item name="item" label="搜索产品">
+              <Input placeholder={t('itemCode')} style={{ width: 200 }} />
+            </Form.Item>
+            <Form.Item name="createDate" label={t('createTime')}>
+              <DatePicker.RangePicker 
+                placeholder={[t('startTime'), t('endTime')]} 
+                style={{ width: 300 }}
+              />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+              {t('search')}
+              </Button>
+            </Form.Item>
+            <Form.Item>
+              <Button onClick={handleReset} icon={<ReloadOutlined />}>
+              {t('reset')}
+              </Button>
+            </Form.Item>
+          </Form>
+        </Card>
+
+        {/* 数据表格 */}
+        <Card>
+          <Tabs
+            activeKey={activeTab}
+            onChange={handleTabChange}
+            items={tabItems}
+            size="large"
+          />
+          
+          {/* 分页 */}
+          <div style={{ marginTop: 16, textAlign: 'right' }}>
+            <Pagination
+              current={pagination.current}
+              pageSize={pagination.pageSize}
+              total={pagination.total}
+              onChange={handleTableChange}
+              showSizeChanger={false}
+              showQuickJumper
+              showTotal={(total, range) => 
+                `第 ${range[0]}-${range[1]} 条/共 ${total} 条`
+              }
+            />
+          </div>
+        </Card>
+      </div>
+
+      {/* 移动端视图 */}
+      <div className="md:hidden pb-20">
+        {/* 操作按钮 */}
+        <div className="mb-4 space-y-2">
           {canUseFeature('printReceipt') && (
-            <Button type="primary" icon={<PrinterOutlined />} onClick={handlePrintReceipt}>{t('printReceipt')}</Button>
+            <Button type="primary" icon={<PrinterOutlined />} onClick={handlePrintReceipt} block size="large">
+              {t('printReceipt')}
+            </Button>
           )}
           {canUseFeature('printLabel') && (
-            <Button onClick={() => setPrintLabelVisible(true)}>
+            <Button onClick={() => setPrintLabelVisible(true)} block size="large">
               {t('printLabel')}
             </Button>
           )}
           {canUseFeature('printDailyReport') && (
-            <Button onClick={() => setPrintDailyReportVisible(true)}>
+            <Button onClick={() => setPrintDailyReportVisible(true)} block size="large">
               {t('printDailyReport')}
             </Button>
           )}
-          {canUseFeature('dailySales') && (
-            <Button onClick={() => setDailySaleVisible(true)}>
-              {t('dailySales') || '每日销售统计'}
-            </Button>
-          )}
-          {canUseFeature('dailySales') && (
-            <Button onClick={() => setPaymentMethodSaleVisible(true)}>
-              {t('paymentMethodSales') || '支付方式销售统计'}
-            </Button>
-          )}
-          {canUseFeature('cashInOut') && (
-            <Button onClick={() => setCashInOutVisible(true)}>
-              {t('cashInOut') || '收支记录'}
-            </Button>
-          )}
-          {canUseFeature('openingClosingBalance') && (
-            <Button onClick={() => setOpeningClosingBalanceVisible(true)}>
-              {t('openingClosingBalance') || '开/闭店结余'}
-            </Button>
-          )}
-          {!isFinance() && (
-            <Button onClick={() => setOpenCashDrawerVisible(true)}>
-              {t('openCashDrawer') || '打开钱箱'}
-            </Button>
-          )}
         </div>
-      </div>
-      
-      {/* 搜索表单 */}
-      <Card style={{ marginBottom: 16 }}>
-        <Form
-          form={form}
-          layout="inline"
-          onFinish={handleSearch}
-        >
-          <Form.Item name="item" label="搜索产品">
-            <Input placeholder={t('itemCode')} style={{ width: 200 }} />
-          </Form.Item>
-          <Form.Item name="createDate" label={t('createTime')}>
-            <DatePicker.RangePicker 
-              placeholder={[t('startTime'), t('endTime')]} 
-              style={{ width: 300 }}
-            />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-            {t('search')}
-            </Button>
-          </Form.Item>
-          <Form.Item>
-            <Button onClick={handleReset} icon={<ReloadOutlined />}>
-            {t('reset')}
-            </Button>
-          </Form.Item>
-        </Form>
-      </Card>
 
-      {/* 数据表格 */}
-      <Card>
+        {/* 搜索表单 */}
+        <Card className="mb-4">
+          <Form form={form} layout="vertical" onFinish={handleSearch}>
+            <Form.Item name="item" label={t('searchProduct')}>
+              <Input placeholder={t('itemCode')} size="large" />
+            </Form.Item>
+            <Form.Item name="createDate" label={t('createTime')}>
+              <DatePicker.RangePicker 
+                placeholder={[t('startTime'), t('endTime')]} 
+                style={{ width: '100%' }}
+                size="large"
+              />
+            </Form.Item>
+            <div className="flex gap-2">
+              <Button type="primary" htmlType="submit" icon={<SearchOutlined />} className="flex-1" size="large">
+                {t('search')}
+              </Button>
+              <Button onClick={handleReset} icon={<ReloadOutlined />} className="flex-1" size="large">
+                {t('reset')}
+              </Button>
+            </div>
+          </Form>
+        </Card>
+
+        {/* 店铺标签页 */}
         <Tabs
           activeKey={activeTab}
           onChange={handleTabChange}
-          items={tabItems}
+          items={tabItems.map(tab => ({
+            ...tab,
+            children: (
+              <div className="space-y-3">
+                {loading ? (
+                  <div className="text-center py-8">
+                    <Spin size="large" />
+                  </div>
+                ) : data.length > 0 ? (
+                  data.map((item, index) => renderBillCard(item, index))
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    {t('noData')}
+                  </div>
+                )}
+              </div>
+            )
+          }))}
           size="large"
         />
-        
+
         {/* 分页 */}
-        <div style={{ marginTop: 16, textAlign: 'right' }}>
-          <Pagination
-            current={pagination.current}
-            pageSize={pagination.pageSize}
-            total={pagination.total}
-            onChange={handleTableChange}
-            showSizeChanger={false}
-            showQuickJumper
-            showTotal={(total, range) => 
-              `第 ${range[0]}-${range[1]} 条/共 ${total} 条`
-            }
-          />
-        </div>
-      </Card>
+        {data.length > 0 && (
+          <div className="mt-6 text-center">
+            <Pagination
+              current={pagination.current}
+              pageSize={pagination.pageSize}
+              total={pagination.total}
+              onChange={handleTableChange}
+              showSizeChanger={false}
+              simple
+            />
+          </div>
+        )}
+      </div>
 
       {/* Drawer组件 */}
       <PrintLabelDrawer 
@@ -573,13 +809,14 @@ export default function BillManagement() {
         onClose={() => setOpeningClosingBalanceVisible(false)} 
       />
 
-      {/* 删除确认抽屉 */}
+      {/* 删除确认抽屉 - 桌面端 */}
       <Drawer
         title={t('confirmDelete')}
         placement="right"
         onClose={handleCloseDeleteDrawer}
         open={deleteDrawerVisible}
         width={400}
+        className="hidden md:block"
         footer={
           <div style={{ textAlign: 'right' }}>
             <Button onClick={handleCloseDeleteDrawer} style={{ marginRight: 8 }}>
@@ -612,13 +849,51 @@ export default function BillManagement() {
         </div>
       </Drawer>
 
-      {/* Void 确认抽屉 */}
+      {/* 删除确认抽屉 - 移动端 */}
+      <Drawer
+        title={t('confirmDelete')}
+        placement="bottom"
+        onClose={handleCloseDeleteDrawer}
+        open={deleteDrawerVisible}
+        height="40%"
+        className="md:hidden"
+        footer={
+          <div className="flex gap-3">
+            <Button block onClick={handleCloseDeleteDrawer}>
+              {t('cancel')}
+            </Button>
+            <Button 
+              type="primary" 
+              danger 
+              block
+              loading={deleteLoading}
+              onClick={handleConfirmDelete}
+            >
+              {t('confirmDelete')}
+            </Button>
+          </div>
+        }
+      >
+        <div className="text-center py-4">
+          <ExclamationCircleOutlined style={{ fontSize: 48, color: '#ff4d4f', marginBottom: 16 }} />
+          <h3 className="text-lg font-semibold mb-2">{t('confirmDeleteReceipt')}</h3>
+          <p className="text-gray-600">{t('deleteReceiptWarning')}</p>
+          {deleteReceiptId && (
+            <p className="mt-4 text-gray-800">
+              <strong>{t('receiptId')}：</strong>{deleteReceiptId}
+            </p>
+          )}
+        </div>
+      </Drawer>
+
+      {/* Void 确认抽屉 - 桌面端 */}
       <Drawer
         title="Confirm Void"
         placement="right"
         onClose={handleCloseVoidDrawer}
         open={voidDrawerVisible}
         width={400}
+        className="hidden md:block"
         footer={
           <div style={{ textAlign: 'right' }}>
             <Button onClick={handleCloseVoidDrawer} style={{ marginRight: 8 }}>
@@ -651,13 +926,51 @@ export default function BillManagement() {
         </div>
       </Drawer>
 
-      {/* 打开钱箱抽屉 */}
+      {/* Void 确认抽屉 - 移动端 */}
+      <Drawer
+        title="Confirm Void"
+        placement="bottom"
+        onClose={handleCloseVoidDrawer}
+        open={voidDrawerVisible}
+        height="40%"
+        className="md:hidden"
+        footer={
+          <div className="flex gap-3">
+            <Button block onClick={handleCloseVoidDrawer}>
+              {t('cancel')}
+            </Button>
+            <Button 
+              type="primary" 
+              danger 
+              block
+              loading={voidLoading}
+              onClick={handleConfirmVoid}
+            >
+              Confirm Void
+            </Button>
+          </div>
+        }
+      >
+        <div className="text-center py-4">
+          <ExclamationCircleOutlined style={{ fontSize: 48, color: '#ff4d4f', marginBottom: 16 }} />
+          <h3 className="text-lg font-semibold mb-2">Confirm Void Receipt</h3>
+          <p className="text-gray-600">Are you sure you want to void this receipt? This action cannot be undone.</p>
+          {voidReceiptId && (
+            <p className="mt-4 text-gray-800">
+              <strong>Receipt ID：</strong>{voidReceiptId}
+            </p>
+          )}
+        </div>
+      </Drawer>
+
+      {/* 打开钱箱抽屉 - 桌面端 */}
       <Drawer
         title={t('openCashDrawer') || '打开钱箱'}
         placement="right"
         onClose={handleCloseOpenCashDrawer}
         open={openCashDrawerVisible}
         width={400}
+        className="hidden md:block"
         footer={
           <div style={{ textAlign: 'right' }}>
             <Button onClick={handleCloseOpenCashDrawer} style={{ marginRight: 8 }}>
@@ -690,6 +1003,52 @@ export default function BillManagement() {
                 ) : null
               ))}
             </section>
+          </div>
+        </div>
+      </Drawer>
+
+      {/* 打开钱箱抽屉 - 移动端 */}
+      <Drawer
+        title={t('openCashDrawer') || '打开钱箱'}
+        placement="bottom"
+        onClose={handleCloseOpenCashDrawer}
+        open={openCashDrawerVisible}
+        height="50%"
+        className="md:hidden"
+        footer={
+          <div className="flex gap-3">
+            <Button block onClick={handleCloseOpenCashDrawer}>
+              {t('cancel')}
+            </Button>
+            <Button 
+              type="primary" 
+              block
+              loading={openCashDrawerLoading}
+              onClick={handleOpenCashDrawer}
+            >
+              {t('confirm') || '确认'}
+            </Button>
+          </div>
+        }
+      >
+        <div className="py-4">
+          <div className="mb-4">
+            <div className="mb-3 font-medium text-lg">{t('selectStore') || '选择店铺'}:</div>
+            <div className="flex flex-wrap gap-2">
+              {shops.map((item, index) => (
+                index > 0 ? (
+                  <Button 
+                    key={index}
+                    type={selectedStore === index ? 'primary' : 'default'} 
+                    size="large"
+                    style={{ borderRadius: 20 }} 
+                    onClick={() => setSelectedStore(index)}
+                  >
+                    {item}
+                  </Button>
+                ) : null
+              ))}
+            </div>
           </div>
         </div>
       </Drawer>

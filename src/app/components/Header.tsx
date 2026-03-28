@@ -3,8 +3,13 @@
 import { useTranslation } from 'react-i18next';
 import { authManager } from '@/lib/auth';
 import { usePermissions } from '@/lib/usePermissions';
+import { Menu as MenuIcon } from 'lucide-react';
 
-export default function Header() {
+interface HeaderProps {
+  onMenuClick?: () => void;
+}
+
+export default function Header({ onMenuClick }: HeaderProps) {
   const { t, i18n } = useTranslation();
   const { userInfo, loading } = usePermissions();
 
@@ -17,8 +22,17 @@ export default function Header() {
   return (
     <header className="bg-gray-900 shadow-sm border-b border-gray-700 px-4 md:px-6 py-3 md:py-4 min-w-full sticky top-0 z-50">
       <div className="flex items-center justify-between flex-wrap md:flex-nowrap gap-2 md:gap-0">
-        {/* Logo */}
-        <div className="flex items-center flex-shrink-0">
+        {/* Logo + Mobile Menu Button */}
+        <div className="flex items-center flex-shrink-0 gap-3">
+          {/* Mobile Menu Button - only visible on mobile */}
+          <button
+            onClick={onMenuClick}
+            className="md:hidden flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-800 active:bg-gray-700 transition-colors"
+            aria-label="打开菜单"
+          >
+            <MenuIcon className="w-6 h-6 text-white" />
+          </button>
+          
           <div className="text-xl md:text-2xl font-bold text-white">
             Slady
           </div>

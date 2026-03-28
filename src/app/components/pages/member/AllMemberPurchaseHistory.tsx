@@ -37,7 +37,7 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
           desc: 1,
           page,
           pageSize: 20,
-          sort: 'create_date'
+          sort: 'purchase_date'
         },
         refund: 2
       };
@@ -76,7 +76,7 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
           desc: 1,
           page,
           pageSize: 20,
-          sort: 'create_date'
+          sort: 'purchase_date'
         },
         refund: 1
       };

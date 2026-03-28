@@ -35,7 +35,7 @@ export default function MemberTopUpHistory({ onBackToList }: MemberTopUpHistoryP
           desc: 1,
           page,
           pageSize: 20,
-          sort: 'create_date'
+          sort: 'purchase_date'
         },
         types: [1],
         ...formValues,

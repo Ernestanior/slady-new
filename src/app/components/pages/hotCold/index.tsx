@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, message } from 'antd';
+import { Card, message, Tabs } from 'antd';
+import { FireOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { HotColdItem, HotColdListRequest } from '@/lib/types';
 import { hotCold } from '@/lib/api';
@@ -22,7 +23,7 @@ export default function HotColdItems() {
       const params: HotColdListRequest = {
         type: '',
         searchPage: {
-          desc: 1, // 降序排列，热度高的在前
+          desc: 1,
           page: 1,
           pageSize: 20,
           sort: 'hot'
@@ -44,7 +45,7 @@ export default function HotColdItems() {
       const params: HotColdListRequest = {
         type: '',
         searchPage: {
-          desc: 0, // 升序排列，热度低的在前
+          desc: 0,
           page: 1,
           pageSize: 20,
           sort: 'hot'
@@ -60,7 +61,7 @@ export default function HotColdItems() {
     }
   };
 
-  // 初始化数据 - 防止重复调用
+  // 初始化数据
   useEffect(() => {
     if (!hasLoaded) {
       setLoading(true);
@@ -72,28 +73,86 @@ export default function HotColdItems() {
     }
   }, [hasLoaded]);
 
+  // 移动端标签页配置
+  const mobileTabItems = [
+    {
+      key: 'hot',
+      label: (
+        <span className="flex items-center">
+          <FireOutlined className="text-red-500 mr-2" />
+          {t('hotItems')}
+        </span>
+      ),
+      children: (
+        <div className="space-y-4">
+          <TopThreeItems hotData={hotData} coldData={coldData} type="hot" />
+          <HotColdTable
+            hotData={hotData}
+            coldData={coldData}
+            activeTab="hot"
+            loading={loading}
+            onTabChange={setActiveTab}
+            isMobile={true}
+          />
+        </div>
+      ),
+    },
+    {
+      key: 'cold',
+      label: (
+        <span className="flex items-center">
+          <MinusCircleOutlined className="text-blue-500 mr-2" />
+          {t('coldItems')}
+        </span>
+      ),
+      children: (
+        <div className="space-y-4">
+          <TopThreeItems hotData={hotData} coldData={coldData} type="cold" />
+          <HotColdTable
+            hotData={hotData}
+            coldData={coldData}
+            activeTab="cold"
+            loading={loading}
+            onTabChange={setActiveTab}
+            isMobile={true}
+          />
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <div style={{ padding: '24px' }}>
+    <>
+      {/* 桌面版布局 */}
+      <div className="hidden md:block p-6">
+        <TopThreeItems hotData={hotData} coldData={coldData} />
+        <Card 
+          style={{ 
+            borderRadius: 8, 
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)' 
+          }}
+        >
+          <HotColdTable
+            hotData={hotData}
+            coldData={coldData}
+            activeTab={activeTab}
+            loading={loading}
+            onTabChange={setActiveTab}
+            isMobile={false}
+          />
+        </Card>
+      </div>
 
-
-      {/* 前三名商品展示模块 */}
-      <TopThreeItems hotData={hotData} coldData={coldData} />
-
-      {/* 详细表格 */}
-      <Card 
-        style={{ 
-          borderRadius: 8, 
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)' 
-        }}
-      >
-        <HotColdTable
-          hotData={hotData}
-          coldData={coldData}
-          activeTab={activeTab}
-          loading={loading}
-          onTabChange={setActiveTab}
+      {/* 移动版布局 */}
+      <div className="md:hidden p-4">
+        <Tabs
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          items={mobileTabItems}
+          size="large"
+          className="hot-cold-tabs"
         />
-      </Card>
-    </div>
+      </div>
+    </>
   );
 }
