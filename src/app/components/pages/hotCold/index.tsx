@@ -85,14 +85,13 @@ export default function HotColdItems() {
       ),
       children: (
         <div className="space-y-4">
-          <TopThreeItems hotData={hotData} coldData={coldData} type="hot" />
+          <TopThreeItems hotData={hotData} coldData={coldData} />
           <HotColdTable
             hotData={hotData}
             coldData={coldData}
             activeTab="hot"
             loading={loading}
             onTabChange={setActiveTab}
-            isMobile={true}
           />
         </div>
       ),
@@ -107,14 +106,13 @@ export default function HotColdItems() {
       ),
       children: (
         <div className="space-y-4">
-          <TopThreeItems hotData={hotData} coldData={coldData} type="cold" />
+          <TopThreeItems hotData={hotData} coldData={coldData} />
           <HotColdTable
             hotData={hotData}
             coldData={coldData}
             activeTab="cold"
             loading={loading}
             onTabChange={setActiveTab}
-            isMobile={true}
           />
         </div>
       ),
@@ -138,7 +136,6 @@ export default function HotColdItems() {
             activeTab={activeTab}
             loading={loading}
             onTabChange={setActiveTab}
-            isMobile={false}
           />
         </Card>
       </div>
