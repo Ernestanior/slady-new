@@ -16,7 +16,7 @@ interface MemberPurchaseHistoryProps {
 
 export default function MemberPurchaseHistory({ memberData, onBackToList }: MemberPurchaseHistoryProps) {
   const { t } = useTranslation();
-  const { canUseFeature } = usePermissions();
+  const { canUseFeature, isAdmin } = usePermissions();
   const [form] = Form.useForm();
   const [data, setData] = useState<MemberPurchaseRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -291,14 +291,16 @@ export default function MemberPurchaseHistory({ memberData, onBackToList }: Memb
           </Button>
           <h2 style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>会员购买记录</h2>
         </div>
-        <div>
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate} style={{ marginRight: 8 }}>
-            {t('add')}
-          </Button>
-          <Button icon={<MinusCircleOutlined />} onClick={handleRefund}>
-            退还
-          </Button>
-        </div>
+        {isAdmin() && (
+          <div>
+            <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate} style={{ marginRight: 8 }}>
+              {t('add')}
+            </Button>
+            <Button icon={<MinusCircleOutlined />} onClick={handleRefund}>
+              退还
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* 会员详细信息 */}
@@ -360,7 +362,7 @@ export default function MemberPurchaseHistory({ memberData, onBackToList }: Memb
 
       {/* {t('add')}购买记录抽屉 */}
       <Drawer
-        title="{t('add')}购买记录"
+        title={t('add')+'购买记录'}
         open={createDrawerVisible}
         onClose={() => setCreateDrawerVisible(false)}
         width={800}

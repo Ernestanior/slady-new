@@ -8,6 +8,7 @@ import { ReceiptData, ReceiptListRequest } from '@/lib/types';
 import { receipt, cashDrawerService } from '@/lib/api';
 import moment from 'moment';
 import { usePermissions } from '@/lib/usePermissions';
+import { useIsMobile } from '@/lib/useIsMobile';
 import PrintReceipt from './PrintReceipt';
 import PrintLabelDrawer from './PrintLabelDrawer';
 import PrintDailyReportDrawer from './PrintDailyReportDrawer';
@@ -20,6 +21,7 @@ import { shops } from './PrintReceipt';
 export default function BillManagement() {
   const { t } = useTranslation();
   const { canUseFeature, getFinanceStoreAccess, isFinance } = usePermissions();
+  const isMobile = useIsMobile();
   const [form] = Form.useForm();
   const [data, setData] = useState<ReceiptData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -810,248 +812,254 @@ export default function BillManagement() {
       />
 
       {/* 删除确认抽屉 - 桌面端 */}
-      <Drawer
-        title={t('confirmDelete')}
-        placement="right"
-        onClose={handleCloseDeleteDrawer}
-        open={deleteDrawerVisible}
-        width={400}
-        className="hidden md:block"
-        footer={
-          <div style={{ textAlign: 'right' }}>
-            <Button onClick={handleCloseDeleteDrawer} style={{ marginRight: 8 }}>
-              {t('cancel')}
-            </Button>
-            <Button 
-              type="primary" 
-              danger 
-              loading={deleteLoading}
-              onClick={handleConfirmDelete}
-            >
-              {t('confirmDelete')}
-            </Button>
+      {!isMobile && (
+        <Drawer
+          title={t('confirmDelete')}
+          placement="right"
+          onClose={handleCloseDeleteDrawer}
+          open={deleteDrawerVisible}
+          width={400}
+          footer={
+            <div style={{ textAlign: 'right' }}>
+              <Button onClick={handleCloseDeleteDrawer} style={{ marginRight: 8 }}>
+                {t('cancel')}
+              </Button>
+              <Button 
+                type="primary" 
+                danger 
+                loading={deleteLoading}
+                onClick={handleConfirmDelete}
+              >
+                {t('confirmDelete')}
+              </Button>
+            </div>
+          }
+        >
+          <div style={{ padding: '20px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+              <ExclamationCircleOutlined style={{ fontSize: 24, color: '#ff4d4f', marginRight: 12 }} />
+              <span style={{ fontSize: 16, fontWeight: 500 }}>{t('confirmDeleteReceipt')}</span>
+            </div>
+            <div style={{ color: '#666', lineHeight: 1.8 }}>
+              <p>{t('deleteReceiptWarning')}</p>
+              {deleteReceiptId && (
+                <p style={{ marginTop: 8 }}>
+                  <strong>{t('receiptId')}：</strong>{deleteReceiptId}
+                </p>
+              )}
+            </div>
           </div>
-        }
-      >
-        <div style={{ padding: '20px 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
-            <ExclamationCircleOutlined style={{ fontSize: 24, color: '#ff4d4f', marginRight: 12 }} />
-            <span style={{ fontSize: 16, fontWeight: 500 }}>{t('confirmDeleteReceipt')}</span>
-          </div>
-          <div style={{ color: '#666', lineHeight: 1.8 }}>
-            <p>{t('deleteReceiptWarning')}</p>
+        </Drawer>
+      )}
+
+      {/* 删除确认抽屉 - 移动端 */}
+      {isMobile && (
+        <Drawer
+          title={t('confirmDelete')}
+          placement="bottom"
+          onClose={handleCloseDeleteDrawer}
+          open={deleteDrawerVisible}
+          height="40%"
+          footer={
+            <div className="flex gap-3">
+              <Button block onClick={handleCloseDeleteDrawer}>
+                {t('cancel')}
+              </Button>
+              <Button 
+                type="primary" 
+                danger 
+                block
+                loading={deleteLoading}
+                onClick={handleConfirmDelete}
+              >
+                {t('confirmDelete')}
+              </Button>
+            </div>
+          }
+        >
+          <div className="text-center py-4">
+            <ExclamationCircleOutlined style={{ fontSize: 48, color: '#ff4d4f', marginBottom: 16 }} />
+            <h3 className="text-lg font-semibold mb-2">{t('confirmDeleteReceipt')}</h3>
+            <p className="text-gray-600">{t('deleteReceiptWarning')}</p>
             {deleteReceiptId && (
-              <p style={{ marginTop: 8 }}>
+              <p className="mt-4 text-gray-800">
                 <strong>{t('receiptId')}：</strong>{deleteReceiptId}
               </p>
             )}
           </div>
-        </div>
-      </Drawer>
-
-      {/* 删除确认抽屉 - 移动端 */}
-      <Drawer
-        title={t('confirmDelete')}
-        placement="bottom"
-        onClose={handleCloseDeleteDrawer}
-        open={deleteDrawerVisible}
-        height="40%"
-        className="md:hidden"
-        footer={
-          <div className="flex gap-3">
-            <Button block onClick={handleCloseDeleteDrawer}>
-              {t('cancel')}
-            </Button>
-            <Button 
-              type="primary" 
-              danger 
-              block
-              loading={deleteLoading}
-              onClick={handleConfirmDelete}
-            >
-              {t('confirmDelete')}
-            </Button>
-          </div>
-        }
-      >
-        <div className="text-center py-4">
-          <ExclamationCircleOutlined style={{ fontSize: 48, color: '#ff4d4f', marginBottom: 16 }} />
-          <h3 className="text-lg font-semibold mb-2">{t('confirmDeleteReceipt')}</h3>
-          <p className="text-gray-600">{t('deleteReceiptWarning')}</p>
-          {deleteReceiptId && (
-            <p className="mt-4 text-gray-800">
-              <strong>{t('receiptId')}：</strong>{deleteReceiptId}
-            </p>
-          )}
-        </div>
-      </Drawer>
+        </Drawer>
+      )}
 
       {/* Void 确认抽屉 - 桌面端 */}
-      <Drawer
-        title="Confirm Void"
-        placement="right"
-        onClose={handleCloseVoidDrawer}
-        open={voidDrawerVisible}
-        width={400}
-        className="hidden md:block"
-        footer={
-          <div style={{ textAlign: 'right' }}>
-            <Button onClick={handleCloseVoidDrawer} style={{ marginRight: 8 }}>
-              {t('cancel')}
-            </Button>
-            <Button 
-              type="primary" 
-              danger 
-              loading={voidLoading}
-              onClick={handleConfirmVoid}
-            >
-              Confirm Void
-            </Button>
+      {!isMobile && (
+        <Drawer
+          title="Confirm Void"
+          placement="right"
+          onClose={handleCloseVoidDrawer}
+          open={voidDrawerVisible}
+          width={400}
+          footer={
+            <div style={{ textAlign: 'right' }}>
+              <Button onClick={handleCloseVoidDrawer} style={{ marginRight: 8 }}>
+                {t('cancel')}
+              </Button>
+              <Button 
+                type="primary" 
+                danger 
+                loading={voidLoading}
+                onClick={handleConfirmVoid}
+              >
+                Confirm Void
+              </Button>
+            </div>
+          }
+        >
+          <div style={{ padding: '20px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+              <ExclamationCircleOutlined style={{ fontSize: 24, color: '#ff4d4f', marginRight: 12 }} />
+              <span style={{ fontSize: 16, fontWeight: 500 }}>Confirm Void Receipt</span>
+            </div>
+            <div style={{ color: '#666', lineHeight: 1.8 }}>
+              <p>Are you sure you want to void this receipt? This action cannot be undone.</p>
+              {voidReceiptId && (
+                <p style={{ marginTop: 8 }}>
+                  <strong>Receipt ID：</strong>{voidReceiptId}
+                </p>
+              )}
+            </div>
           </div>
-        }
-      >
-        <div style={{ padding: '20px 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
-            <ExclamationCircleOutlined style={{ fontSize: 24, color: '#ff4d4f', marginRight: 12 }} />
-            <span style={{ fontSize: 16, fontWeight: 500 }}>Confirm Void Receipt</span>
-          </div>
-          <div style={{ color: '#666', lineHeight: 1.8 }}>
-            <p>Are you sure you want to void this receipt? This action cannot be undone.</p>
+        </Drawer>
+      )}
+
+      {/* Void 确认抽屉 - 移动端 */}
+      {isMobile && (
+        <Drawer
+          title="Confirm Void"
+          placement="bottom"
+          onClose={handleCloseVoidDrawer}
+          open={voidDrawerVisible}
+          height="40%"
+          footer={
+            <div className="flex gap-3">
+              <Button block onClick={handleCloseVoidDrawer}>
+                {t('cancel')}
+              </Button>
+              <Button 
+                type="primary" 
+                danger 
+                block
+                loading={voidLoading}
+                onClick={handleConfirmVoid}
+              >
+                Confirm Void
+              </Button>
+            </div>
+          }
+        >
+          <div className="text-center py-4">
+            <ExclamationCircleOutlined style={{ fontSize: 48, color: '#ff4d4f', marginBottom: 16 }} />
+            <h3 className="text-lg font-semibold mb-2">Confirm Void Receipt</h3>
+            <p className="text-gray-600">Are you sure you want to void this receipt? This action cannot be undone.</p>
             {voidReceiptId && (
-              <p style={{ marginTop: 8 }}>
+              <p className="mt-4 text-gray-800">
                 <strong>Receipt ID：</strong>{voidReceiptId}
               </p>
             )}
           </div>
-        </div>
-      </Drawer>
-
-      {/* Void 确认抽屉 - 移动端 */}
-      <Drawer
-        title="Confirm Void"
-        placement="bottom"
-        onClose={handleCloseVoidDrawer}
-        open={voidDrawerVisible}
-        height="40%"
-        className="md:hidden"
-        footer={
-          <div className="flex gap-3">
-            <Button block onClick={handleCloseVoidDrawer}>
-              {t('cancel')}
-            </Button>
-            <Button 
-              type="primary" 
-              danger 
-              block
-              loading={voidLoading}
-              onClick={handleConfirmVoid}
-            >
-              Confirm Void
-            </Button>
-          </div>
-        }
-      >
-        <div className="text-center py-4">
-          <ExclamationCircleOutlined style={{ fontSize: 48, color: '#ff4d4f', marginBottom: 16 }} />
-          <h3 className="text-lg font-semibold mb-2">Confirm Void Receipt</h3>
-          <p className="text-gray-600">Are you sure you want to void this receipt? This action cannot be undone.</p>
-          {voidReceiptId && (
-            <p className="mt-4 text-gray-800">
-              <strong>Receipt ID：</strong>{voidReceiptId}
-            </p>
-          )}
-        </div>
-      </Drawer>
+        </Drawer>
+      )}
 
       {/* 打开钱箱抽屉 - 桌面端 */}
-      <Drawer
-        title={t('openCashDrawer') || '打开钱箱'}
-        placement="right"
-        onClose={handleCloseOpenCashDrawer}
-        open={openCashDrawerVisible}
-        width={400}
-        className="hidden md:block"
-        footer={
-          <div style={{ textAlign: 'right' }}>
-            <Button onClick={handleCloseOpenCashDrawer} style={{ marginRight: 8 }}>
-              {t('cancel')}
-            </Button>
-            <Button 
-              type="primary" 
-              loading={openCashDrawerLoading}
-              onClick={handleOpenCashDrawer}
-            >
-              {t('confirm') || '确认'}
-            </Button>
-          </div>
-        }
-      >
-        <div style={{ padding: '20px 0' }}>
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ marginBottom: 8, fontWeight: 500 }}>{t('selectStore') || '选择店铺'}:</div>
-            <section style={{ marginBottom: 10, marginTop: 10 }}>
-              {shops.map((item, index) => (
-                index > 0 ? (
-                  <Button 
-                    key={index}
-                    type={selectedStore === index ? 'primary' : 'default'} 
-                    style={{ borderRadius: 20, marginRight: 5, marginBottom: 5 }} 
-                    onClick={() => setSelectedStore(index)}
-                  >
-                    {item}
-                  </Button>
-                ) : null
-              ))}
-            </section>
-          </div>
-        </div>
-      </Drawer>
-
-      {/* 打开钱箱抽屉 - 移动端 */}
-      <Drawer
-        title={t('openCashDrawer') || '打开钱箱'}
-        placement="bottom"
-        onClose={handleCloseOpenCashDrawer}
-        open={openCashDrawerVisible}
-        height="50%"
-        className="md:hidden"
-        footer={
-          <div className="flex gap-3">
-            <Button block onClick={handleCloseOpenCashDrawer}>
-              {t('cancel')}
-            </Button>
-            <Button 
-              type="primary" 
-              block
-              loading={openCashDrawerLoading}
-              onClick={handleOpenCashDrawer}
-            >
-              {t('confirm') || '确认'}
-            </Button>
-          </div>
-        }
-      >
-        <div className="py-4">
-          <div className="mb-4">
-            <div className="mb-3 font-medium text-lg">{t('selectStore') || '选择店铺'}:</div>
-            <div className="flex flex-wrap gap-2">
-              {shops.map((item, index) => (
-                index > 0 ? (
-                  <Button 
-                    key={index}
-                    type={selectedStore === index ? 'primary' : 'default'} 
-                    size="large"
-                    style={{ borderRadius: 20 }} 
-                    onClick={() => setSelectedStore(index)}
-                  >
-                    {item}
-                  </Button>
-                ) : null
-              ))}
+      {!isMobile && (
+        <Drawer
+          title={t('openCashDrawer') || '打开钱箱'}
+          placement="right"
+          onClose={handleCloseOpenCashDrawer}
+          open={openCashDrawerVisible}
+          width={400}
+          footer={
+            <div style={{ textAlign: 'right' }}>
+              <Button onClick={handleCloseOpenCashDrawer} style={{ marginRight: 8 }}>
+                {t('cancel')}
+              </Button>
+              <Button 
+                type="primary" 
+                loading={openCashDrawerLoading}
+                onClick={handleOpenCashDrawer}
+              >
+                {t('confirm') || '确认'}
+              </Button>
+            </div>
+          }
+        >
+          <div style={{ padding: '20px 0' }}>
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ marginBottom: 8, fontWeight: 500 }}>{t('selectStore') || '选择店铺'}:</div>
+              <section style={{ marginBottom: 10, marginTop: 10 }}>
+                {shops.map((item, index) => (
+                  index > 0 ? (
+                    <Button 
+                      key={index}
+                      type={selectedStore === index ? 'primary' : 'default'} 
+                      style={{ borderRadius: 20, marginRight: 5, marginBottom: 5 }} 
+                      onClick={() => setSelectedStore(index)}
+                    >
+                      {item}
+                    </Button>
+                  ) : null
+                ))}
+              </section>
             </div>
           </div>
-        </div>
-      </Drawer>
+        </Drawer>
+      )}
+
+      {/* 打开钱箱抽屉 - 移动端 */}
+      {isMobile && (
+        <Drawer
+          title={t('openCashDrawer') || '打开钱箱'}
+          placement="bottom"
+          onClose={handleCloseOpenCashDrawer}
+          open={openCashDrawerVisible}
+          height="50%"
+          footer={
+            <div className="flex gap-3">
+              <Button block onClick={handleCloseOpenCashDrawer}>
+                {t('cancel')}
+              </Button>
+              <Button 
+                type="primary" 
+                block
+                loading={openCashDrawerLoading}
+                onClick={handleOpenCashDrawer}
+              >
+                {t('confirm') || '确认'}
+              </Button>
+            </div>
+          }
+        >
+          <div className="py-4">
+            <div className="mb-4">
+              <div className="mb-3 font-medium text-lg">{t('selectStore') || '选择店铺'}:</div>
+              <div className="flex flex-wrap gap-2">
+                {shops.map((item, index) => (
+                  index > 0 ? (
+                    <Button 
+                      key={index}
+                      type={selectedStore === index ? 'primary' : 'default'} 
+                      size="large"
+                      style={{ borderRadius: 20 }} 
+                      onClick={() => setSelectedStore(index)}
+                    >
+                      {item}
+                    </Button>
+                  ) : null
+                ))}
+              </div>
+            </div>
+          </div>
+        </Drawer>
+      )}
     </div>
   );
 }

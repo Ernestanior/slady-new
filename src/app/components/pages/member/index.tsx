@@ -6,6 +6,7 @@ import { SearchOutlined, ReloadOutlined, FilterOutlined, EditOutlined, DeleteOut
 import { useTranslation } from 'react-i18next';
 import { MemberData, MemberListRequest, ModifyMemberRequest, TopUpMemberRequest, MemberPurchaseRecord, MemberPurchaseRequest, CreateMemberRequest } from '@/lib/types';
 import { usePermissions } from '@/lib/usePermissions';
+import { useIsMobile } from '@/lib/useIsMobile';
 import { member } from '@/lib/api';
 import moment from 'moment';
 import MemberPurchaseHistory from './MemberPurchaseHistory';
@@ -15,6 +16,7 @@ import MemberTopUpHistory from './MemberTopUpHistory';
 export default function MemberManagement() {
   const { t } = useTranslation();
   const { canUseFeature, isAdmin } = usePermissions();
+  const isMobile = useIsMobile();
   const [form] = Form.useForm();
   const [modifyForm] = Form.useForm();
   const [topUpForm] = Form.useForm();
@@ -298,24 +300,27 @@ export default function MemberManagement() {
   const renderMemberCard = (memberData: MemberData) => {
     const menuItems = [
       {
-        key: 'modify',
-        icon: <EditOutlined />,
-        label: t('modify'),
-        onClick: () => handleModify(memberData),
-      },
-      {
-        key: 'topUp',
-        icon: <DollarOutlined />,
-        label: t('topUp'),
-        onClick: () => handleTopUp(memberData),
-      },
-      {
         key: 'detail',
         icon: <EyeOutlined />,
         label: t('detailRecord'),
         onClick: () => handleViewPurchase(memberData),
       },
+      ...(isAdmin() ? [
+        {
+          key: 'modify',
+          icon: <EditOutlined />,
+          label: t('modify'),
+          onClick: () => handleModify(memberData),
+        },
+        {
+          key: 'topUp',
+          icon: <DollarOutlined />,
+          label: t('topUp'),
+          onClick: () => handleTopUp(memberData),
+        },
+      ] : []),
       ...(canUseFeature('deleteMember') ? [
+      
         {
           key: 'divider',
           type: 'divider' as const,
@@ -402,17 +407,26 @@ export default function MemberManagement() {
       width: 80,
       fixed: 'right' as const,
       render: (_: any, record: MemberData) => {
-        const menuItems = [
-          <Menu.Item key="modify" icon={<EditOutlined />} onClick={() => handleModify(record)}>
-            {t('modify')}
-          </Menu.Item>,
-          <Menu.Item key="topUp" icon={<PlusOutlined />} onClick={() => handleTopUp(record)}>
-            {t('topUp')}
-          </Menu.Item>,
+        const menuItems = [];
+
+        // 只有ADMIN用户才能看到修改和充值选项
+        if (isAdmin()) {
+          menuItems.push(
+            <Menu.Item key="modify" icon={<EditOutlined />} onClick={() => handleModify(record)}>
+              {t('modify')}
+            </Menu.Item>,
+            <Menu.Item key="topUp" icon={<PlusOutlined />} onClick={() => handleTopUp(record)}>
+              {t('topUp')}
+            </Menu.Item>
+          );
+        }
+
+        // 详情记录所有用户都可以看到
+        menuItems.push(
           <Menu.Item key="detail" icon={<EyeOutlined />} onClick={() => handleViewPurchase(record)}>
             {t('detailRecord')}
-          </Menu.Item>,
-        ];
+          </Menu.Item>
+        );
 
         // 只有有删除权限的用户才能看到删除选项
         if (canUseFeature('deleteMember')) {
@@ -592,217 +606,223 @@ export default function MemberManagement() {
       </div>
 
       {/* 桌面端修改会员抽屉 */}
-      <Drawer
-        title={t('modifyMemberInfo')}
-        open={modifyDrawerVisible}
-        onClose={() => setModifyDrawerVisible(false)}
-        width={600}
-        placement="right"
-        className="hidden md:block"
-      >
-        <Form form={modifyForm} layout="vertical">
-          <Form.Item name="name" label={t('name')} rules={[{ required: true, message: t('pleaseEnterName') }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="phone" label={t('phone')} rules={[{ required: true, message: t('pleaseEnterPhone') }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="registrationDate" label={t('registrationDate')} rules={[{ required: true, message: t('pleaseSelectRegistrationDate') }]}>
-            <DatePicker 
-              style={{ width: '100%' }} 
-              format="YYYY-MM-DD"
-              placeholder={t('pleaseSelectRegistrationDate')}
-            />
-          </Form.Item>
-          <Form.Item name="voucherNumber" label={t('voucherNumber')} rules={[{ required: true, message: t('pleaseEnterVoucherNumber') }]}>
-            <InputNumber style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="remark" label={t('remark')}>
-            <Input />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" onClick={handleModifySubmit} block>
-              {t('confirmModify')}
-            </Button>
-          </Form.Item>
-        </Form>
-      </Drawer>
+      {!isMobile && (
+        <Drawer
+          title={t('modifyMemberInfo')}
+          open={modifyDrawerVisible}
+          onClose={() => setModifyDrawerVisible(false)}
+          width={600}
+          placement="right"
+        >
+          <Form form={modifyForm} layout="vertical">
+            <Form.Item name="name" label={t('name')} rules={[{ required: true, message: t('pleaseEnterName') }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="phone" label={t('phone')} rules={[{ required: true, message: t('pleaseEnterPhone') }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="registrationDate" label={t('registrationDate')} rules={[{ required: true, message: t('pleaseSelectRegistrationDate') }]}>
+              <DatePicker 
+                style={{ width: '100%' }} 
+                format="YYYY-MM-DD"
+                placeholder={t('pleaseSelectRegistrationDate')}
+              />
+            </Form.Item>
+            <Form.Item name="voucherNumber" label={t('voucherNumber')} rules={[{ required: true, message: t('pleaseEnterVoucherNumber') }]}>
+              <InputNumber style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item name="remark" label={t('remark')}>
+              <Input />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" onClick={handleModifySubmit} block>
+                {t('confirmModify')}
+              </Button>
+            </Form.Item>
+          </Form>
+        </Drawer>
+      )}
 
       {/* 移动端修改会员抽屉 */}
-      <Drawer
-        title={t('modifyMemberInfo')}
-        open={modifyDrawerVisible}
-        onClose={() => setModifyDrawerVisible(false)}
-        placement="bottom"
-        height="80%"
-        className="md:hidden"
-      >
-        <Form form={modifyForm} layout="vertical" onFinish={handleModifySubmit}>
-          <Form.Item name="name" label={t('name')} rules={[{ required: true, message: t('pleaseEnterName') }]}>
-            <Input size="large" placeholder={t('pleaseEnterName')} />
-          </Form.Item>
-          <Form.Item name="phone" label={t('phone')} rules={[{ required: true, message: t('pleaseEnterPhone') }]}>
-            <Input size="large" placeholder={t('pleaseEnterPhone')} />
-          </Form.Item>
-          <Form.Item name="registrationDate" label={t('registrationDate')} rules={[{ required: true, message: t('pleaseSelectRegistrationDate') }]}>
-            <DatePicker 
-              size="large"
-              style={{ width: '100%' }} 
-              format="YYYY-MM-DD"
-              placeholder={t('pleaseSelectRegistrationDate')}
-            />
-          </Form.Item>
-          <Form.Item name="voucherNumber" label={t('voucherNumber')} rules={[{ required: true, message: t('pleaseEnterVoucherNumber') }]}>
-            <InputNumber size="large" style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="remark" label={t('remark')}>
-            <Input size="large" placeholder={t('remark')} />
-          </Form.Item>
-          <div className="flex gap-3 mt-6">
-            <Button block size="large" onClick={() => setModifyDrawerVisible(false)}>
-              {t('cancel')}
-            </Button>
-            <Button type="primary" block size="large" htmlType="submit">
-              {t('confirm')}
-            </Button>
-          </div>
-        </Form>
-      </Drawer>
+      {isMobile && (
+        <Drawer
+          title={t('modifyMemberInfo')}
+          open={modifyDrawerVisible}
+          onClose={() => setModifyDrawerVisible(false)}
+          placement="bottom"
+          height="80%"
+        >
+          <Form form={modifyForm} layout="vertical" onFinish={handleModifySubmit}>
+            <Form.Item name="name" label={t('name')} rules={[{ required: true, message: t('pleaseEnterName') }]}>
+              <Input size="large" placeholder={t('pleaseEnterName')} />
+            </Form.Item>
+            <Form.Item name="phone" label={t('phone')} rules={[{ required: true, message: t('pleaseEnterPhone') }]}>
+              <Input size="large" placeholder={t('pleaseEnterPhone')} />
+            </Form.Item>
+            <Form.Item name="registrationDate" label={t('registrationDate')} rules={[{ required: true, message: t('pleaseSelectRegistrationDate') }]}>
+              <DatePicker 
+                size="large"
+                style={{ width: '100%' }} 
+                format="YYYY-MM-DD"
+                placeholder={t('pleaseSelectRegistrationDate')}
+              />
+            </Form.Item>
+            <Form.Item name="voucherNumber" label={t('voucherNumber')} rules={[{ required: true, message: t('pleaseEnterVoucherNumber') }]}>
+              <InputNumber size="large" style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item name="remark" label={t('remark')}>
+              <Input size="large" placeholder={t('remark')} />
+            </Form.Item>
+            <div className="flex gap-3 mt-6">
+              <Button block size="large" onClick={() => setModifyDrawerVisible(false)}>
+                {t('cancel')}
+              </Button>
+              <Button type="primary" block size="large" htmlType="submit">
+                {t('confirm')}
+              </Button>
+            </div>
+          </Form>
+        </Drawer>
+      )}
 
       {/* 桌面端充值抽屉 */}
-      <Drawer
-        title={t('memberTopUp')}
-        open={topUpDrawerVisible}
-        onClose={() => setTopUpDrawerVisible(false)}
-        width={600}
-        placement="right"
-        className="hidden md:block"
-      >
-        <Form form={topUpForm} layout="vertical">
-          <Form.Item name="amount" label={t('memberAmount')} rules={[{ required: true, message: t('pleaseEnterTopUpAmount') }]}>
-            <InputNumber style={{ width: '100%' }} min={0} />
-          </Form.Item>
-          <Form.Item name="saler" label={t('saler')} rules={[{ required: true, message: t('pleaseEnterSaler') }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="remark" label={t('paymentDetail')} rules={[{ required: true, message: t('pleaseEnterPaymentDetail') }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" onClick={handleTopUpSubmit} block>
-              {t('confirmTopUp')}
-            </Button>
-          </Form.Item>
-        </Form>
-      </Drawer>
+      {!isMobile && (
+        <Drawer
+          title={t('memberTopUp')}
+          open={topUpDrawerVisible}
+          onClose={() => setTopUpDrawerVisible(false)}
+          width={600}
+          placement="right"
+        >
+          <Form form={topUpForm} layout="vertical">
+            <Form.Item name="amount" label={t('memberAmount')} rules={[{ required: true, message: t('pleaseEnterTopUpAmount') }]}>
+              <InputNumber style={{ width: '100%' }} min={0} />
+            </Form.Item>
+            <Form.Item name="saler" label={t('saler')} rules={[{ required: true, message: t('pleaseEnterSaler') }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="remark" label={t('paymentDetail')} rules={[{ required: true, message: t('pleaseEnterPaymentDetail') }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" onClick={handleTopUpSubmit} block>
+                {t('confirmTopUp')}
+              </Button>
+            </Form.Item>
+          </Form>
+        </Drawer>
+      )}
 
       {/* 移动端充值抽屉 */}
-      <Drawer
-        title={t('memberTopUp')}
-        open={topUpDrawerVisible}
-        onClose={() => setTopUpDrawerVisible(false)}
-        placement="bottom"
-        height="70%"
-        className="md:hidden"
-      >
-        <Form form={topUpForm} layout="vertical" onFinish={handleTopUpSubmit}>
-          <Form.Item name="amount" label={t('memberAmount')} rules={[{ required: true, message: t('pleaseEnterTopUpAmount') }]}>
-            <InputNumber size="large" style={{ width: '100%' }} min={0} />
-          </Form.Item>
-          <Form.Item name="saler" label={t('saler')} rules={[{ required: true, message: t('pleaseEnterSaler') }]}>
-            <Input size="large" placeholder={t('pleaseEnterSaler')} />
-          </Form.Item>
-          <Form.Item name="remark" label={t('paymentDetail')} rules={[{ required: true, message: t('pleaseEnterPaymentDetail') }]}>
-            <Input size="large" placeholder={t('pleaseEnterPaymentDetail')} />
-          </Form.Item>
-          <div className="flex gap-3 mt-6">
-            <Button block size="large" onClick={() => setTopUpDrawerVisible(false)}>
-              {t('cancel')}
-            </Button>
-            <Button type="primary" block size="large" htmlType="submit">
-              {t('confirm')}
-            </Button>
-          </div>
-        </Form>
-      </Drawer>
+      {isMobile && (
+        <Drawer
+          title={t('memberTopUp')}
+          open={topUpDrawerVisible}
+          onClose={() => setTopUpDrawerVisible(false)}
+          placement="bottom"
+          height="70%"
+        >
+          <Form form={topUpForm} layout="vertical" onFinish={handleTopUpSubmit}>
+            <Form.Item name="amount" label={t('memberAmount')} rules={[{ required: true, message: t('pleaseEnterTopUpAmount') }]}>
+              <InputNumber size="large" style={{ width: '100%' }} min={0} />
+            </Form.Item>
+            <Form.Item name="saler" label={t('saler')} rules={[{ required: true, message: t('pleaseEnterSaler') }]}>
+              <Input size="large" placeholder={t('pleaseEnterSaler')} />
+            </Form.Item>
+            <Form.Item name="remark" label={t('paymentDetail')} rules={[{ required: true, message: t('pleaseEnterPaymentDetail') }]}>
+              <Input size="large" placeholder={t('pleaseEnterPaymentDetail')} />
+            </Form.Item>
+            <div className="flex gap-3 mt-6">
+              <Button block size="large" onClick={() => setTopUpDrawerVisible(false)}>
+                {t('cancel')}
+              </Button>
+              <Button type="primary" block size="large" htmlType="submit">
+                {t('confirm')}
+              </Button>
+            </div>
+          </Form>
+        </Drawer>
+      )}
 
       {/* 桌面端新增会员抽屉 */}
-      <Drawer
-        title={t('addMember')}
-        open={createDrawerVisible}
-        onClose={() => setCreateDrawerVisible(false)}
-        width={600}
-        placement="right"
-        className="hidden md:block"
-      >
-        <Form form={createForm} layout="vertical">
-          <Form.Item name="name" label={t('name')} rules={[{ required: true, message: t('pleaseEnterName') }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="phone" label={t('phone')} rules={[{ required: true, message: t('pleaseEnterPhone') }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="registrationDate" label={t('registrationDate')} rules={[{ required: true, message: t('pleaseSelectRegistrationDate') }]}>
-            <DatePicker 
-              style={{ width: '100%' }} 
-              format="YYYY-MM-DD"
-              placeholder={t('pleaseSelectRegistrationDate')}
-            />
-          </Form.Item>
-          <Form.Item name="voucherNumber" label={t('voucherNumber')} rules={[{ required: true, message: t('pleaseEnterVoucherNumber') }]}>
-            <InputNumber style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="remark" label={t('remark')}>
-            <Input />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" onClick={handleCreateSubmit} block>
-              {t('confirmAdd')}
-            </Button>
-          </Form.Item>
-        </Form>
-      </Drawer>
+      {!isMobile && (
+        <Drawer
+          title={t('addMember')}
+          open={createDrawerVisible}
+          onClose={() => setCreateDrawerVisible(false)}
+          width={600}
+          placement="right"
+        >
+          <Form form={createForm} layout="vertical">
+            <Form.Item name="name" label={t('name')} rules={[{ required: true, message: t('pleaseEnterName') }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="phone" label={t('phone')} rules={[{ required: true, message: t('pleaseEnterPhone') }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="registrationDate" label={t('registrationDate')} rules={[{ required: true, message: t('pleaseSelectRegistrationDate') }]}>
+              <DatePicker 
+                style={{ width: '100%' }} 
+                format="YYYY-MM-DD"
+                placeholder={t('pleaseSelectRegistrationDate')}
+              />
+            </Form.Item>
+            <Form.Item name="voucherNumber" label={t('voucherNumber')} rules={[{ required: true, message: t('pleaseEnterVoucherNumber') }]}>
+              <InputNumber style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item name="remark" label={t('remark')}>
+              <Input />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" onClick={handleCreateSubmit} block>
+                {t('confirmAdd')}
+              </Button>
+            </Form.Item>
+          </Form>
+        </Drawer>
+      )}
 
       {/* 移动端新增会员抽屉 */}
-      <Drawer
-        title={t('addMember')}
-        open={createDrawerVisible}
-        onClose={() => setCreateDrawerVisible(false)}
-        placement="bottom"
-        height="80%"
-        className="md:hidden"
-      >
-        <Form form={createForm} layout="vertical" onFinish={handleCreateSubmit}>
-          <Form.Item name="name" label={t('name')} rules={[{ required: true, message: t('pleaseEnterName') }]}>
-            <Input size="large" placeholder={t('pleaseEnterName')} />
-          </Form.Item>
-          <Form.Item name="phone" label={t('phone')} rules={[{ required: true, message: t('pleaseEnterPhone') }]}>
-            <Input size="large" placeholder={t('pleaseEnterPhone')} />
-          </Form.Item>
-          <Form.Item name="registrationDate" label={t('registrationDate')} rules={[{ required: true, message: t('pleaseSelectRegistrationDate') }]}>
-            <DatePicker 
-              size="large"
-              style={{ width: '100%' }} 
-              format="YYYY-MM-DD"
-              placeholder={t('pleaseSelectRegistrationDate')}
-            />
-          </Form.Item>
-          <Form.Item name="voucherNumber" label={t('voucherNumber')} rules={[{ required: true, message: t('pleaseEnterVoucherNumber') }]}>
-            <InputNumber size="large" style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="remark" label={t('remark')}>
-            <Input size="large" placeholder={t('remark')} />
-          </Form.Item>
-          <div className="flex gap-3 mt-6">
-            <Button block size="large" onClick={() => setCreateDrawerVisible(false)}>
-              {t('cancel')}
-            </Button>
-            <Button type="primary" block size="large" htmlType="submit">
-              {t('confirm')}
-            </Button>
-          </div>
-        </Form>
-      </Drawer>
+      {isMobile && (
+        <Drawer
+          title={t('addMember')}
+          open={createDrawerVisible}
+          onClose={() => setCreateDrawerVisible(false)}
+          placement="bottom"
+          height="80%"
+        >
+          <Form form={createForm} layout="vertical" onFinish={handleCreateSubmit}>
+            <Form.Item name="name" label={t('name')} rules={[{ required: true, message: t('pleaseEnterName') }]}>
+              <Input size="large" placeholder={t('pleaseEnterName')} />
+            </Form.Item>
+            <Form.Item name="phone" label={t('phone')} rules={[{ required: true, message: t('pleaseEnterPhone') }]}>
+              <Input size="large" placeholder={t('pleaseEnterPhone')} />
+            </Form.Item>
+            <Form.Item name="registrationDate" label={t('registrationDate')} rules={[{ required: true, message: t('pleaseSelectRegistrationDate') }]}>
+              <DatePicker 
+                size="large"
+                style={{ width: '100%' }} 
+                format="YYYY-MM-DD"
+                placeholder={t('pleaseSelectRegistrationDate')}
+              />
+            </Form.Item>
+            <Form.Item name="voucherNumber" label={t('voucherNumber')} rules={[{ required: true, message: t('pleaseEnterVoucherNumber') }]}>
+              <InputNumber size="large" style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item name="remark" label={t('remark')}>
+              <Input size="large" placeholder={t('remark')} />
+            </Form.Item>
+            <div className="flex gap-3 mt-6">
+              <Button block size="large" onClick={() => setCreateDrawerVisible(false)}>
+                {t('cancel')}
+              </Button>
+              <Button type="primary" block size="large" htmlType="submit">
+                {t('confirm')}
+              </Button>
+            </div>
+          </Form>
+        </Drawer>
+      )}
 
       {/* 删除确认弹窗 */}
       <Modal

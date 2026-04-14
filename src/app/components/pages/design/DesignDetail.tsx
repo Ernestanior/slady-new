@@ -6,6 +6,7 @@ import { ArrowLeftOutlined, EditOutlined, DeleteOutlined, PlusCircleOutlined, Pl
 import { useTranslation } from 'react-i18next';
 import { DesignDetail as DesignDetailType, typeList, ItemData, CreateItemRequest, WAREHOUSE } from '@/lib/types';
 import { usePermissions } from '@/lib/usePermissions';
+import { useIsMobile } from '@/lib/useIsMobile';
 import { item, order } from '@/lib/api';
 import ItemTable from './ItemTable';
 import ColorSelect from '../../ColorSelect';
@@ -39,6 +40,7 @@ export default function DesignDetail({
   const { t } = useTranslation();
   const { isSaler, isAdmin, canUseFeature } = usePermissions();
   const dev_url = 'http://119.28.104.20';
+  const isMobile = useIsMobile();
   
   // 库存相关状态
   const [itemsLoading, setItemsLoading] = useState(false);
@@ -703,390 +705,397 @@ export default function DesignDetail({
       </div>
 
       {/* 编辑抽屉 - 桌面端 */}
-      <Drawer
-        title={t('editDesign')}
-        placement="right"
-        width={500}
-        onClose={onEditDrawerClose}
-        open={editDrawerVisible}
-        className="hidden md:block"
-        footer={
-          <div style={{ textAlign: 'right' }}>
-            <Button onClick={onEditDrawerClose} style={{ marginRight: 8 }}>
-              {t('cancel')}
-            </Button>
-            <Button type="primary" onClick={onEditSubmit}>
-              {t('confirm')}
-            </Button>
-          </div>
-        }
-      >
-        <Form form={editForm} layout="vertical">
-          <Form.Item
-            label={t('designCode')}
-            name="design"
-            rules={[
-              { required: true, message: t('pleaseEnterDesignCode') },
-              { whitespace: true, message: t('designCodeCannotBeEmpty') }
-            ]}
-          >
-            <Input placeholder={t('designCode')} />
-          </Form.Item>
+      {!isMobile && (
+        <Drawer
+          title={t('editDesign')}
+          placement="right"
+          width={500}
+          onClose={onEditDrawerClose}
+          open={editDrawerVisible}
+          footer={
+            <div style={{ textAlign: 'right' }}>
+              <Button onClick={onEditDrawerClose} style={{ marginRight: 8 }}>
+                {t('cancel')}
+              </Button>
+              <Button type="primary" onClick={onEditSubmit}>
+                {t('confirm')}
+              </Button>
+            </div>
+          }
+        >
+          <Form form={editForm} layout="vertical">
+            <Form.Item
+              label={t('designCode')}
+              name="design"
+              rules={[
+                { required: true, message: t('pleaseEnterDesignCode') },
+                { whitespace: true, message: t('designCodeCannotBeEmpty') }
+              ]}
+            >
+              <Input placeholder={t('designCode')} />
+            </Form.Item>
 
-          <Form.Item
-            label={t('type')}
-            name="type"
-            rules={[
-              { required: true, message: t('pleaseSelectDesignType') },
-              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneType') }
-            ]}
-          >
-            <Select
-              mode="multiple"
-              placeholder={t('type')}
-              options={typeList}
-              showSearch
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-            />
-          </Form.Item>
+            <Form.Item
+              label={t('type')}
+              name="type"
+              rules={[
+                { required: true, message: t('pleaseSelectDesignType') },
+                { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneType') }
+              ]}
+            >
+              <Select
+                mode="multiple"
+                placeholder={t('type')}
+                options={typeList}
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                }
+              />
+            </Form.Item>
 
-          <Form.Item
-            label={t('purchasePrice')}
-            name="purchasePrice"
-            rules={[{ required: true, message: t('pleaseEnterPurchasePrice') }]}
-          >
-            <Input placeholder={t('purchasePrice')} style={{ width: '100%' }} />
-          </Form.Item>
+            <Form.Item
+              label={t('purchasePrice')}
+              name="purchasePrice"
+              rules={[{ required: true, message: t('pleaseEnterPurchasePrice') }]}
+            >
+              <Input placeholder={t('purchasePrice')} style={{ width: '100%' }} />
+            </Form.Item>
 
-          <Form.Item
-            label={t('salePrice')}
-            name="salePrice"
-            rules={[{ required: true, message: t('pleaseEnterSalePrice') }]}
-          >
-            <Input placeholder={t('salePrice')} />
-          </Form.Item>
+            <Form.Item
+              label={t('salePrice')}
+              name="salePrice"
+              rules={[{ required: true, message: t('pleaseEnterSalePrice') }]}
+            >
+              <Input placeholder={t('salePrice')} />
+            </Form.Item>
 
-          <Form.Item label={t('remark')} name="remark">
-            <Input.TextArea placeholder={t('remark')} rows={4} />
-          </Form.Item>
-        </Form>
-      </Drawer>
+            <Form.Item label={t('remark')} name="remark">
+              <Input.TextArea placeholder={t('remark')} rows={4} />
+            </Form.Item>
+          </Form>
+        </Drawer>
+      )}
 
       {/* 编辑抽屉 - 移动端 */}
-      <Drawer
-        title={t('editItem')}
-        placement="bottom"
-        height="90%"
-        onClose={onEditDrawerClose}
-        open={editDrawerVisible}
-        className="md:hidden"
-        footer={
-          <div className="flex gap-3">
-            <Button block onClick={onEditDrawerClose}>
-              {t('cancel')}
-            </Button>
-            <Button type="primary" block onClick={onEditSubmit}>
-              {t('confirm')}
-            </Button>
-          </div>
-        }
-      >
-        <Form form={editForm} layout="vertical">
-          <Form.Item
-            name="design"
-            label={t('designCode')}
-            rules={[{ required: true, message: t('pleaseEnterDesignCode') }]}
-          >
-            <Input size="large" placeholder={t('pleaseEnterDesignCode')} />
-          </Form.Item>
+      {isMobile && (
+        <Drawer
+          title={t('editItem')}
+          placement="bottom"
+          height="90%"
+          onClose={onEditDrawerClose}
+          open={editDrawerVisible}
+          footer={
+            <div className="flex gap-3">
+              <Button block onClick={onEditDrawerClose}>
+                {t('cancel')}
+              </Button>
+              <Button type="primary" block onClick={onEditSubmit}>
+                {t('confirm')}
+              </Button>
+            </div>
+          }
+        >
+          <Form form={editForm} layout="vertical">
+            <Form.Item
+              name="design"
+              label={t('designCode')}
+              rules={[{ required: true, message: t('pleaseEnterDesignCode') }]}
+            >
+              <Input size="large" placeholder={t('pleaseEnterDesignCode')} />
+            </Form.Item>
 
-          <Form.Item
-            name="type"
-            label={t('designType')}
-            rules={[
-              { required: true, message: t('pleaseSelectDesignType') },
-              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneType') }
-            ]}
-          >
-            <Select placeholder={t('pleaseSelectDesignType')} mode="multiple" size="large" options={typeList} />
-          </Form.Item>
+            <Form.Item
+              name="type"
+              label={t('designType')}
+              rules={[
+                { required: true, message: t('pleaseSelectDesignType') },
+                { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneType') }
+              ]}
+            >
+              <Select placeholder={t('pleaseSelectDesignType')} mode="multiple" size="large" options={typeList} />
+            </Form.Item>
 
-          <Form.Item
-            name="purchasePrice"
-            label={t('purchasePrice')}
-            rules={[{ required: true, message: t('pleaseEnterPurchasePrice') }]}
-          >
-            <InputNumber size="large" style={{ width: '100%' }} min={0} precision={2} />
-          </Form.Item>
+            <Form.Item
+              name="purchasePrice"
+              label={t('purchasePrice')}
+              rules={[{ required: true, message: t('pleaseEnterPurchasePrice') }]}
+            >
+              <InputNumber size="large" style={{ width: '100%' }} min={0} precision={2} />
+            </Form.Item>
 
-          <Form.Item
-            name="salePrice"
-            label={t('salePrice')}
-            rules={[{ required: true, message: t('pleaseEnterSalePrice') }]}
-          >
-            <InputNumber size="large" style={{ width: '100%' }} min={0} precision={2} />
-          </Form.Item>
+            <Form.Item
+              name="salePrice"
+              label={t('salePrice')}
+              rules={[{ required: true, message: t('pleaseEnterSalePrice') }]}
+            >
+              <InputNumber size="large" style={{ width: '100%' }} min={0} precision={2} />
+            </Form.Item>
 
-          <Form.Item name="remark" label={t('remark')}>
-            <Input.TextArea size="large" placeholder={t('pleaseEnterRemark')} rows={3} />
-          </Form.Item>
-        </Form>
-      </Drawer>
+            <Form.Item name="remark" label={t('remark')}>
+              <Input.TextArea size="large" placeholder={t('pleaseEnterRemark')} rows={3} />
+            </Form.Item>
+          </Form>
+        </Drawer>
+      )}
 
       {/* 创建Item抽屉 - 桌面端 */}
-      <Drawer
-        title={t('addItem')}
-        open={createDrawerVisible}
-        onClose={() => {
-          setCreateDrawerVisible(false);
-          createForm.resetFields();
-        }}
-        width={500}
-        className="hidden md:block"
-        maskClosable={true}
-      >
-        <Form form={createForm} layout="vertical" onFinish={handleCreateSubmit}>
-          <Form.Item
-            label={t('warehouse')}
-            name="warehouseName"
-            rules={[
-              { required: true, message: t('pleaseSelectWarehouse') },
-              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneWarehouse') }
-            ]}
-          >
-            <Select mode="multiple" placeholder={t('warehouse')} options={warehouseOptions} />
-          </Form.Item>
-          
-          <Form.Item
-            label={t('color')}
-            name="color"
-            rules={[
-              { required: true, message: t('pleaseSelectColor') },
-              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneColor') }
-            ]}
-          >
-            <ColorSelect mode="multiple" placeholder={t('color')} />
-          </Form.Item>
-          
-          <Form.Item
-            label={t('size')}
-            name="size"
-            rules={[
-              { required: true, message: t('pleaseSelectSize') },
-              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneSize') }
-            ]}
-          >
-            <Select
-              mode="multiple"
-              placeholder={t('size')}
-              options={sizeList.map(size => ({ label: size, value: size }))}
-            />
-          </Form.Item>
-          
-          <Form.Item
-            label={t('stockQuantity')}
-            name="stock"
-            rules={[
-              { required: true, message: t('pleaseEnterStockQuantity') },
-              { type: 'number', min: 0, message: t('stockQuantityMustBePositive') }
-            ]}
-          >
-            <InputNumber style={{ width: '100%' }} min={0} precision={0} placeholder={t('stockQuantity')} />
-          </Form.Item>
-          
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block>
-              {t('confirmAdd')}
-            </Button>
-          </Form.Item>
-        </Form>
-      </Drawer>
+      {!isMobile && (
+        <Drawer
+          title={t('addItem')}
+          open={createDrawerVisible}
+          onClose={() => {
+            setCreateDrawerVisible(false);
+            createForm.resetFields();
+          }}
+          width={500}
+          maskClosable={true}
+        >
+          <Form form={createForm} layout="vertical" onFinish={handleCreateSubmit}>
+            <Form.Item
+              label={t('warehouse')}
+              name="warehouseName"
+              rules={[
+                { required: true, message: t('pleaseSelectWarehouse') },
+                { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneWarehouse') }
+              ]}
+            >
+              <Select mode="multiple" placeholder={t('warehouse')} options={warehouseOptions} />
+            </Form.Item>
+            
+            <Form.Item
+              label={t('color')}
+              name="color"
+              rules={[
+                { required: true, message: t('pleaseSelectColor') },
+                { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneColor') }
+              ]}
+            >
+              <ColorSelect mode="multiple" placeholder={t('color')} />
+            </Form.Item>
+            
+            <Form.Item
+              label={t('size')}
+              name="size"
+              rules={[
+                { required: true, message: t('pleaseSelectSize') },
+                { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneSize') }
+              ]}
+            >
+              <Select
+                mode="multiple"
+                placeholder={t('size')}
+                options={sizeList.map(size => ({ label: size, value: size }))}
+              />
+            </Form.Item>
+            
+            <Form.Item
+              label={t('stockQuantity')}
+              name="stock"
+              rules={[
+                { required: true, message: t('pleaseEnterStockQuantity') },
+                { type: 'number', min: 0, message: t('stockQuantityMustBePositive') }
+              ]}
+            >
+              <InputNumber style={{ width: '100%' }} min={0} precision={0} placeholder={t('stockQuantity')} />
+            </Form.Item>
+            
+            <Form.Item>
+              <Button type="primary" htmlType="submit" block>
+                {t('confirmAdd')}
+              </Button>
+            </Form.Item>
+          </Form>
+        </Drawer>
+      )}
 
       {/* 创建Item抽屉 - 移动端 */}
-      <Drawer
-        title={t('addItem')}
-        placement="bottom"
-        height="80%"
-        onClose={() => {
-          setCreateDrawerVisible(false);
-          createForm.resetFields();
-        }}
-        open={createDrawerVisible}
-        className="md:hidden"
-        footer={
-          <div className="flex gap-3">
-            <Button block onClick={() => setCreateDrawerVisible(false)}>
-              {t('cancel')}
-            </Button>
-            <Button type="primary" block onClick={handleCreateSubmit}>
-              {t('confirm')}
-            </Button>
-          </div>
-        }
-      >
-        <Form form={createForm} layout="vertical">
-          <Form.Item
-            name="warehouseName"
-            label={t('warehouse')}
-            rules={[
-              { required: true, message: t('pleaseSelectWarehouse') },
-              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneWarehouse') }
-            ]}
-          >
-            <Select
-              mode="multiple"
-              size="large"
-              placeholder={t('pleaseSelectWarehouse')}
-              options={warehouseOptions}
-            />
-          </Form.Item>
+      {isMobile && (
+        <Drawer
+          title={t('addItem')}
+          placement="bottom"
+          height="80%"
+          onClose={() => {
+            setCreateDrawerVisible(false);
+            createForm.resetFields();
+          }}
+          open={createDrawerVisible}
+          footer={
+            <div className="flex gap-3">
+              <Button block onClick={() => setCreateDrawerVisible(false)}>
+                {t('cancel')}
+              </Button>
+              <Button type="primary" block onClick={handleCreateSubmit}>
+                {t('confirm')}
+              </Button>
+            </div>
+          }
+        >
+          <Form form={createForm} layout="vertical">
+            <Form.Item
+              name="warehouseName"
+              label={t('warehouse')}
+              rules={[
+                { required: true, message: t('pleaseSelectWarehouse') },
+                { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneWarehouse') }
+              ]}
+            >
+              <Select
+                mode="multiple"
+                size="large"
+                placeholder={t('pleaseSelectWarehouse')}
+                options={warehouseOptions}
+              />
+            </Form.Item>
 
-          <Form.Item
-            name="color"
-            label={t('color')}
-            rules={[
-              { required: true, message: t('pleaseSelectColor') },
-              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneColor') }
-            ]}
-          >
-            <ColorSelect mode="multiple" size="large" placeholder={t('pleaseSelectColor')} />
-          </Form.Item>
+            <Form.Item
+              name="color"
+              label={t('color')}
+              rules={[
+                { required: true, message: t('pleaseSelectColor') },
+                { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneColor') }
+              ]}
+            >
+              <ColorSelect mode="multiple" size="large" placeholder={t('pleaseSelectColor')} />
+            </Form.Item>
 
-          <Form.Item
-            name="size"
-            label={t('size')}
-            rules={[
-              { required: true, message: t('pleaseSelectSize') },
-              { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneSize') }
-            ]}
-          >
-            <Select
-              mode="multiple"
-              size="large"
-              placeholder={t('pleaseSelectSize')}
-              options={sizeList.map(size => ({ value: size, label: size }))}
-            />
-          </Form.Item>
+            <Form.Item
+              name="size"
+              label={t('size')}
+              rules={[
+                { required: true, message: t('pleaseSelectSize') },
+                { type: 'array', min: 1, message: t('pleaseSelectAtLeastOneSize') }
+              ]}
+            >
+              <Select
+                mode="multiple"
+                size="large"
+                placeholder={t('pleaseSelectSize')}
+                options={sizeList.map(size => ({ value: size, label: size }))}
+              />
+            </Form.Item>
 
-          <Form.Item
-            name="stock"
-            label={t('stockQuantity')}
-            rules={[
-              { required: true, message: t('pleaseEnterStockQuantity') },
-              { type: 'number', min: 0, message: t('stockQuantityMustBePositive') }
-            ]}
-          >
-            <InputNumber size="large" style={{ width: '100%' }} min={0} />
-          </Form.Item>
-        </Form>
-      </Drawer>
+            <Form.Item
+              name="stock"
+              label={t('stockQuantity')}
+              rules={[
+                { required: true, message: t('pleaseEnterStockQuantity') },
+                { type: 'number', min: 0, message: t('stockQuantityMustBePositive') }
+              ]}
+            >
+              <InputNumber size="large" style={{ width: '100%' }} min={0} />
+            </Form.Item>
+          </Form>
+        </Drawer>
+      )}
 
       {/* 修改库存抽屉 - 移动端 */}
-      <Drawer
-        title={t('modifyStock')}
-        placement="bottom"
-        height="50%"
-        onClose={() => setStockDrawerVisible(false)}
-        open={stockDrawerVisible}
-        className="md:hidden"
-        footer={
-          <div className="flex gap-3">
-            <Button block onClick={() => setStockDrawerVisible(false)}>
-              {t('cancel')}
-            </Button>
-            <Button type="primary" block onClick={handleStockSubmit}>
-              {t('confirm')}
-            </Button>
-          </div>
-        }
-      >
-        <Form form={stockForm} layout="vertical">
-          <Form.Item
-            name="stock"
-            label={t('stockQuantity')}
-            rules={[
-              { required: true, message: t('pleaseEnterStockQuantity') },
-              { type: 'number', min: 0, message: t('stockQuantityMustBePositive') }
-            ]}
-          >
-            <InputNumber size="large" style={{ width: '100%' }} min={0} />
-          </Form.Item>
-        </Form>
-      </Drawer>
+      {isMobile && (
+        <Drawer
+          title={t('modifyStock')}
+          placement="bottom"
+          height="50%"
+          onClose={() => setStockDrawerVisible(false)}
+          open={stockDrawerVisible}
+          footer={
+            <div className="flex gap-3">
+              <Button block onClick={() => setStockDrawerVisible(false)}>
+                {t('cancel')}
+              </Button>
+              <Button type="primary" block onClick={handleStockSubmit}>
+                {t('confirm')}
+              </Button>
+            </div>
+          }
+        >
+          <Form form={stockForm} layout="vertical">
+            <Form.Item
+              name="stock"
+              label={t('stockQuantity')}
+              rules={[
+                { required: true, message: t('pleaseEnterStockQuantity') },
+                { type: 'number', min: 0, message: t('stockQuantityMustBePositive') }
+              ]}
+            >
+              <InputNumber size="large" style={{ width: '100%' }} min={0} />
+            </Form.Item>
+          </Form>
+        </Drawer>
+      )}
 
       {/* 订单抽屉 - 移动端 */}
-      <Drawer
-        title={orderType === 'store' ? t('storeAdjustment') : t('customerOrder')}
-        placement="bottom"
-        height="60%"
-        onClose={() => setOrderDrawerVisible(false)}
-        open={orderDrawerVisible}
-        className="md:hidden"
-        footer={
-          <div className="flex gap-3">
-            <Button block onClick={() => setOrderDrawerVisible(false)}>
-              {t('cancel')}
-            </Button>
-            <Button type="primary" block onClick={handleOrderSubmit}>
-              {t('confirm')}
-            </Button>
-          </div>
-        }
-      >
-        <Form form={orderForm} layout="vertical">
-          <Form.Item
-            name="amount"
-            label={t('quantity')}
-            rules={[
-              { required: true, message: t('pleaseEnterQuantity') },
-              { type: 'number', min: 1, message: t('quantityMustBePositive') }
-            ]}
-          >
-            <InputNumber size="large" style={{ width: '100%' }} min={1} />
-          </Form.Item>
+      {isMobile && (
+        <Drawer
+          title={orderType === 'store' ? t('storeAdjustment') : t('customerOrder')}
+          placement="bottom"
+          height="60%"
+          onClose={() => setOrderDrawerVisible(false)}
+          open={orderDrawerVisible}
+          footer={
+            <div className="flex gap-3">
+              <Button block onClick={() => setOrderDrawerVisible(false)}>
+                {t('cancel')}
+              </Button>
+              <Button type="primary" block onClick={handleOrderSubmit}>
+                {t('confirm')}
+              </Button>
+            </div>
+          }
+        >
+          <Form form={orderForm} layout="vertical">
+            <Form.Item
+              name="amount"
+              label={t('quantity')}
+              rules={[
+                { required: true, message: t('pleaseEnterQuantity') },
+                { type: 'number', min: 1, message: t('quantityMustBePositive') }
+              ]}
+            >
+              <InputNumber size="large" style={{ width: '100%' }} min={1} />
+            </Form.Item>
 
-          <Form.Item
-            name="remark"
-            label={t('remark')}
-            rules={[{ required: true, message: t('pleaseEnterRemark') }]}
-          >
-            <Input size="large" placeholder={t('pleaseEnterRemark')} />
-          </Form.Item>
-        </Form>
-      </Drawer>
+            <Form.Item
+              name="remark"
+              label={t('remark')}
+              rules={[{ required: true, message: t('pleaseEnterRemark') }]}
+            >
+              <Input size="large" placeholder={t('pleaseEnterRemark')} />
+            </Form.Item>
+          </Form>
+        </Drawer>
+      )}
 
       {/* 删除库存确认抽屉 - 移动端 */}
-      <Drawer
-        title={t('confirmDelete')}
-        placement="bottom"
-        height="40%"
-        onClose={() => setDeleteItemDrawerVisible(false)}
-        open={deleteItemDrawerVisible}
-        className="md:hidden"
-        footer={
-          <div className="flex gap-3">
-            <Button block onClick={() => setDeleteItemDrawerVisible(false)}>
-              {t('cancel')}
-            </Button>
-            <Button type="primary" danger block onClick={handleConfirmDeleteItem}>
-              {t('confirmDelete')}
-            </Button>
+      {isMobile && (
+        <Drawer
+          title={t('confirmDelete')}
+          placement="bottom"
+          height="40%"
+          onClose={() => setDeleteItemDrawerVisible(false)}
+          open={deleteItemDrawerVisible}
+          footer={
+            <div className="flex gap-3">
+              <Button block onClick={() => setDeleteItemDrawerVisible(false)}>
+                {t('cancel')}
+              </Button>
+              <Button type="primary" danger block onClick={handleConfirmDeleteItem}>
+                {t('confirmDelete')}
+              </Button>
+            </div>
+          }
+        >
+          <div className="text-center py-8">
+            <DeleteOutlined style={{ fontSize: '48px', color: '#ff4d4f', marginBottom: '16px' }} />
+            <h3 className="text-lg font-semibold mb-2">{t('confirmDeleteStock')}</h3>
+            <p className="text-gray-600 mb-4">
+              {t('confirmDeleteStockMessage')} <strong>{deleteItemData?.color} {deleteItemData?.size}</strong> {t('stockQuestionMark')}
+            </p>
+            <p className="text-sm text-gray-500">
+              {t('deleteCannotBeUndone')}
+            </p>
           </div>
-        }
-      >
-        <div className="text-center py-8">
-          <DeleteOutlined style={{ fontSize: '48px', color: '#ff4d4f', marginBottom: '16px' }} />
-          <h3 className="text-lg font-semibold mb-2">{t('confirmDeleteStock')}</h3>
-          <p className="text-gray-600 mb-4">
-            {t('confirmDeleteStockMessage')} <strong>{deleteItemData?.color} {deleteItemData?.size}</strong> {t('stockQuestionMark')}
-          </p>
-          <p className="text-sm text-gray-500">
-            {t('deleteCannotBeUndone')}
-          </p>
-        </div>
-      </Drawer>
+        </Drawer>
+      )}
     </>
   );
 }

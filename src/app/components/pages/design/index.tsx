@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { DesignItem, DesignListRequest, SearchPageParams, DesignDetail as DesignDetailType, ModifyDesignRequest, typeList, colorList, fabricList, sizeList, WAREHOUSE, CreateDesignRequest } from '@/lib/types';
 import { usePermissions } from '@/lib/usePermissions';
+import { useIsMobile } from '@/lib/useIsMobile';
 import ImageUpload from '../../ImageUpload';
 import DesignDetail from './DesignDetail';
 import ImageGallery from './ImageGallery';
@@ -18,6 +19,7 @@ import type { UploadFile, RcFile } from 'antd/es/upload/interface';
 export default function Design() {
   const { modal } = App.useApp();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const { canUseFeature } = usePermissions();
   
   // 视图状态：'list'、'detail' 或 'images'
@@ -216,7 +218,7 @@ export default function Design() {
         type: detailData.type.split(','),
         purchasePrice: detailData.purchasePrice,
         salePrice: detailData.salePrice,
-        remark: ''
+        remark: detailData.remark
       });
       setEditDrawerVisible(true);
     }
@@ -809,14 +811,14 @@ export default function Design() {
         </div>
       </div>
 
-      {/* 创建商品抽屉 - 响应式 */}
-      <Drawer
-        title={t('createDesign')}
-        placement="right"
-        width={600}
-        onClose={() => setCreateDrawerVisible(false)}
-        open={createDrawerVisible}
-        className="hidden md:block"
+      {/* 创建商品抽屉 - 桌面端 */}
+      {!isMobile && (
+        <Drawer
+          title={t('createDesign')}
+          placement="right"
+          width={600}
+          onClose={() => setCreateDrawerVisible(false)}
+          open={createDrawerVisible}
         footer={
           <div style={{ textAlign: 'right' }}>
             <Button onClick={() => setCreateDrawerVisible(false)} style={{ marginRight: 8 }}>
@@ -962,15 +964,16 @@ export default function Design() {
           </div>
         </Form>
       </Drawer>
+      )}
 
       {/* 移动端创建商品抽屉 */}
-      <Drawer
-        title={t('addItem')}
-        placement="bottom"
-        height="90%"
-        onClose={() => setCreateDrawerVisible(false)}
-        open={createDrawerVisible}
-        className="md:hidden"
+      {isMobile && (
+        <Drawer
+          title={t('addItem')}
+          placement="bottom"
+          height="90%"
+          onClose={() => setCreateDrawerVisible(false)}
+          open={createDrawerVisible}
         footer={
           <div className="flex gap-4">
             <Button block size="large" onClick={() => setCreateDrawerVisible(false)}>
@@ -1124,6 +1127,7 @@ export default function Design() {
           </div>
         </Form>
       </Drawer>
+      )}
     </>
   );
 }
