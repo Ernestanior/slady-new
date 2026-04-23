@@ -157,24 +157,22 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
               {t('modifyStock')}
             </Button>
           )}
-          {!isSaler() && (
-            <Button
-              type="link"
-              icon={<PlusOutlined />}
-              onClick={() => handleOrder(record, 'store')}
-              size="small"
-              style={{
-                backgroundColor: '#fff',
-                border: '1px solid #d9d9d9',
-                borderRadius: '4px',
-                padding: '4px 8px',
-                height: 'auto',
-                minWidth: '80px'
-              }}
-            >
-              {t('storeAdjustment')}
-            </Button>
-          )}
+          <Button
+            type="link"
+            icon={<PlusOutlined />}
+            onClick={() => handleOrder(record, 'store')}
+            size="small"
+            style={{
+              backgroundColor: '#fff',
+              border: '1px solid #d9d9d9',
+              borderRadius: '4px',
+              padding: '4px 8px',
+              height: 'auto',
+              minWidth: '80px'
+            }}
+          >
+            {t('storeAdjustment')}
+          </Button>
           <Button
             type="link"
             icon={<ShoppingOutlined />}

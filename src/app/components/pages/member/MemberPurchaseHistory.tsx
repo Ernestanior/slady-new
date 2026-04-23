@@ -291,16 +291,14 @@ export default function MemberPurchaseHistory({ memberData, onBackToList }: Memb
           </Button>
           <h2 style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>会员购买记录</h2>
         </div>
-        {isAdmin() && (
-          <div>
-            <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate} style={{ marginRight: 8 }}>
-              {t('add')}
-            </Button>
-            <Button icon={<MinusCircleOutlined />} onClick={handleRefund}>
-              退还
-            </Button>
-          </div>
-        )}
+        <div>
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate} style={{ marginRight: 8 }}>
+            {t('add')}
+          </Button>
+          <Button icon={<MinusCircleOutlined />} onClick={handleRefund}>
+            退还
+          </Button>
+        </div>
       </div>
 
       {/* 会员详细信息 */}

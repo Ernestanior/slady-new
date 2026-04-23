@@ -305,20 +305,18 @@ export default function MemberManagement() {
         label: t('detailRecord'),
         onClick: () => handleViewPurchase(memberData),
       },
-      ...(isAdmin() ? [
-        {
-          key: 'modify',
-          icon: <EditOutlined />,
-          label: t('modify'),
-          onClick: () => handleModify(memberData),
-        },
-        {
-          key: 'topUp',
-          icon: <DollarOutlined />,
-          label: t('topUp'),
-          onClick: () => handleTopUp(memberData),
-        },
-      ] : []),
+      {
+        key: 'modify',
+        icon: <EditOutlined />,
+        label: t('modify'),
+        onClick: () => handleModify(memberData),
+      },
+      {
+        key: 'topUp',
+        icon: <DollarOutlined />,
+        label: t('topUp'),
+        onClick: () => handleTopUp(memberData),
+      },
       ...(canUseFeature('deleteMember') ? [
       
         {
@@ -407,26 +405,17 @@ export default function MemberManagement() {
       width: 80,
       fixed: 'right' as const,
       render: (_: any, record: MemberData) => {
-        const menuItems = [];
-
-        // 只有ADMIN用户才能看到修改和充值选项
-        if (isAdmin()) {
-          menuItems.push(
-            <Menu.Item key="modify" icon={<EditOutlined />} onClick={() => handleModify(record)}>
-              {t('modify')}
-            </Menu.Item>,
-            <Menu.Item key="topUp" icon={<PlusOutlined />} onClick={() => handleTopUp(record)}>
-              {t('topUp')}
-            </Menu.Item>
-          );
-        }
-
-        // 详情记录所有用户都可以看到
-        menuItems.push(
+        const menuItems = [
+          <Menu.Item key="modify" icon={<EditOutlined />} onClick={() => handleModify(record)}>
+            {t('modify')}
+          </Menu.Item>,
+          <Menu.Item key="topUp" icon={<PlusOutlined />} onClick={() => handleTopUp(record)}>
+            {t('topUp')}
+          </Menu.Item>,
           <Menu.Item key="detail" icon={<EyeOutlined />} onClick={() => handleViewPurchase(record)}>
             {t('detailRecord')}
-          </Menu.Item>
-        );
+          </Menu.Item>,
+        ];
 
         // 只有有删除权限的用户才能看到删除选项
         if (canUseFeature('deleteMember')) {

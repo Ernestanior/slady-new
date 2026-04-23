@@ -157,6 +157,8 @@ export function usePermissions() {
       
       case 'createMember':
       case 'editMember':
+        return hasPermission([E_USER_TYPE.ADMIN, E_USER_TYPE.SUPERADMIN, E_USER_TYPE.SALER]);
+      
       case 'deleteMember':
         return hasPermission([E_USER_TYPE.ADMIN, E_USER_TYPE.SUPERADMIN]);
       

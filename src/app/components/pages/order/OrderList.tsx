@@ -78,6 +78,7 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
     { value: "2", label: t('completed') },
     { value: "3", label: t('outOfStock') },
     { value: "4", label: t('damaged') },
+    { value: "5", label: t('void') },
   ];
 
   // 获取订单数据
@@ -211,6 +212,7 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
       '2': { text: t('completed'), color: '#52c41a' },
       '3': { text: t('outOfStock'), color: '#ff4d4f' },
       '4': { text: t('damaged'), color: '#722ed1' },
+      '5': { text: t('void'), color: '#8c8c8c' },
     };
     
     const statusInfo = statusMap[status] || { text: '未知', color: '#d9d9d9' };
@@ -254,22 +256,26 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
     }
   };
 
-  // 删除订单
-  const handleDelete = (orderData: OrderData) => {
+  // Void订单（软删除）
+  const handleVoid = (orderData: OrderData) => {
     modal.confirm({
-      title: '确认删除',
-      content: `确定要删除订单: ${orderData.design} ？`,
+      title: t('confirmVoid') || '确认作废',
+      content: `确定要作废订单: ${orderData.design} ？`,
       icon: <ExclamationCircleOutlined />,
-      okText: '确认',
-      cancelText: '取消',
+      okText: t('confirm') || '确认',
+      cancelText: t('cancel') || '取消',
       onOk: async () => {
         try {
-          await order.delete([orderData.id]);
-          message.success(t('deleteSuccess') || '删除订单成功');
+          await order.modify({
+            ...orderData,
+            status: '5',
+            pendingDate: '',
+          } as any);
+          message.success(t('voidSuccess') || '订单已作废');
           onRefresh();
         } catch (error) {
-          console.error('删除订单失败:', error);
-          message.error(t('deleteFailed') || '删除订单失败，请稍后重试');
+          console.error('作废订单失败:', error);
+          message.error(t('voidFailed') || '作废订单失败，请稍后重试');
         }
       },
     });
@@ -362,11 +368,11 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
         onClick: () => handleEdit(orderData),
       },
       {
-        key: 'delete',
-        label: t('deleteOrder'),
-        icon: <DeleteOutlined />,
+        key: 'void',
+        label: t('void') || 'Void',
+        icon: <CloseOutlined />,
         danger: true,
-        onClick: () => handleDelete(orderData),
+        onClick: () => handleVoid(orderData),
       },
       {
         key: 'sent',
@@ -580,11 +586,11 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
           <Button
             size="small"
             danger
-            onClick={() => handleDelete(order)}
+            onClick={() => handleVoid(order)}
             className="flex-1"
             style={{ minHeight: '32px' }}
           >
-            {t('deleteOrder')}
+            {t('void') || 'Void'}
           </Button>
         </div>
       </div>
