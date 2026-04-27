@@ -18,6 +18,7 @@ export default function MemberPurchaseHistory({ memberData, onBackToList }: Memb
   const { t } = useTranslation();
   const { canUseFeature, isAdmin } = usePermissions();
   const [form] = Form.useForm();
+  const [searchForm] = Form.useForm();
   const [data, setData] = useState<MemberPurchaseRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -31,11 +32,13 @@ export default function MemberPurchaseHistory({ memberData, onBackToList }: Memb
   const [selectedRecord, setSelectedRecord] = useState<MemberPurchaseRecord | null>(null);
 
   // 获取购买记录
-  const fetchPurchaseHistory = async (page = 1) => {
+  const fetchPurchaseHistory = async (page = 1, searchParams: any = {}) => {
     setLoading(true);
     setData([]);
     
     try {
+      const formValues = searchForm.getFieldsValue();
+      
       const params: MemberPurchaseRequest = {
         memberId: memberData.id,
         searchPage: {
@@ -43,7 +46,9 @@ export default function MemberPurchaseHistory({ memberData, onBackToList }: Memb
           page,
           pageSize: 20,
           sort: 'create_date'
-        }
+        },
+        ...formValues,
+        ...searchParams
       };
 
       const response = await member.getPurchaseHistory(params);
@@ -80,6 +85,17 @@ export default function MemberPurchaseHistory({ memberData, onBackToList }: Memb
   useEffect(() => {
     fetchPurchaseHistory();
   }, [memberData.id]);
+
+  // 搜索
+  const handleSearch = () => {
+    fetchPurchaseHistory(1);
+  };
+
+  // 重置搜索
+  const handleReset = () => {
+    searchForm.resetFields();
+    fetchPurchaseHistory(1);
+  };
 
   // 分页变化
   const handleTableChange = (page: number) => {
@@ -329,6 +345,30 @@ export default function MemberPurchaseHistory({ memberData, onBackToList }: Memb
             <span>{memberData?.remark}</span>
           </Row>
         </div>
+      </Card>
+
+      {/* 搜索表单 */}
+      <Card style={{ marginBottom: 16 }}>
+        <Form
+          form={searchForm}
+          layout="inline"
+          onFinish={handleSearch}
+        >
+          <Form.Item name="designCode" label={t('designCode') || '商品代码'}>
+            <Input placeholder={t('pleaseEnterDesignCode') || '请输入商品代码'} style={{ width: 200 }} />
+          </Form.Item>
+          
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit">
+                {t('search')}
+              </Button>
+              <Button onClick={handleReset}>
+                {t('reset')}
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
       </Card>
 
       {/* 购买记录表格 */}

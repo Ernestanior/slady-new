@@ -5,6 +5,7 @@ import { Table, Button, Modal, Drawer, Form, Input, InputNumber, Select, message
 import { MoreOutlined, EditOutlined, DeleteOutlined, SendOutlined, CheckOutlined, ExclamationCircleOutlined, ReloadOutlined, CloseOutlined, PrinterOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { OrderData, ModifyOrderRequest, colorList, sizeList, WAREHOUSE } from '@/lib/types';
+import { usePermissions } from '@/lib/usePermissions';
 import { order } from '@/lib/api';
 import moment from 'moment';
 import { useNotification } from '@/lib/notificationManager';
@@ -20,9 +21,13 @@ const dev_url = 'http://119.28.104.20';
 const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, onViewDesignDetail }, ref) => {
   const { t } = useTranslation();
   const { modal } = App.useApp();
+  const { isLogistics, isKoreanLogistics } = usePermissions();
   const [form] = Form.useForm();
   const [sentForm] = Form.useForm();
   const [searchForm] = Form.useForm();
+  
+  // 判断是否为物流用户（包括普通物流和韩国物流）
+  const isLogisticsUser = isLogistics() || isKoreanLogistics();
   
   // 状态管理
   const [loading, setLoading] = useState(false);
@@ -475,12 +480,12 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
       width: 110,
       render: (data: string) => moment(data).format('YYYY-MM-DD'),
     },
-    {
+    ...(!isLogisticsUser ? [{
       title: t('orderRemark'),
       dataIndex: 'remark',
       key: 'remark',
       width: 150,
-    },
+    }] : []),
     {
       title: t('status'),
       dataIndex: 'status',
@@ -611,9 +616,11 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
             <Input placeholder={t('pleaseEnterDesignCode')} />
           </Form.Item>
           
-          <Form.Item name="remark" label={t('orderRemark')} className="md:w-48 mb-4">
-            <Input placeholder={t('pleaseEnterRemark')} />
-          </Form.Item>
+          {!isLogisticsUser && (
+            <Form.Item name="remark" label={t('orderRemark')} className="md:w-48 mb-4">
+              <Input placeholder={t('pleaseEnterRemark')} />
+            </Form.Item>
+          )}
           
           <Form.Item name="status" label={t('status')} className="md:w-48 mb-4">
             <Select

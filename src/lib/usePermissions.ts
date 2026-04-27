@@ -53,6 +53,11 @@ export function usePermissions() {
     return hasPermission([E_USER_TYPE.LOGISTICS]);
   };
 
+  // 检查是否为韩国物流
+  const isKoreanLogistics = () => {
+    return hasPermission([E_USER_TYPE.KOREAN_LOGISTICS]);
+  };
+
   // 检查是否为产品管理
   const isProductManagement = () => {
     return hasPermission([E_USER_TYPE.PRODUCTMANAGEMENT]);
@@ -82,6 +87,7 @@ export function usePermissions() {
         ];
       
       case E_USER_TYPE.LOGISTICS:
+      case E_USER_TYPE.KOREAN_LOGISTICS:
         return ['orderManagement'];
       
       case E_USER_TYPE.FINANCE:
@@ -153,7 +159,7 @@ export function usePermissions() {
       case 'createOrder':
       case 'editOrder':
       case 'deleteOrder':
-        return hasPermission([E_USER_TYPE.ADMIN, E_USER_TYPE.SUPERADMIN, E_USER_TYPE.SALER, E_USER_TYPE.LOGISTICS]);
+        return hasPermission([E_USER_TYPE.ADMIN, E_USER_TYPE.SUPERADMIN, E_USER_TYPE.SALER, E_USER_TYPE.LOGISTICS, E_USER_TYPE.KOREAN_LOGISTICS]);
       
       case 'createMember':
       case 'editMember':
@@ -197,6 +203,7 @@ export function usePermissions() {
     isSaler,
     isFinance,
     isLogistics,
+    isKoreanLogistics,
     isProductManagement,
     isSuperAdmin,
     getAccessiblePages,
