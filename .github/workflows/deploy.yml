@@ -1,0 +1,120 @@
+name: Deploy IMS Frontend
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ims-frontend-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build deploy zip
+        run: node buildZip.js
+
+      - name: Upload build zip to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.IMS_PROD_HOST }}
+          username: ${{ secrets.IMS_PROD_USERNAME }}
+          password: ${{ secrets.IMS_PROD_PASSWORD }}
+          source: build.zip
+          target: /home/ubuntu/
+
+      - name: Restart frontend on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.IMS_PROD_HOST }}
+          username: ${{ secrets.IMS_PROD_USERNAME }}
+          password: ${{ secrets.IMS_PROD_PASSWORD }}
+          script_stop: true
+          command_timeout: 20m
+          script: |
+            set -e
+            echo '${{ secrets.IMS_PROD_SUDO_PASSWORD }}' | sudo -S mv /home/ubuntu/build.zip /root/frontend/build.zip
+            echo '${{ secrets.IMS_PROD_SUDO_PASSWORD }}' | sudo -S bash /root/frontend/restartFrontend.sh
+
+            for i in $(seq 1 30); do
+              if curl -fsS http://127.0.0.1 > /dev/null; then
+                echo "Deployment verified on attempt ${i}"
+                exit 0
+              fi
+              sleep 5
+            done
+
+            echo "Deployment verification failed"
+            exit 1
+
+      - name: Notify Telegram
+        if: always()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DEPLOY_STATUS: ${{ job.status }}
+          REPO: ${{ github.repository }}
+          PROJECT_NAME: ims-frontend
+          BRANCH: ${{ github.ref_name }}
+          SERVER_HOST: ${{ secrets.IMS_PROD_HOST }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "${TELEGRAM_BOT_TOKEN}" ] || [ -z "${TELEGRAM_CHAT_ID}" ]; then
+            echo "Telegram notification skipped: missing bot token or chat id"
+            exit 0
+          fi
+
+          if [ "${DEPLOY_STATUS}" = "success" ]; then
+            STATUS_TEXT="部署成功"
+          else
+            STATUS_TEXT="部署失败"
+          fi
+
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B | sed '/^[[:space:]]*$/d')
+
+          MESSAGE=$(cat <<EOF
+          [部署通知]
+
+          项目:
+          ${PROJECT_NAME}
+
+          仓库:
+          ${REPO}
+
+          分支:
+          ${BRANCH}
+
+          部署服务器:
+          ${SERVER_HOST}
+
+          部署结果:
+          ${STATUS_TEXT}
+
+          提交内容:
+          ${COMMIT_MESSAGE}
+
+          运行详情:
+          ${RUN_URL}
+          EOF
+          )
+
+          curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${MESSAGE}"
