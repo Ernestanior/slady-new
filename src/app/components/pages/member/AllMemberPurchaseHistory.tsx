@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Card, message, Pagination, Space, Tag, Tabs } from 'antd';
+import { Table, Button, Card, message, Pagination, Space, Tag, Tabs, Form, Input } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { MemberPurchaseRecord, MemberPurchaseHistoryRequest } from '@/lib/types';
@@ -13,6 +13,7 @@ interface AllMemberPurchaseHistoryProps {
 
 export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurchaseHistoryProps) {
   const { t } = useTranslation();
+  const [searchForm] = Form.useForm();
   const [purchaseData, setPurchaseData] = useState<MemberPurchaseRecord[]>([]);
   const [refundData, setRefundData] = useState<MemberPurchaseRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -32,6 +33,7 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
   const fetchPurchaseData = async (page: number = 1) => {
     setLoading(true);
     try {
+      const formValues = searchForm.getFieldsValue();
       const params: MemberPurchaseHistoryRequest = {
         searchPage: {
           desc: 1,
@@ -39,7 +41,8 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
           pageSize: 20,
           sort: 'purchase_date'
         },
-        refund: 2
+        refund: 2,
+        ...(formValues.designCode && { designCode: formValues.designCode })
       };
 
       const response = await member.getPurchaseHistoryList(params);
@@ -71,6 +74,7 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
   const fetchRefundData = async (page: number = 1) => {
     setLoading(true);
     try {
+      const formValues = searchForm.getFieldsValue();
       const params: MemberPurchaseHistoryRequest = {
         searchPage: {
           desc: 1,
@@ -78,7 +82,8 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
           pageSize: 20,
           sort: 'purchase_date'
         },
-        refund: 1
+        refund: 1,
+        ...(formValues.designCode && { designCode: formValues.designCode })
       };
 
       const response = await member.getPurchaseHistoryList(params);
@@ -119,6 +124,25 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
   const handleTabChange = (key: string) => {
     setActiveTab(key);
     if (key === 'purchase') {
+      fetchPurchaseData(1);
+    } else {
+      fetchRefundData(1);
+    }
+  };
+
+  // 搜索
+  const handleSearch = () => {
+    if (activeTab === 'purchase') {
+      fetchPurchaseData(1);
+    } else {
+      fetchRefundData(1);
+    }
+  };
+
+  // 重置搜索
+  const handleReset = () => {
+    searchForm.resetFields();
+    if (activeTab === 'purchase') {
       fetchPurchaseData(1);
     } else {
       fetchRefundData(1);
@@ -258,6 +282,29 @@ export default function AllMemberPurchaseHistory({ onBackToList }: AllMemberPurc
           <h2 style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>{t('allMemberPurchaseHistory')}</h2>
         </div>
       </div>
+
+      <Card style={{ marginBottom: 16 }}>
+        <Form
+          form={searchForm}
+          layout="inline"
+          onFinish={handleSearch}
+        >
+          <Form.Item name="designCode" label={t('code')}>
+            <Input placeholder={t('pleaseEnterDesignCode')} style={{ width: 200 }} />
+          </Form.Item>
+          
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit">
+                {t('search')}
+              </Button>
+              <Button onClick={handleReset}>
+                {t('reset')}
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Card>
 
       <Card>
         <Tabs
