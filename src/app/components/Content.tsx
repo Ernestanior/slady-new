@@ -59,28 +59,39 @@ export default function Content({ activePage, sidebarCollapsed = false, setActiv
         </div>
       );
     }
-    switch (activePage) {
-      case 'employeeManagement':
-        return <EmployeeManagement />;
-      case 'designManagement':
-        return <Design />;
-      case 'orderManagement':
-        return <Order />;
-      case 'orderHistory':
-        return <OrderHistory />;
-      case 'hotColdItems':
-        return <HotColdItems />;
-      case 'inventoryRecords':
-        return <InventoryRecords />;
-      case 'employeeHistory':
-        return <EmployeeHistory />;
-      case 'memberManagement':
-        return <MemberManagement />;
-      case 'billManagement':
-        return <BillManagement />;
-      default:
-        return <Design />;
-    }
+
+    // 使用 CSS 隐藏而不是卸载组件，保持所有页面的状态
+    return (
+      <>
+        <div style={{ display: activePage === 'employeeManagement' ? 'block' : 'none' }}>
+          <EmployeeManagement />
+        </div>
+        <div style={{ display: activePage === 'designManagement' ? 'block' : 'none' }}>
+          <Design />
+        </div>
+        <div style={{ display: activePage === 'orderManagement' ? 'block' : 'none' }}>
+          <Order />
+        </div>
+        <div style={{ display: activePage === 'orderHistory' ? 'block' : 'none' }}>
+          <OrderHistory />
+        </div>
+        <div style={{ display: activePage === 'hotColdItems' ? 'block' : 'none' }}>
+          <HotColdItems />
+        </div>
+        <div style={{ display: activePage === 'inventoryRecords' ? 'block' : 'none' }}>
+          <InventoryRecords />
+        </div>
+        <div style={{ display: activePage === 'employeeHistory' ? 'block' : 'none' }}>
+          <EmployeeHistory />
+        </div>
+        <div style={{ display: activePage === 'memberManagement' ? 'block' : 'none' }}>
+          <MemberManagement />
+        </div>
+        <div style={{ display: activePage === 'billManagement' ? 'block' : 'none' }}>
+          <BillManagement />
+        </div>
+      </>
+    );
   };
 
   return (

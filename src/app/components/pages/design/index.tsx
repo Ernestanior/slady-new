@@ -103,11 +103,11 @@ export default function Design() {
           setDisplayData(newData);
           setAllData(newData);
         } else {
-          setDisplayData(prev => [...prev, ...newData]);
-          setAllData(prev => [...prev, ...newData]);
+          setDisplayData((prev: DesignItem[]) => [...prev, ...newData]);
+          setAllData((prev: DesignItem[]) => [...prev, ...newData]);
         }
         
-        setPagination(prev => ({
+        setPagination((prev: { page: number; pageSize: number; total: number; totalPages: number }) => ({
           page: reset ? 1 : prev.page + 1,
           pageSize: response.data.size,
           total: response.data.totalElements,
@@ -125,6 +125,7 @@ export default function Design() {
 
   // 初始加载数据
   useEffect(() => {
+    // 首次加载数据
     fetchDesignList(1, true);
   }, []);
 
@@ -173,6 +174,7 @@ export default function Design() {
 
   // 跳转到详情页面
   const toDetail = (item: DesignItem) => {
+    // 保存当前滚动位置
     if (scrollListRef.current) {
       savedScrollPosition.current = scrollListRef.current.scrollTop;
     }
@@ -188,14 +190,12 @@ export default function Design() {
     setSelectedDesignId(null);
     setDetailData(null);
     
+    // 恢复滚动位置
     setTimeout(() => {
       if (scrollListRef.current && savedScrollPosition.current > 0) {
         scrollListRef.current.scrollTop = savedScrollPosition.current;
       }
     }, 0);
-    
-    // 刷新列表
-    fetchDesignList(1, true);
   };
 
   // 跳转到图片浏览页面
@@ -519,38 +519,41 @@ export default function Design() {
   );
 
   // 根据当前视图渲染对应内容
-  if (currentView === 'detail' && selectedDesignId) {
-    return (
-      <DesignDetail
-        detailData={detailData}
-        detailLoading={detailLoading}
-        onBackToList={handleBackToList}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onViewImages={handleViewImages}
-        editDrawerVisible={editDrawerVisible}
-        onEditDrawerClose={() => setEditDrawerVisible(false)}
-        onEditSubmit={handleEditSubmit}
-        editForm={form}
-      />
-    );
-  }
-
-  if (currentView === 'images') {
-    return (
-      <ImageGallery
-        currentFolderPath={currentFolderPath}
-        coverPath={coverPath}
-        designId={selectedDesignId || 0}
-        onBackToDetail={handleBackToDetail}
-        onImageModify={handleImageModify}
-      />
-    );
-  }
-
-  // 列表视图
   return (
     <>
+      {/* 详情视图 */}
+      <div style={{ display: currentView === 'detail' && selectedDesignId ? 'block' : 'none' }}>
+        {selectedDesignId && (
+          <DesignDetail
+            detailData={detailData}
+            detailLoading={detailLoading}
+            onBackToList={handleBackToList}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onViewImages={handleViewImages}
+            editDrawerVisible={editDrawerVisible}
+            onEditDrawerClose={() => setEditDrawerVisible(false)}
+            onEditSubmit={handleEditSubmit}
+            editForm={form}
+          />
+        )}
+      </div>
+
+      {/* 图片浏览视图 */}
+      <div style={{ display: currentView === 'images' ? 'block' : 'none' }}>
+        {selectedDesignId && (
+          <ImageGallery
+            currentFolderPath={currentFolderPath}
+            coverPath={coverPath}
+            designId={selectedDesignId || 0}
+            onBackToDetail={handleBackToDetail}
+            onImageModify={handleImageModify}
+          />
+        )}
+      </div>
+
+      {/* 列表视图 */}
+      <div style={{ display: currentView === 'list' ? 'block' : 'none' }}>
       <div className="p-3 md:p-6">
         {/* 搜索和筛选区域 */}
         <Card className="mb-4">
@@ -796,12 +799,34 @@ export default function Design() {
               <Spin size="large" />
             </div>
           ) : displayData.length > 0 ? (
-            <div className="space-y-3">
-              {displayData.map((item, index) => (
-                <div key={`${item.id}-${index}`}>
-                  {renderMobileCard(item)}
-                </div>
-              ))}
+            <div 
+              style={{ 
+                height: '70vh', 
+                overflowY: 'scroll',
+                padding: '0 4px'
+              }}
+              onScroll={handleScroll}
+              ref={scrollListRef}
+            >
+              <div className="space-y-3">
+                {displayData.map((item, index) => (
+                  <div key={`${item.id}-${index}`}>
+                    {renderMobileCard(item)}
+                  </div>
+                ))}
+                
+                {loading && (
+                  <div className="flex justify-center py-4">
+                    <Spin />
+                  </div>
+                )}
+                
+                {!hasMore && (
+                  <div className="text-center py-4 text-gray-400 text-sm">
+                    已加载全部数据
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <div className="text-center py-20 text-gray-500">
@@ -1128,6 +1153,7 @@ export default function Design() {
         </Form>
       </Drawer>
       )}
+      </div>
     </>
   );
 }
