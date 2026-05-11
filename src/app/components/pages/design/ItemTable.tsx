@@ -19,7 +19,7 @@ interface ItemTableProps {
 export default function ItemTable({ data, loading, warehouseName, designId, onRefresh }: ItemTableProps) {
   const { t } = useTranslation();
   const { modal } = App.useApp();
-  const { canUseFeature, isSaler } = usePermissions();
+  const { canUseFeature, isSaler, userInfo } = usePermissions();
   const [form] = Form.useForm();
   const [stockForm] = Form.useForm();
   const [orderForm] = Form.useForm();
@@ -91,6 +91,9 @@ export default function ItemTable({ data, loading, warehouseName, designId, onRe
           remark: values.remark,
           paymentStatus: -1,
           status: '0',
+          statusChangeUserId: userInfo?.id || 0,
+          statusChangeUserName: userInfo?.name || '未知用户',
+          statusChangeTime: new Date().toISOString().slice(0, 19).replace('T', ' '),
         };
         
         await order.create(orderData);

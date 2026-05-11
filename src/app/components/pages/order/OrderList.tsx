@@ -4,11 +4,19 @@ import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'rea
 import { Table, Button, Modal, Drawer, Form, Input, InputNumber, Select, message, App, Dropdown, Space, DatePicker, Card, Pagination, Image, Spin } from 'antd';
 import { MoreOutlined, EditOutlined, DeleteOutlined, SendOutlined, CheckOutlined, ExclamationCircleOutlined, ReloadOutlined, CloseOutlined, PrinterOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { OrderData, ModifyOrderRequest, colorList, sizeList, WAREHOUSE } from '@/lib/types';
+import { OrderData, ModifyOrderRequest, colorList, sizeList, WAREHOUSE, OrderStatusHistory } from '@/lib/types';
 import { usePermissions } from '@/lib/usePermissions';
 import { order } from '@/lib/api';
 import moment from 'moment';
+import dayjs, { Dayjs } from 'dayjs';
+import 'dayjs/locale/zh-cn';
 import { useNotification } from '@/lib/notificationManager';
+
+// 设置 dayjs 的 locale
+dayjs.locale('zh-cn');
+
+// 店员列表
+const salerList = ['Sandy', 'Serene', 'Jewaa', 'Yen', 'Xiao Li', 'Qi Qi', 'Staff'];
 
 interface OrderListProps {
   warehouseName: string;
@@ -21,7 +29,7 @@ const dev_url = 'http://119.28.104.20';
 const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, onViewDesignDetail }, ref) => {
   const { t } = useTranslation();
   const { modal } = App.useApp();
-  const { isLogistics, isKoreanLogistics } = usePermissions();
+  const { isLogistics, isKoreanLogistics, userInfo } = usePermissions();
   const [form] = Form.useForm();
   const [sentForm] = Form.useForm();
   const [searchForm] = Form.useForm();
@@ -36,6 +44,8 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
   const [editDrawerVisible, setEditDrawerVisible] = useState(false);
   const [sentDrawerVisible, setSentDrawerVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
+  const [drawerKey, setDrawerKey] = useState(0); // 用于强制重新渲染 DatePicker
+  const [selectedDateTime, setSelectedDateTime] = useState<Dayjs | null>(null); // DatePicker 的值
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 20,
@@ -84,6 +94,8 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
     { value: "3", label: t('outOfStock') },
     { value: "4", label: t('damaged') },
     { value: "5", label: t('void') },
+    { value: "6", label: t('arrivedNotPickedUp') },
+    { value: "7", label: t('unpaidTry') },
   ];
 
   // 获取订单数据
@@ -106,9 +118,9 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
         ...searchParams
       };
       
-      // 处理状态：如果为空则使用默认值
+      // 处理状态：如果为空则使用默认值（显示除了作废状态外的所有订单）
       if (!formValues.status || formValues.status.length === 0) {
-        params.status = ['0', '1', '2', '3', '4'];
+        params.status = ['0', '1', '2', '3', '4', '6', '7'];
       }
       
       // 处理日期范围
@@ -180,9 +192,9 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
         ...formValues
       };
       
-      // 处理状态：如果为空则使用默认值
+      // 处理状态：如果为空则使用默认值（显示除了作废状态外的所有订单）
       if (!formValues.status || formValues.status.length === 0) {
-        params.status = ['0', '1', '2', '3', '4'];
+        params.status = ['0', '1', '2', '3', '4', '6', '7'];
       }
       
       // 处理日期范围
@@ -218,10 +230,58 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
       '3': { text: t('outOfStock'), color: '#ff4d4f' },
       '4': { text: t('damaged'), color: '#722ed1' },
       '5': { text: t('void'), color: '#8c8c8c' },
+      '6': { text: t('arrivedNotPickedUp'), color: '#fa8c16' },
+      '7': { text: t('unpaidTry'), color: '#eb2f96' },
     };
     
     const statusInfo = statusMap[status] || { text: '未知', color: '#d9d9d9' };
     return <span style={{ color: statusInfo.color, fontWeight: 'bold' }}>{statusInfo.text}</span>;
+  };
+
+  // 渲染状态历史日志
+  const renderStatusHistory = (statusHistory: string | undefined) => {
+    if (!statusHistory) return null;
+    
+    try {
+      const history: OrderStatusHistory[] = JSON.parse(statusHistory);
+      if (!history || history.length === 0) return null;
+      
+      return (
+        <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
+          {history.map((item, index) => {
+            const statusMap: Record<string, string> = {
+              '0': t('pending'),
+              '1': t('shipped'),
+              '2': t('completed'),
+              '3': t('outOfStock'),
+              '4': t('damaged'),
+              '5': t('void'),
+              '6': t('arrivedNotPickedUp'),
+              '7': t('unpaidTry'),
+            };
+            
+            const fromStatusText = item.fromStatus ? statusMap[item.fromStatus] || item.fromStatus : '';
+            const toStatusText = statusMap[item.toStatus] || item.toStatus;
+            const arrow = item.fromStatus ? ' → ' : '';
+            
+            return (
+              <div key={index} style={{ marginBottom: index < history.length - 1 ? '4px' : 0 }}>
+                <span style={{ color: '#666' }}>{item.time}</span>
+                <br />
+                <span style={{ color: '#1890ff' }}>{item.userName}</span>
+                {': '}
+                {fromStatusText && <span>{fromStatusText}</span>}
+                {arrow}
+                <span style={{ fontWeight: 'bold' }}>{toStatusText}</span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    } catch (error) {
+      console.error('解析状态历史失败:', error);
+      return null;
+    }
   };
 
   // 修改订单
@@ -272,10 +332,12 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
       onOk: async () => {
         try {
           await order.modify({
-            ...orderData,
+            id: orderData.id,
             status: '5',
-            pendingDate: '',
-          } as any);
+            statusChangeUserId: userInfo?.id || 0,
+            statusChangeUserName: userInfo?.name || '未知用户',
+            statusChangeTime: moment().format('YYYY-MM-DD HH:mm:ss'),
+          });
           message.success(t('voidSuccess') || '订单已作废');
           onRefresh();
         } catch (error) {
@@ -286,34 +348,88 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
     });
   };
 
-  // 发货
+  // 发货（需要填写日期和操作人）
   const handleSent = (orderData: OrderData) => {
     setSelectedOrder(orderData);
+    setDrawerKey(Date.now()); // 更新 key 强制重新渲染
+    setSelectedDateTime(dayjs()); // 设置当前时间
+    
+    // 清空表单
     sentForm.resetFields();
+    
+    // 设置默认值
+    sentForm.setFieldsValue({
+      targetStatus: '1', // 发货状态
+      statusText: t('shipped'),
+      statusChangeUserName: userInfo?.name || '',
+    });
+    
     setSentDrawerVisible(true);
   };
 
-  // 提交发货
+  // 提交发货或状态变更（带日期和操作人）
   const handleSentSubmit = async () => {
     try {
       const values = await sentForm.validateFields();
-      if (selectedOrder) {
+      if (selectedOrder && selectedDateTime) {
+        const targetStatus = values.targetStatus || '1'; // 默认为发货状态
+        
+        // 格式化时间为 YYYY-MM-DD HH:mm:ss
+        const formattedTime = selectedDateTime.format('YYYY-MM-DD HH:mm:ss');
+        
         await order.modify({
           id: selectedOrder.id,
-          pendingDate: values.pendingDate,
-          status: '1',
+          status: targetStatus,
+          statusChangeUserId: userInfo?.id || 0,
+          statusChangeUserName: values.statusChangeUserName,
+          statusChangeTime: formattedTime,
         });
-        message.success(t('shippedSuccess') || '订单已发货');
+        
+        const statusTextMap: Record<string, string> = {
+          '1': t('shippedSuccess') || '订单已发货',
+          '2': t('completedSuccess') || '订单已完成',
+          '6': t('arrivedNotPickedUpSuccess') || '已标记为货到未取',
+          '7': t('unpaidTrySuccess') || '已标记为未付try',
+        };
+        
+        message.success(statusTextMap[targetStatus] || '状态更新成功');
         setSentDrawerVisible(false);
         onRefresh();
       }
     } catch (error) {
-      console.error('发货失败:', error);
-      message.error(t('shippedFailed') || '发货失败，请稍后重试');
+      console.error('状态更新失败:', error);
+      message.error(t('statusUpdateFailed') || '状态更新失败，请稍后重试');
     }
   };
 
-  // 状态变更
+  // 状态变更（需要填写日期和操作人的状态：1、2、6、7）
+  const handleStatusChangeWithDate = (orderData: OrderData, status: string, statusText: string) => {
+    setSelectedOrder(orderData);
+    setDrawerKey(Date.now()); // 更新 key 强制重新渲染
+    
+    const currentDayjs = dayjs();
+    setSelectedDateTime(currentDayjs); // 设置当前时间
+    
+    console.log('当前用户信息:', userInfo);
+    console.log('创建新的 dayjs:', currentDayjs);
+    console.log('dayjs format:', currentDayjs.format('YYYY-MM-DD HH:mm:ss'));
+    console.log('dayjs valueOf:', currentDayjs.valueOf());
+    console.log('dayjs toDate:', currentDayjs.toDate());
+    
+    // 清空表单
+    sentForm.resetFields();
+    
+    // 设置默认值
+    sentForm.setFieldsValue({ 
+      targetStatus: status, 
+      statusText,
+      statusChangeUserName: userInfo?.name || '',
+    });
+    
+    setSentDrawerVisible(true);
+  };
+
+  // 状态变更（不需要填写日期和操作人的状态：0、3、4、5）
   const handleStatusChange = (orderData: OrderData, status: string, statusText: string) => {
     modal.confirm({
       title: statusText,
@@ -324,10 +440,12 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
       onOk: async () => {
         try {
           await order.modify({
-            ...orderData,
+            id: orderData.id,
             status,
-            pendingDate: '',
-          } as any);
+            statusChangeUserId: userInfo?.id || 0,
+            statusChangeUserName: userInfo?.name || '未知用户',
+            statusChangeTime: moment().format('YYYY-MM-DD HH:mm:ss'),
+          });
           message.success(`${statusText}成功`);
           onRefresh();
         } catch (error) {
@@ -349,10 +467,12 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
       onOk: async () => {
         try {
           await order.modify({
-            ...orderData,
+            id: orderData.id,
             status: '0',
-            pendingDate: '',
-          } as any);
+            statusChangeUserId: userInfo?.id || 0,
+            statusChangeUserName: userInfo?.name || '未知用户',
+            statusChangeTime: moment().format('YYYY-MM-DD HH:mm:ss'),
+          });
           message.success('重置状态成功');
           onRefresh();
         } catch (error) {
@@ -389,7 +509,19 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
         key: 'ok',
         label: t('completed'),
         icon: <CheckOutlined />,
-        onClick: () => handleStatusChange(orderData, '2', t('completed')),
+        onClick: () => handleStatusChangeWithDate(orderData, '2', t('completed')),
+      },
+      {
+        key: 'arrived_not_picked_up',
+        label: t('arrivedNotPickedUp'),
+        icon: <ExclamationCircleOutlined />,
+        onClick: () => handleStatusChangeWithDate(orderData, '6', t('arrivedNotPickedUp')),
+      },
+      {
+        key: 'unpaid_try',
+        label: t('unpaidTry'),
+        icon: <ExclamationCircleOutlined />,
+        onClick: () => handleStatusChangeWithDate(orderData, '7', t('unpaidTry')),
       },
       {
         key: 'out_of_stock',
@@ -493,10 +625,10 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
       render: (value: string) => renderStatus(value),
     },
     {
-      title: t('shippingDate'),
-      dataIndex: 'pendingDate',
-      width: 110,
-      render: (value: any) => value && <div>{value}</div>,
+      title: t('statusLog') || '日志',
+      dataIndex: 'statusHistory',
+      width: 250,
+      render: (value: string) => renderStatusHistory(value),
     },
     {
       title: t('operation'),
@@ -552,6 +684,12 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
                 <span>{t('orderAmount')}: {order.amount}</span>
                 <span>{t('time')}: {moment(order.date).format('MM-DD HH:mm')}</span>
               </div>
+              {order.statusHistory && (
+                <div className="mt-2 p-2 bg-gray-50 rounded">
+                  <div className="font-semibold mb-1">{t('statusLog') || '日志'}:</div>
+                  {renderStatusHistory(order.statusHistory)}
+                </div>
+              )}
               {order.remark && (
                 <div className="text-gray-500">
                   {t('orderRemark')}: {order.remark}
@@ -807,22 +945,22 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
         </Form>
       </Drawer>
 
-      {/* 发货抽屉 - 响应式 */}
+      {/* 发货/状态变更抽屉 - 响应式 */}
       <Drawer
-        title={t('sent')}
+        title={sentForm.getFieldValue('statusText') || t('sent')}
         placement="right"
         open={sentDrawerVisible}
         onClose={() => setSentDrawerVisible(false)}
         width={400}
         className="md:w-[400px] w-full"
-        height="50%"
+        height="60%"
         footer={
           <div className="md:hidden flex gap-3">
             <Button block onClick={() => setSentDrawerVisible(false)}>
               {t('cancel')}
             </Button>
             <Button type="primary" block onClick={handleSentSubmit}>
-              {t('confirmShipped') || '确认发货'}
+              {t('confirm')}
             </Button>
           </div>
         }
@@ -839,19 +977,47 @@ const OrderList = forwardRef<any, OrderListProps>(({ warehouseName, onRefresh, o
           layout="vertical"
           onFinish={handleSentSubmit}
         >
+          <Form.Item name="targetStatus" hidden>
+            <Input />
+          </Form.Item>
+          <Form.Item name="statusText" hidden>
+            <Input />
+          </Form.Item>
+          
           <Form.Item
-            name="pendingDate"
-            label={t('shippingDate')}
-            rules={[
-              { required: true, message: '请输入发货日期' }
-            ]}
+            name="statusChangeUserName"
+            label={t('operator')}
+            rules={[{ required: true, message: '请选择操作人' }]}
           >
-            <Input placeholder={t('pleaseEnterShippingDate')} />
+            <Select placeholder="请选择操作人">
+              {salerList.map(s => (
+                <Select.Option key={s} value={s}>{s}</Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          
+          <Form.Item
+            label={t('statusDate')}
+            required
+          >
+            <DatePicker 
+              key={drawerKey}
+              showTime 
+              format="YYYY-MM-DD HH:mm:ss"
+              style={{ width: '100%' }}
+              placeholder="请选择时间"
+              value={selectedDateTime}
+              onChange={(date) => {
+                console.log('DatePicker onChange:', date);
+                console.log('DatePicker onChange toDate:', date?.toDate());
+                setSelectedDateTime(date);
+              }}
+            />
           </Form.Item>
           
           <Form.Item className="hidden md:block">
             <Button type="primary" htmlType="submit" block>
-              确认发货
+              {t('confirm')}
             </Button>
           </Form.Item>
         </Form>

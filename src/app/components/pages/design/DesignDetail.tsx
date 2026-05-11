@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Descriptions, Tag, Drawer, Form, InputNumber, Select, message, Input, Spin, Card, Image, Tabs } from 'antd';
 import { ArrowLeftOutlined, EditOutlined, DeleteOutlined, PlusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { DesignDetail as DesignDetailType, typeList, ItemData, CreateItemRequest, WAREHOUSE } from '@/lib/types';
+import { DesignDetail as DesignDetailType, typeList, ItemData, CreateItemRequest, CreateOrderRequest, WAREHOUSE } from '@/lib/types';
 import { usePermissions } from '@/lib/usePermissions';
 import { useIsMobile } from '@/lib/useIsMobile';
 import { item, order } from '@/lib/api';
@@ -38,7 +38,7 @@ export default function DesignDetail({
   editForm
 }: DesignDetailProps) {
   const { t } = useTranslation();
-  const { isSaler, isAdmin, canUseFeature } = usePermissions();
+  const { isSaler, isAdmin, canUseFeature, userInfo } = usePermissions();
   const dev_url = 'http://119.28.104.20';
   const isMobile = useIsMobile();
   
@@ -175,13 +175,16 @@ export default function DesignDetail({
     try {
       const values = await orderForm.validateFields();
       if (currentItem) {
-        const orderData = {
+        const orderData: CreateOrderRequest = {
           itemId: currentItem.id,
           amount: values.amount,
           type: 0,
           remark: values.remark,
           paymentStatus: -1,
           status: '0',
+          statusChangeUserId: userInfo?.id || 0,
+          statusChangeUserName: userInfo?.name || '未知用户',
+          statusChangeTime: new Date().toISOString().slice(0, 19).replace('T', ' '),
         };
         
         await order.create(orderData);

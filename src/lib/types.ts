@@ -641,6 +641,9 @@ export interface CreateOrderRequest {
   remark: string;
   paymentStatus: number;
   status: string;
+  statusChangeUserId?: number; // 状态变更操作人ID
+  statusChangeUserName?: string; // 状态变更操作人名字
+  statusChangeTime?: string; // 状态变更时间 (格式: YYYY-MM-DD HH:mm:ss)
 }
 
 // 创建商品请求参数
@@ -650,6 +653,15 @@ export interface CreateItemRequest {
   color: string[];
   size: string[];
   stock: number;
+}
+
+// 订单状态历史记录
+export interface OrderStatusHistory {
+  fromStatus?: string; // 原状态
+  toStatus: string; // 目标状态
+  userId: number; // 操作人ID
+  userName: string; // 操作人名字
+  time: string; // 操作时间
 }
 
 // 订单数据
@@ -669,7 +681,12 @@ export interface OrderData {
   status: string;
   paymentStatus: number;
   createDate: string;
-  pendingDate?: string;
+  pendingDate?: string; // 旧字段，保留兼容性
+  operator?: string; // 旧字段，保留兼容性
+  statusChangeUserId?: number; // 状态变更操作人ID
+  statusChangeUserName?: string; // 状态变更操作人名字
+  statusChangeTime?: string; // 状态变更时间
+  statusHistory?: string; // 状态历史记录（JSON 字符串）
 }
 
 // 订单分页请求参数
@@ -701,6 +718,10 @@ export interface ModifyOrderRequest {
   remark?: string;
   amount?: number;
   id: number;
-  pendingDate?: string;
+  pendingDate?: string; // 旧字段，保留兼容性
   status?: string;
+  operator?: string; // 旧字段，保留兼容性
+  statusChangeUserId?: number; // 状态变更操作人ID
+  statusChangeUserName?: string; // 状态变更操作人名字
+  statusChangeTime?: string; // 状态变更时间 (格式: YYYY-MM-DD HH:mm:ss)
 }
